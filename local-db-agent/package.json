@@ -1,0 +1,40 @@
+{
+  "name": "agent-local",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "本地 NL->SQL agent：直连 SQL Server + SSE",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "release": "powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1",
+    "dbcheck": "tsx scripts/db-check.ts",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.2.17",
+    "@langchain/langgraph": "^1.5.0",
+    "@langchain/openai": "^1.6.2",
+    "fastify": "^5.12.7",
+    "langchain": "^1.5.18",
+    "msnodesqlv8": "^5.6.0",
+    "mssql": "^12.7.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/mssql": "^12.3.0",
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.4",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^2.1.9"
+  }
+}
