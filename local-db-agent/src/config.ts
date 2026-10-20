@@ -48,11 +48,17 @@ const DEFAULTS = {
   llmBaseUrl: 'https://api.deepseek.com/v1',
   llmModel: 'deepseek-chat',
   llmTimeoutSec: 60,
-  recursionLimit: 12,
+  recursionLimit: 80,
   turnTimeoutSec: 120,
   maxConcurrent: 3,
   summaryTriggerTokens: 6000,
   summaryKeepMessages: 12,
+  // 单轮预算：防止海量数据被反复查询、把上下文和 token 撑爆
+  maxSqlQueries: 6,
+  maxSchemaCalls: 6,
+  maxResultChars: 8000,
+  maxTotalToolChars: 40000,
+  maxOutputTokens: 8000,
 };
 
 // ============================================================
@@ -88,6 +94,16 @@ export interface LimitsInput {
   maxConcurrent?: number;
   summaryTriggerTokens?: number;
   summaryKeepMessages?: number;
+  /** 单轮 SQL 查询次数上限（默认 6） */
+  maxSqlQueries?: number;
+  /** 单轮表结构查询次数上限（list_tables + get_table_schema，默认 6） */
+  maxSchemaCalls?: number;
+  /** 单次工具结果字符数上限（默认 8000） */
+  maxResultChars?: number;
+  /** 单轮所有工具结果字符数上限（默认 40000） */
+  maxTotalToolChars?: number;
+  /** 单次大模型输出 token 上限（默认 8000） */
+  maxOutputTokens?: number;
 }
 
 export interface RequestConfigInput {
@@ -121,6 +137,11 @@ export interface ResolvedConfig {
   maxConcurrent: number;
   summaryTriggerTokens: number;
   summaryKeepMessages: number;
+  maxSqlQueries: number;
+  maxSchemaCalls: number;
+  maxResultChars: number;
+  maxTotalToolChars: number;
+  maxOutputTokens: number;
   /** 供运行时缓存的键（哈希，不含明文密钥） */
   key: string;
 }
@@ -235,8 +256,28 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     num(lim.summaryKeepMessages, DEFAULTS.summaryKeepMessages),
   );
 
+  const maxSqlQueries = Math.max(1, num(lim.maxSqlQueries, DEFAULTS.maxSqlQueries));
+  const maxSchemaCalls = Math.max(1, num(lim.maxSchemaCalls, DEFAULTS.maxSchemaCalls));
+  const maxResultChars = Math.max(1000, num(lim.maxResultChars, DEFAULTS.maxResultChars));
+  const maxTotalToolChars = Math.max(
+    2000,
+    num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars),
+  );
+  const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+
   const key = hashKey(
-    JSON.stringify({ db, llm, recursionLimit, summaryTriggerTokens, summaryKeepMessages }),
+    JSON.stringify({
+      db,
+      llm,
+      recursionLimit,
+      summaryTriggerTokens,
+      summaryKeepMessages,
+      maxSqlQueries,
+      maxSchemaCalls,
+      maxResultChars,
+      maxTotalToolChars,
+      maxOutputTokens,
+    }),
   );
 
   return {
@@ -247,6 +288,11 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     maxConcurrent,
     summaryTriggerTokens,
     summaryKeepMessages,
+    maxSqlQueries,
+    maxSchemaCalls,
+    maxResultChars,
+    maxTotalToolChars,
+    maxOutputTokens,
     key,
   };
 }

@@ -3,9 +3,12 @@ import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from '@langchain/
 import { serverConfig, describeDb, resolveRequestConfig } from './config.js';
 import type { RequestConfigInput, ResolvedConfig } from './config.js';
 import { getRuntime, pingModel } from './runtime.js';
+import { VISUAL_TOOL_NAMES } from './tools.js';
 import { closeAllPools, pingDatabase } from './db.js';
 import { decryptConfigPayload, handshake } from './crypto.js';
 import type { ConfigEncPayload } from './crypto.js';
+import { TurnBudget, runWithBudget } from './budget.js';
+import { logLine } from './log.js';
 
 const app = Fastify({ logger: true });
 
@@ -20,7 +23,13 @@ app.options('/*', async (_request, reply) => {
 });
 
 // 健康检查：仅表示服务存活，不含任何配置/密钥
-app.get('/health', async () => ({ status: 'ok' }));
+const bootedAt = new Date().toISOString();
+app.get('/health', async () => ({
+  status: 'ok',
+  pid: process.pid,
+  startedAt: bootedAt,
+  uptimeSec: Math.round(process.uptime()),
+}));
 
 // 传输加密公钥：前端用它加密 config（含数据库密码 / API Key）
 app.get('/handshake', async () => handshake);
@@ -58,13 +67,50 @@ function configFromBody(body: {
   return body.config;
 }
 
+const SSE_HEADERS = {
+  'Content-Type': 'text/event-stream; charset=utf-8',
+  'Cache-Control': 'no-cache, no-transform',
+  Connection: 'keep-alive',
+  'Access-Control-Allow-Origin': '*',
+};
+
+// /chat/stream 任何情况下都必须返回 SSE（包括 body 解析失败），
+// 否则前端的 SSE 客户端只会报 content-type 不匹配，看不到真正的错误。
+app.setErrorHandler((error, request, reply) => {
+  if (request.url.split('?')[0] === '/chat/stream') {
+    if (!reply.raw.headersSent) reply.raw.writeHead(200, SSE_HEADERS);
+    if (!reply.raw.writableEnded) {
+      const message = error instanceof Error ? error.message : String(error);
+      reply.raw.write(`data: ${JSON.stringify({ type: 'error', message })}\n\n`);
+      reply.raw.end();
+    }
+    return;
+  }
+  reply.send(error);
+});
+
 let activeStreams = 0;
 
 app.post('/chat/stream', async (request, reply) => {
   const body = request.body as ChatRequestBody;
 
+  // 一开始就切到 SSE，校验失败也用 SSE 返回错误。
+  // 否则前端 SSE 客户端会先报 "Expected content-type to be text/event-stream,
+  // Actual: application/json"，真正的原因（缺配置、解密失败等）反而看不到。
+  reply.hijack();
+  const raw = reply.raw;
+  raw.writeHead(200, SSE_HEADERS);
+
+  const send = (payload: unknown) => {
+    raw.write(`data: ${JSON.stringify(payload)}\n\n`);
+  };
+  const fail = (message: string) => {
+    send({ type: 'error', message });
+    raw.end();
+  };
+
   if (!body || !Array.isArray(body.messages)) {
-    reply.code(400).send({ error: 'messages 必须是数组' });
+    fail('messages 必须是数组');
     return;
   }
 
@@ -73,7 +119,9 @@ app.post('/chat/stream', async (request, reply) => {
   try {
     resolved = resolveOrThrow(configFromBody(body));
   } catch (e) {
-    reply.code(400).send({ error: e instanceof Error ? e.message : String(e) });
+    const message = e instanceof Error ? e.message : String(e);
+    request.log.warn({ err: e }, 'chat/stream config error');
+    fail(message);
     return;
   }
 
@@ -84,26 +132,12 @@ app.post('/chat/stream', async (request, reply) => {
 
   // 并发上限：防止同时发起大量对话放大 token 与数据库压力
   if (activeStreams >= resolved.maxConcurrent) {
-    reply.code(429).send({ error: '当前会话过多，请稍后再试' });
+    fail('当前会话过多，请稍后再试');
     return;
   }
 
   // 历史直接交给 agent；上下文优化由 LangChain 的 summarizationMiddleware 负责
   const messages: BaseMessage[] = body.messages.map(toMessage);
-  const agent = getRuntime(resolved);
-
-  reply.hijack();
-  const raw = reply.raw;
-  raw.writeHead(200, {
-    'Content-Type': 'text/event-stream; charset=utf-8',
-    'Cache-Control': 'no-cache, no-transform',
-    Connection: 'keep-alive',
-    'Access-Control-Allow-Origin': '*',
-  });
-
-  const send = (payload: unknown) => {
-    raw.write(`data: ${JSON.stringify(payload)}\n\n`);
-  };
 
   // 单轮总时长上限 + 客户端断开即中止（避免挂起、持续烧 token / 占着数据库）
   const controller = new AbortController();
@@ -117,11 +151,24 @@ app.post('/chat/stream', async (request, reply) => {
   const onClientClose = () => {
     if (!finished) controller.abort();
   };
-  reply.raw.on('close', onClientClose);
+  raw.on('close', onClientClose);
 
   activeStreams += 1;
 
+  const budget = new TurnBudget({
+    maxSqlQueries: resolved.maxSqlQueries,
+    maxSchemaCalls: resolved.maxSchemaCalls,
+    maxResultChars: resolved.maxResultChars,
+    maxTotalToolChars: resolved.maxTotalToolChars,
+  });
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let turnError = '';
+  logLine(`turn start model=${resolved.llm.model}`);
+
+  await runWithBudget(budget, async () => {
   try {
+    const agent = getRuntime(resolved);
     const stream = await agent.streamEvents(
       { messages },
       { version: 'v2', recursionLimit: resolved.recursionLimit, signal: controller.signal },
@@ -139,26 +186,49 @@ app.post('/chat/stream', async (request, reply) => {
           input: (event.data as { input?: unknown })?.input,
         });
       } else if (event.event === 'on_tool_end') {
-        send({
-          type: 'tool_result',
-          name: event.name,
-          output: extractText((event.data as { output?: unknown })?.output),
-        });
+        const output = extractText((event.data as { output?: unknown })?.output);
+        const spec = VISUAL_TOOL_NAMES.has(event.name) ? safeParseObject(output) : null;
+        if (spec) {
+          // 可视化工具有效 → 作为独立的 visual 事件下发，前端直接渲染组件
+          send({ type: 'visual', ...spec });
+        } else {
+          send({ type: 'tool_result', name: event.name, output });
+        }
+      } else if (event.event === 'on_chat_model_end') {
+        const usage = (event.data?.output as {
+          usage_metadata?: { input_tokens?: number; output_tokens?: number };
+        })?.usage_metadata;
+        if (usage) {
+          inputTokens += usage.input_tokens || 0;
+          outputTokens += usage.output_tokens || 0;
+        }
       }
     }
 
     send({ type: 'done' });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const message = timedOut
+      ? '处理超时，已中断'
+      : /recursion limit/i.test(rawMessage)
+        ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
+        : rawMessage;
+    turnError = rawMessage;
     request.log.error({ err: error }, 'agent stream failed');
-    send({ type: 'error', message: timedOut ? '处理超时，已中断' : message });
+    logLine(`turn error ${rawMessage}`);
+    send({ type: 'error', message });
   } finally {
     finished = true;
     clearTimeout(turnTimer);
-    reply.raw.off('close', onClientClose);
+    raw.off('close', onClientClose);
     activeStreams -= 1;
+    logLine(
+      `turn end ${budget.summary()} tokens_in=${inputTokens} tokens_out=${outputTokens}` +
+        `${turnError ? ' error=1' : ''}${budget.usage.exceeded.length ? ' exceeded=1' : ''}`,
+    );
     raw.end();
   }
+  });
 });
 
 // 连接自检：真实连一下数据库 + 轻量探一下大模型；用于前端打开组件时友好提示
@@ -234,6 +304,18 @@ function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promise<T> 
       },
     );
   });
+}
+
+/** 把工具返回的 JSON 字符串解析成对象；失败返回 null。 */
+function safeParseObject(text: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function extractText(content: unknown): string {

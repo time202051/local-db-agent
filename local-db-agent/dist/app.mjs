@@ -308,13 +308,13 @@ var require_queue = __commonJS({
           cb(null, res);
         }, cb);
       }
-      var queue2 = fastqueue(context2, asyncWrapper, _concurrency);
-      var pushCb = queue2.push;
-      var unshiftCb = queue2.unshift;
-      queue2.push = push2;
-      queue2.unshift = unshift;
-      queue2.drained = drained;
-      return queue2;
+      var queue3 = fastqueue(context2, asyncWrapper, _concurrency);
+      var pushCb = queue3.push;
+      var unshiftCb = queue3.unshift;
+      queue3.push = push2;
+      queue3.unshift = unshift;
+      queue3.drained = drained;
+      return queue3;
       function push2(value) {
         var p = new Promise(function(resolve2, reject) {
           pushCb(value, function(err, result) {
@@ -344,14 +344,14 @@ var require_queue = __commonJS({
       function drained() {
         var p = new Promise(function(resolve2) {
           process.nextTick(function() {
-            if (queue2.idle()) {
+            if (queue3.idle()) {
               resolve2();
             } else {
-              var previousDrain = queue2.drain;
-              queue2.drain = function() {
+              var previousDrain = queue3.drain;
+              queue3.drain = function() {
                 if (typeof previousDrain === "function") previousDrain();
                 resolve2();
-                queue2.drain = previousDrain;
+                queue3.drain = previousDrain;
               };
             }
           });
@@ -753,8 +753,8 @@ var require_plugin = __commonJS({
     var { AVV_ERR_PLUGIN_EXEC_TIMEOUT } = require_errors();
     var { getPluginName } = require_get_plugin_name();
     var { isPromiseLike: isPromiseLike2 } = require_is_promise_like();
-    function Plugin(queue2, func, options, isAfter, timeout) {
-      this.queue = queue2;
+    function Plugin(queue3, func, options, isAfter, timeout) {
+      this.queue = queue3;
       this.func = func;
       this.options = options;
       this.isAfter = isAfter;
@@ -7257,7 +7257,7 @@ var require_sonic_boom = __commonJS({
     var kContentModeUtf8 = "utf8";
     var [major, minor] = (process.versions.node || "0.0").split(".").map(Number);
     var kCopyBuffer = major >= 22 && minor >= 7;
-    function openFile(file2, sonic) {
+    function openFile(file3, sonic) {
       sonic._opening = true;
       sonic._writing = true;
       sonic._asyncDrainScheduled = false;
@@ -7279,7 +7279,7 @@ var require_sonic_boom = __commonJS({
         }
         const reopening = sonic._reopening;
         sonic.fd = fd;
-        sonic.file = file2;
+        sonic.file = file3;
         sonic._reopening = false;
         sonic._opening = false;
         sonic._writing = false;
@@ -7301,27 +7301,27 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs.mkdirSync(path4.dirname(file2), { recursive: true });
-          const fd = fs.openSync(file2, flags, mode);
+          if (sonic.mkdir) fs.mkdirSync(path4.dirname(file3), { recursive: true });
+          const fd = fs.openSync(file3, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
           fileOpened(err);
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs.mkdir(path4.dirname(file2), { recursive: true }, (err) => {
+        fs.mkdir(path4.dirname(file3), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
-          fs.open(file2, flags, mode, fileOpened);
+          fs.open(file3, flags, mode, fileOpened);
         });
       } else {
-        fs.open(file2, flags, mode, fileOpened);
+        fs.open(file3, flags, mode, fileOpened);
       }
     }
     function SonicBoom(opts) {
       if (!(this instanceof SonicBoom)) {
         return new SonicBoom(opts);
       }
-      let { fd, dest, minLength, maxLength, maxWrite, periodicFlush, sync, append = true, mkdir: mkdir3, retryEAGAIN, fsync, contentMode, mode } = opts || {};
+      let { fd, dest, minLength, maxLength, maxWrite, periodicFlush, sync, append = true, mkdir: mkdir4, retryEAGAIN, fsync, contentMode, mode } = opts || {};
       fd = fd || dest;
       this._len = 0;
       this.fd = -1;
@@ -7346,7 +7346,7 @@ var require_sonic_boom = __commonJS({
       this.append = append || false;
       this.mode = mode;
       this.retryEAGAIN = retryEAGAIN || (() => true);
-      this.mkdir = mkdir3 || false;
+      this.mkdir = mkdir4 || false;
       let fsWriteSync;
       let fsWrite;
       if (contentMode === kContentModeBuffer) {
@@ -7620,13 +7620,13 @@ var require_sonic_boom = __commonJS({
       }
       this._actualWrite();
     }
-    SonicBoom.prototype.reopen = function(file2) {
+    SonicBoom.prototype.reopen = function(file3) {
       if (this.destroyed) {
         throw new Error("SonicBoom destroyed");
       }
       if (this._opening) {
         this.once("ready", () => {
-          this.reopen(file2);
+          this.reopen(file3);
         });
         return;
       }
@@ -7636,8 +7636,8 @@ var require_sonic_boom = __commonJS({
       if (!this.file) {
         throw new Error("Unable to reopen a file descriptor, you must pass a file to SonicBoom");
       }
-      if (file2) {
-        this.file = file2;
+      if (file3) {
+        this.file = file3;
       }
       this._reopening = true;
       if (this._writing) {
@@ -8058,7 +8058,7 @@ var require_thread_stream = __commonJS({
     var { version: version4 } = require_package();
     var { EventEmitter } = __require("events");
     var { Worker: Worker2 } = __require("worker_threads");
-    var { join } = __require("path");
+    var { join: join2 } = __require("path");
     var { pathToFileURL } = __require("url");
     var { wait } = require_wait();
     var {
@@ -8109,7 +8109,7 @@ var require_thread_stream = __commonJS({
     function createWorker(stream, opts) {
       const { filename, workerData } = opts;
       const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
-      const toExecute = bundlerOverrides["thread-stream-worker"] || join(__dirname, "lib", "worker.js");
+      const toExecute = bundlerOverrides["thread-stream-worker"] || join2(__dirname, "lib", "worker.js");
       const worker = new Worker2(toExecute, {
         ...opts.workerOpts,
         name: opts.workerOpts?.name || "thread-stream",
@@ -8577,7 +8577,7 @@ var require_transport = __commonJS({
     var { createRequire } = __require("module");
     var { existsSync: existsSync3 } = __require("node:fs");
     var getCallers = require_caller();
-    var { join, isAbsolute, sep } = __require("node:path");
+    var { join: join2, isAbsolute, sep } = __require("node:path");
     var { fileURLToPath: fileURLToPath2 } = __require("node:url");
     var sleep5 = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
@@ -8732,7 +8732,7 @@ var require_transport = __commonJS({
         throw new Error("only one of target or targets can be specified");
       }
       if (targets) {
-        target = bundlerOverrides["pino-worker"] || join(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join2(__dirname, "worker.js");
         options.targets = targets.filter((dest) => dest.target).map((dest) => {
           return {
             ...dest,
@@ -8753,7 +8753,7 @@ var require_transport = __commonJS({
         const pipelinesHaveLevel = options.pipelines.some((p) => p.some((t) => t.level != null));
         usesMultistream = options.targets.length + options.pipelines.length > 1 || targetsHaveLevel || pipelinesHaveLevel;
       } else if (pipeline) {
-        target = bundlerOverrides["pino-worker"] || join(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join2(__dirname, "worker.js");
         options.pipelines = [pipeline.map((dest) => {
           return {
             ...dest,
@@ -8780,7 +8780,7 @@ var require_transport = __commonJS({
           return origin;
         }
         if (origin === "pino/file") {
-          return join(__dirname, "..", "file.js");
+          return join2(__dirname, "..", "file.js");
         }
         let fixTarget2;
         for (const filePath of callers) {
@@ -9760,7 +9760,7 @@ var require_safe_stable_stringify = __commonJS({
               return circularValue;
             }
             let res = "";
-            let join = ",";
+            let join2 = ",";
             const originalIndentation = indentation;
             if (Array.isArray(value)) {
               if (value.length === 0) {
@@ -9774,7 +9774,7 @@ var require_safe_stable_stringify = __commonJS({
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join = `,
+                join2 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -9782,13 +9782,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join;
+                res += join2;
               }
               const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -9809,7 +9809,7 @@ ${originalIndentation}`;
             let separator = "";
             if (spacer !== "") {
               indentation += spacer;
-              join = `,
+              join2 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -9823,13 +9823,13 @@ ${indentation}`;
               const tmp = stringifyFnReplacer(key2, value, stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join;
+                separator = join2;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...":${whitespace}"${getItemCount(removedKeys)} not stringified"`;
-              separator = join;
+              separator = join2;
             }
             if (spacer !== "" && separator.length > 1) {
               res = `
@@ -9870,7 +9870,7 @@ ${originalIndentation}`;
             }
             const originalIndentation = indentation;
             let res = "";
-            let join = ",";
+            let join2 = ",";
             if (Array.isArray(value)) {
               if (value.length === 0) {
                 return "[]";
@@ -9883,7 +9883,7 @@ ${originalIndentation}`;
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join = `,
+                join2 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -9891,13 +9891,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join;
+                res += join2;
               }
               const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -9910,7 +9910,7 @@ ${originalIndentation}`;
             let whitespace = "";
             if (spacer !== "") {
               indentation += spacer;
-              join = `,
+              join2 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -9919,7 +9919,7 @@ ${indentation}`;
               const tmp = stringifyArrayReplacer(key2, value[key2], stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join;
+                separator = join2;
               }
             }
             if (spacer !== "" && separator.length > 1) {
@@ -9977,20 +9977,20 @@ ${originalIndentation}`;
               indentation += spacer;
               let res2 = `
 ${indentation}`;
-              const join2 = `,
+              const join3 = `,
 ${indentation}`;
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
               let i = 0;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
                 res2 += tmp2 !== void 0 ? tmp2 : "null";
-                res2 += join2;
+                res2 += join3;
               }
               const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
               res2 += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res2 += `${join2}"... ${getItemCount(removedKeys)} not stringified"`;
+                res2 += `${join3}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               res2 += `
 ${originalIndentation}`;
@@ -10006,16 +10006,16 @@ ${originalIndentation}`;
               return '"[Object]"';
             }
             indentation += spacer;
-            const join = `,
+            const join2 = `,
 ${indentation}`;
             let res = "";
             let separator = "";
             let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
             if (isTypedArrayWithEntries(value)) {
-              res += stringifyTypedArray(value, join, maximumBreadth);
+              res += stringifyTypedArray(value, join2, maximumBreadth);
               keys = keys.slice(value.length);
               maximumPropertiesToStringify -= value.length;
-              separator = join;
+              separator = join2;
             }
             if (deterministic) {
               keys = sort(keys, comparator);
@@ -10026,13 +10026,13 @@ ${indentation}`;
               const tmp = stringifyIndent(key2, value[key2], stack, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}: ${tmp}`;
-                separator = join;
+                separator = join2;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...": "${getItemCount(removedKeys)} not stringified"`;
-              separator = join;
+              separator = join2;
             }
             if (separator !== "") {
               res = `
@@ -32948,15 +32948,15 @@ var require_compiler = __commonJS({
         this.emit("}");
       }
       emitLeaf(node2, paramsCount, pos) {
-        const storage = node2.handlerStorage;
-        const storageConst = this.addConst(storage, "handlers");
+        const storage2 = node2.handlerStorage;
+        const storageConst = this.addConst(storage2, "handlers");
         const handle = `h${this.uid++}`;
         this.emit(`const ${handle} = ${storageConst}.getMatchingHandler(derivedConstraints)`);
         this.emit(`if (${handle} !== null) {`);
         this.indent++;
         let paramsExpr;
-        if (storage.handlers.length === 1) {
-          const params = storage.handlers[0].params;
+        if (storage2.handlers.length === 1) {
+          const params = storage2.handlers[0].params;
           this.maxParams = Math.max(this.maxParams, paramsCount, params.length);
           const paramsObject = `o${this.uid++}`;
           this.emit(`const ${paramsObject} = new NullObject()`);
@@ -48598,8 +48598,8 @@ var init_prompts = __esm({
 import * as nodeFs from "node:fs";
 import * as nodeFsPromises from "node:fs/promises";
 import * as nodePath from "node:path";
-async function mkdir2(dir) {
-  await nodeFsPromises.mkdir(dir, { recursive: true });
+async function mkdir2(dir2) {
+  await nodeFsPromises.mkdir(dir2, { recursive: true });
 }
 async function writeFileAtomic(filePath, content) {
   const tempPath = `${filePath}.tmp`;
@@ -48609,8 +48609,8 @@ async function writeFileAtomic(filePath, content) {
   });
   await nodeFsPromises.rename(tempPath, filePath);
 }
-async function readdir2(dir) {
-  return nodeFsPromises.readdir(dir);
+async function readdir2(dir2) {
+  return nodeFsPromises.readdir(dir2);
 }
 async function stat2(filePath) {
   return nodeFsPromises.stat(filePath);
@@ -48618,8 +48618,8 @@ async function stat2(filePath) {
 function existsSync2(p) {
   return nodeFs.existsSync(p);
 }
-function mkdirSync2(dir) {
-  nodeFs.mkdirSync(dir, { recursive: true });
+function mkdirSync2(dir2) {
+  nodeFs.mkdirSync(dir2, { recursive: true });
 }
 function writeFileSync2(filePath, content) {
   nodeFs.writeFileSync(filePath, content);
@@ -48633,8 +48633,8 @@ function unlinkSync2(filePath) {
 function readFileSync2(filePath) {
   return nodeFs.readFileSync(filePath, "utf-8");
 }
-async function mkdirExclusive(dir) {
-  await nodeFsPromises.mkdir(dir, { mode: 448 });
+async function mkdirExclusive(dir2) {
+  await nodeFsPromises.mkdir(dir2, { mode: 448 });
 }
 function statMtimeMs(filePath) {
   try {
@@ -48820,9 +48820,9 @@ var init_prompt_cache = __esm({
         for (const [key, entry] of this.cache.entries()) {
           entries[key] = entry.value;
         }
-        const dir = path2.dirname(filePath);
-        if (!existsSync2(dir)) {
-          mkdirSync2(dir);
+        const dir2 = path2.dirname(filePath);
+        if (!existsSync2(dir2)) {
+          mkdirSync2(dir2);
         }
         const tempPath = `${filePath}.tmp`;
         try {
@@ -57596,13 +57596,13 @@ var init_tracer_langchain = __esm({
           rootRun = rootRun.parent_run;
         }
         visited.clear();
-        const queue2 = [rootRun];
-        while (queue2.length > 0) {
-          const current = queue2.shift();
+        const queue3 = [rootRun];
+        while (queue3.length > 0) {
+          const current = queue3.shift();
           if (!current || visited.has(current.id)) continue;
           visited.add(current.id);
           this.runTreeMap.set(current.id, current);
-          if (current.child_runs) queue2.push(...current.child_runs);
+          if (current.child_runs) queue3.push(...current.child_runs);
         }
         this.client = runTree.client ?? this.client;
         this.replicas = runTree.replicas ?? this.replicas;
@@ -58342,8 +58342,8 @@ var init_async_local_storage = __esm({
       }
       runWithConfig(config2, callback, avoidCreatingRootRunTree) {
         const callbackManager = CallbackManager._configureSync(config2?.callbacks, void 0, config2?.tags, void 0, config2?.metadata);
-        const storage = this.getInstance();
-        const previousValue = storage.getStore();
+        const storage2 = this.getInstance();
+        const previousValue = storage2.getStore();
         const parentRunId = callbackManager?.getParentRunId();
         const langChainTracer = callbackManager?.handlers?.find((handler) => handler?.name === "langchain_tracer");
         let runTree;
@@ -58360,7 +58360,7 @@ var init_async_local_storage = __esm({
           if (runTree === void 0) runTree = {};
           runTree[_CONTEXT_VARIABLES_KEY] = previousValue[_CONTEXT_VARIABLES_KEY];
         }
-        return storage.run(runTree, callback);
+        return storage2.run(runTree, callback);
       }
       initializeGlobalInstance(instance) {
         if (getGlobalAsyncLocalStorageInstance() === void 0) setGlobalAsyncLocalStorageInstance(instance);
@@ -77018,13 +77018,13 @@ var init_json_schema_processors = __esm({
       const keyType = def.keyType;
       const patterns = aggregateChecks(keyType).patterns;
       if (def.mode === "loose" && patterns && patterns.size > 0) {
-        const valueSchema = processSchema(def.valueType, ctx, {
+        const valueSchema2 = processSchema(def.valueType, ctx, {
           ...params,
           path: [...params.path, "patternProperties", "*"]
         });
         json2.patternProperties = {};
         for (const pattern of patterns) {
-          assignProp(json2.patternProperties, exactPattern(pattern).source, valueSchema);
+          assignProp(json2.patternProperties, exactPattern(pattern).source, valueSchema2);
         }
       } else {
         if (ctx.target === "draft-07" || ctx.target === "draft-2020-12") {
@@ -93681,7 +93681,7 @@ var init_sax = __esm({
         var stringFromCharCode = String.fromCharCode;
         var floor = Math.floor;
         var fromCodePoint = function() {
-          var MAX_SIZE = 16384;
+          var MAX_SIZE2 = 16384;
           var codeUnits = [];
           var highSurrogate2;
           var lowSurrogate;
@@ -93699,7 +93699,7 @@ var init_sax = __esm({
               lowSurrogate = codePoint % 1024 + 56320;
               codeUnits.push(highSurrogate2, lowSurrogate);
             }
-            if (index2 + 1 === length || codeUnits.length > MAX_SIZE) {
+            if (index2 + 1 === length || codeUnits.length > MAX_SIZE2) {
               result += stringFromCharCode.apply(null, codeUnits);
               codeUnits.length = 0;
             }
@@ -112606,11 +112606,11 @@ var init_reduced = __esm({
       * Optional extra fields to merge into the generated JSON Schema (e.g., for documentation or constraints).
       */
       jsonSchemaExtra;
-      constructor(valueSchema, init) {
+      constructor(valueSchema2, init) {
         this.reducer = init.reducer;
         this.jsonSchemaExtra = init.jsonSchemaExtra;
-        this.valueSchema = valueSchema;
-        this.inputSchema = "inputSchema" in init ? init.inputSchema : valueSchema;
+        this.valueSchema = valueSchema2;
+        this.inputSchema = "inputSchema" in init ? init.inputSchema : valueSchema2;
         this.jsonSchemaExtra = init.jsonSchemaExtra;
       }
       static isInstance(value) {
@@ -112697,10 +112697,10 @@ var init_delta2 = __esm({
       * Optional extra fields to merge into the generated JSON Schema.
       */
       jsonSchemaExtra;
-      constructor(valueSchema, init) {
+      constructor(valueSchema2, init) {
         this.reducer = init.reducer;
-        this.valueSchema = valueSchema;
-        this.inputSchema = "inputSchema" in init ? init.inputSchema : valueSchema;
+        this.valueSchema = valueSchema2;
+        this.inputSchema = "inputSchema" in init ? init.inputSchema : valueSchema2;
         this.snapshotFrequency = init.snapshotFrequency;
         this.jsonSchemaExtra = init.jsonSchemaExtra;
       }
@@ -113722,12 +113722,12 @@ var init_state2 = __esm({
             const schemaKeys = new Set(Object.keys(getInteropZodObjectShape(schemaDef)));
             if (updates.filter(([k]) => schemaKeys.has(k)).length === 0) return updates;
             const updateSchema = interopZodObjectPartial(this._metaRegistry.getExtendedChannelSchemas(schemaDef, { withReducerSchema: true }));
-            const valueSchema = interopZodObjectPartial(schemaDef);
+            const valueSchema2 = interopZodObjectPartial(schemaDef);
             return updates.map(([k, v]) => {
               if (!schemaKeys.has(k)) return [k, v];
               const [isOverwrite, overwriteValue] = _getOverwriteValue(v);
               if (isOverwrite) {
-                const parsed2 = interopParse(valueSchema, { [k]: overwriteValue });
+                const parsed2 = interopParse(valueSchema2, { [k]: overwriteValue });
                 return [k, Object.prototype.hasOwnProperty.call(parsed2, k) ? { [OVERWRITE]: parsed2[k] } : v];
               }
               const parsed = interopParse(updateSchema, { [k]: v });
@@ -120333,11 +120333,17 @@ var DEFAULTS = {
   llmBaseUrl: "https://api.deepseek.com/v1",
   llmModel: "deepseek-chat",
   llmTimeoutSec: 60,
-  recursionLimit: 12,
+  recursionLimit: 80,
   turnTimeoutSec: 120,
   maxConcurrent: 3,
   summaryTriggerTokens: 6e3,
-  summaryKeepMessages: 12
+  summaryKeepMessages: 12,
+  // 单轮预算：防止海量数据被反复查询、把上下文和 token 撑爆
+  maxSqlQueries: 6,
+  maxSchemaCalls: 6,
+  maxResultChars: 8e3,
+  maxTotalToolChars: 4e4,
+  maxOutputTokens: 8e3
 };
 var ConfigError = class extends Error {
 };
@@ -120422,7 +120428,23 @@ function resolveRequestConfig(raw) {
   const maxConcurrent = Math.max(1, num(lim.maxConcurrent, DEFAULTS.maxConcurrent));
   const summaryTriggerTokens = Math.max(500, num(lim.summaryTriggerTokens, DEFAULTS.summaryTriggerTokens));
   const summaryKeepMessages = Math.max(1, num(lim.summaryKeepMessages, DEFAULTS.summaryKeepMessages));
-  const key = hashKey(JSON.stringify({ db, llm, recursionLimit, summaryTriggerTokens, summaryKeepMessages }));
+  const maxSqlQueries = Math.max(1, num(lim.maxSqlQueries, DEFAULTS.maxSqlQueries));
+  const maxSchemaCalls = Math.max(1, num(lim.maxSchemaCalls, DEFAULTS.maxSchemaCalls));
+  const maxResultChars = Math.max(1e3, num(lim.maxResultChars, DEFAULTS.maxResultChars));
+  const maxTotalToolChars = Math.max(2e3, num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars));
+  const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+  const key = hashKey(JSON.stringify({
+    db,
+    llm,
+    recursionLimit,
+    summaryTriggerTokens,
+    summaryKeepMessages,
+    maxSqlQueries,
+    maxSchemaCalls,
+    maxResultChars,
+    maxTotalToolChars,
+    maxOutputTokens
+  }));
   return {
     db,
     llm,
@@ -120431,6 +120453,11 @@ function resolveRequestConfig(raw) {
     maxConcurrent,
     summaryTriggerTokens,
     summaryKeepMessages,
+    maxSqlQueries,
+    maxSchemaCalls,
+    maxResultChars,
+    maxTotalToolChars,
+    maxOutputTokens,
     key
   };
 }
@@ -121442,21 +121469,21 @@ var Stream = class _Stream {
     const left = createStreamTeeQueue();
     const right = createStreamTeeQueue();
     const iterator = this.iterator();
-    const teeIterator = (queue2) => ({
+    const teeIterator = (queue3) => ({
       next: () => {
-        if (queue2.canceled) {
+        if (queue3.canceled) {
           return Promise.resolve({ value: void 0, done: true });
         }
-        if (queue2.length === 0) {
+        if (queue3.length === 0) {
           const result = iterator.next();
           left.enqueue(result);
           right.enqueue(result);
         }
-        return queue2.dequeue();
+        return queue3.dequeue();
       },
       return: async () => {
-        if (!queue2.canceled) {
-          queue2.cancel();
+        if (!queue3.canceled) {
+          queue3.cancel();
           if (left.canceled && right.canceled) {
             await __classPrivateFieldGet2(this, _Stream_instances, "m", _Stream_cancelIterator).call(this, iterator, controller);
           }
@@ -121464,8 +121491,8 @@ var Stream = class _Stream {
         return { value: void 0, done: true };
       }
     });
-    const branch = (queue2) => {
-      const stream = new _Stream(() => teeIterator(queue2), controller, __classPrivateFieldGet2(this, _Stream_client, "f"));
+    const branch = (queue3) => {
+      const stream = new _Stream(() => teeIterator(queue3), controller, __classPrivateFieldGet2(this, _Stream_client, "f"));
       __classPrivateFieldSet2(stream, _Stream_isTeeBranch, true, "f");
       return stream;
     };
@@ -132405,8 +132432,8 @@ async function prepareAgentFiles(client2, files, options) {
   }
   const prepared = { files: [], uploadedFiles: [] };
   try {
-    for (const [path4, file2] of entries) {
-      const uploaded = await client2.files.create({ file: file2, purpose: "user_data" }, requestOptions);
+    for (const [path4, file3] of entries) {
+      const uploaded = await client2.files.create({ file: file3, purpose: "user_data" }, requestOptions);
       prepared.uploadedFiles.push(uploaded);
       prepared.files.push({ type: "file_id", file_id: uploaded.id, path: path4 });
     }
@@ -137585,17 +137612,17 @@ Evals.Runs = Runs5;
 async function waitForFileProcessing(resource, id, pollInterval, maxWait) {
   const terminalStates = /* @__PURE__ */ new Set(["processed", "error", "deleted"]);
   const start = performance.now();
-  let file2 = await resource.retrieve(id);
-  while (!file2.status || !terminalStates.has(file2.status)) {
+  let file3 = await resource.retrieve(id);
+  while (!file3.status || !terminalStates.has(file3.status)) {
     await sleep3(pollInterval);
-    file2 = await resource.retrieve(id);
+    file3 = await resource.retrieve(id);
     if (performance.now() - start > maxWait) {
       throw new APIConnectionTimeoutError2({
         message: `Giving up on waiting for file ${id} to finish processing after ${maxWait} milliseconds.`
       });
     }
   }
-  return file2;
+  return file3;
 }
 
 // node_modules/openai/resources/files.mjs
@@ -141250,8 +141277,8 @@ var Files4 = class extends APIResource2 {
    * Attach a file to the given vector store and wait for it to be processed.
    */
   async createAndPoll(vectorStoreId, body, options) {
-    const file2 = await this.create(vectorStoreId, body, options);
-    return await this.poll(vectorStoreId, file2.id, options);
+    const file3 = await this.create(vectorStoreId, body, options);
+    return await this.poll(vectorStoreId, file3.id, options);
   }
   /**
    * Wait for the vector store file to finish processing.
@@ -141268,15 +141295,15 @@ var Files4 = class extends APIResource2 {
    * Note the file will be asynchronously processed (you can use the alternative
    * polling helper method to wait for processing to complete).
    */
-  async upload(vectorStoreId, file2, options) {
-    const fileInfo = await this._client.files.create({ file: file2, purpose: "assistants" }, options);
+  async upload(vectorStoreId, file3, options) {
+    const fileInfo = await this._client.files.create({ file: file3, purpose: "assistants" }, options);
     return this.create(vectorStoreId, { file_id: fileInfo.id }, options);
   }
   /**
    * Add a file to a vector store and poll until processing is complete.
    */
-  async uploadAndPoll(vectorStoreId, file2, options) {
-    const fileInfo = await this.upload(vectorStoreId, file2, options);
+  async uploadAndPoll(vectorStoreId, file3, options) {
+    const fileInfo = await this.upload(vectorStoreId, file3, options);
     return await this.poll(vectorStoreId, fileInfo.id, options);
   }
   /**
@@ -154639,12 +154666,338 @@ init_stores();
 init_documents();
 init_testing();
 
+// dist/metrics.js
+var WMS_METRICS = [
+  {
+    key: "\u5165\u5E93\u5355\u91CF",
+    aliases: ["\u6536\u8D27\u5355\u91CF", "\u5165\u5E93\u91CF", "\u5165\u5E93\u5355\u6570"],
+    unit: "\u5355",
+    formula: "\u6309\u5165\u5E93\u5355\u5934\u8BA1\u6570\uFF0C\u6392\u9664\u5DF2\u4F5C\u5E9F/\u5DF2\u53D6\u6D88\u5355\u636E",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u5355\u636E\u7C7B\u578B", "\u65E5\u671F"],
+    chart: "bar / line"
+  },
+  {
+    key: "\u51FA\u5E93\u5355\u91CF",
+    aliases: ["\u53D1\u8D27\u5355\u91CF", "\u51FA\u5E93\u91CF", "\u51FA\u5E93\u5355\u6570"],
+    unit: "\u5355",
+    formula: "\u6309\u51FA\u5E93\u5355\u5934\u8BA1\u6570\uFF0C\u6392\u9664\u5DF2\u4F5C\u5E9F/\u5DF2\u53D6\u6D88\u5355\u636E",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u5BA2\u6237", "\u65E5\u671F"],
+    chart: "bar / line"
+  },
+  {
+    key: "\u51FA\u5E93\u4EF6\u6570",
+    aliases: ["\u53D1\u8D27\u4EF6\u6570", "\u51FA\u5E93\u6570\u91CF"],
+    unit: "\u4EF6",
+    formula: "\u6309\u51FA\u5E93\u660E\u7EC6\u6570\u91CF\u6C47\u603B\uFF08\u6CE8\u610F\u533A\u5206\u884C\u6570\u4E0E\u4EF6\u6570\uFF09",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u54C1\u7C7B", "\u65E5\u671F"],
+    chart: "bar / line"
+  },
+  {
+    key: "\u5E93\u5B58\u603B\u91CF",
+    aliases: ["\u5E93\u5B58\u6570\u91CF", "\u5728\u5E93\u91CF"],
+    unit: "\u4EF6 / \u6258",
+    formula: "\u5F53\u524D\u53EF\u7528\u5E93\u5B58 + \u5360\u7528\u5E93\u5B58\uFF08\u6309\u67E5\u8BE2\u53E3\u5F84\u8BF4\u660E\u662F\u5426\u542B\u51BB\u7ED3\u3001\u5728\u9014\uFF09",
+    dimensions: ["\u4ED3\u5E93", "\u5E93\u533A", "\u8D27\u4E3B", "\u54C1\u7C7B"],
+    chart: "bar / line"
+  },
+  {
+    key: "\u5E93\u5B58\u91D1\u989D",
+    aliases: ["\u5E93\u5B58\u4EF7\u503C", "\u5E93\u5B58\u6210\u672C"],
+    unit: "\u5143",
+    formula: "\u5E93\u5B58\u6570\u91CF \xD7 \u6210\u672C\u5355\u4EF7\uFF1B\u65E0\u6210\u672C\u5B57\u6BB5\u65F6\u660E\u786E\u8BF4\u660E\u65E0\u6CD5\u8BA1\u7B97",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u54C1\u7C7B"],
+    chart: "bar / pie"
+  },
+  {
+    key: "\u5E93\u5B58\u5468\u8F6C\u7387",
+    aliases: ["\u5468\u8F6C\u6B21\u6570", "\u5468\u8F6C\u5929\u6570"],
+    unit: "\u6B21 / \u5929",
+    formula: "\u671F\u95F4\u51FA\u5E93\u6210\u672C \xF7 \u671F\u95F4\u5E73\u5747\u5E93\u5B58\u6210\u672C\uFF1B\u6216 \u671F\u95F4\u51FA\u5E93\u4EF6\u6570 \xF7 \u5E73\u5747\u5E93\u5B58\u4EF6\u6570",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u54C1\u7C7B", "\u6708"],
+    chart: "line"
+  },
+  {
+    key: "\u5E93\u9F84\u7ED3\u6784",
+    aliases: ["\u5E93\u9F84\u5206\u5E03", "\u5E93\u9F84"],
+    unit: "\u4EF6 / \u5360\u6BD4",
+    formula: "\u6309\u6279\u6B21\u5165\u5E93\u65E5\u671F\u81F3\u4ECA\u7684\u5929\u6570\u5206\u6863\uFF1A0-30 / 31-60 / 61-90 / 90+ \u5929",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u54C1\u7C7B", "\u5E93\u9F84\u6BB5"],
+    chart: "stacked-bar"
+  },
+  {
+    key: "\u5165\u5E93\u53CA\u65F6\u7387",
+    aliases: ["\u6536\u8D27\u53CA\u65F6\u7387", "\u4E0A\u67B6\u53CA\u65F6\u7387"],
+    unit: "%",
+    formula: "\u5728\u5141\u8BB8\u65F6\u6548\u5185\u5B8C\u6210\u7684\u5165\u5E93\u5355\u91CF \xF7 \u5E94\u5B8C\u6210\u5165\u5E93\u5355\u91CF\uFF1B\u65F6\u6548\u9608\u503C\u8981\u5199\u6E05\u695A",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u65E5\u671F"],
+    chart: "line / dual-axis",
+    note: "\u9608\u503C\uFF08\u5982 4 \u5C0F\u65F6/24 \u5C0F\u65F6\uFF09\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u914D\u7F6E\u6216\u660E\u786E\u8BF4\u660E\u5047\u8BBE"
+  },
+  {
+    key: "\u51FA\u5E93\u53CA\u65F6\u7387",
+    aliases: ["\u53D1\u8D27\u53CA\u65F6\u7387", "\u51FA\u5E93\u51C6\u65F6\u7387"],
+    unit: "%",
+    formula: "\u5728\u627F\u8BFA\u65F6\u6548\u5185\u5B8C\u6210\u7684\u51FA\u5E93\u5355\u91CF \xF7 \u5E94\u5B8C\u6210\u51FA\u5E93\u5355\u91CF",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u65E5\u671F"],
+    chart: "line / dual-axis"
+  },
+  {
+    key: "\u62E3\u8D27\u53CA\u65F6\u7387",
+    aliases: ["\u62E3\u8D27\u51C6\u65F6\u7387"],
+    unit: "%",
+    formula: "\u5728\u6CE2\u6B21\u8981\u6C42\u65F6\u95F4\u5185\u5B8C\u6210\u7684\u62E3\u8D27\u4EFB\u52A1\u6570 \xF7 \u62E3\u8D27\u4EFB\u52A1\u603B\u6570",
+    dimensions: ["\u4ED3\u5E93", "\u5E93\u533A", "\u65E5\u671F"],
+    chart: "line"
+  },
+  {
+    key: "\u53D1\u8D27\u51C6\u65F6\u7387",
+    aliases: ["\u51C6\u65F6\u53D1\u8D27\u7387", "OTD"],
+    unit: "%",
+    formula: "\u6309\u8BA1\u5212\u53D1\u8FD0\u65F6\u95F4\u51C6\u65F6\u53D1\u8FD0\u7684\u5355\u91CF \xF7 \u5E94\u53D1\u8FD0\u5355\u91CF",
+    dimensions: ["\u4ED3\u5E93", "\u627F\u8FD0\u5546", "\u65E5\u671F"],
+    chart: "line"
+  },
+  {
+    key: "\u62E3\u8D27\u51C6\u786E\u7387",
+    aliases: ["\u62E3\u9009\u51C6\u786E\u7387", "\u5DEE\u9519\u7387"],
+    unit: "%",
+    formula: "1 - \u5DEE\u9519\u884C\u6570 \xF7 \u62E3\u8D27\u603B\u884C\u6570\uFF1B\u5DEE\u9519\u5B9A\u4E49\u8981\u4E0E\u4E1A\u52A1\u786E\u8BA4\uFF08\u590D\u6838\u5DEE\u5F02/\u5BA2\u8BC9\uFF09",
+    dimensions: ["\u4ED3\u5E93", "\u4EBA\u5458", "\u65E5\u671F"],
+    chart: "line / dual-axis"
+  },
+  {
+    key: "\u5E93\u5B58\u51C6\u786E\u7387",
+    aliases: ["\u8D26\u5B9E\u76F8\u7B26\u7387", "\u76D8\u70B9\u51C6\u786E\u7387"],
+    unit: "%",
+    formula: "1 - \u76D8\u70B9\u5DEE\u5F02 SKU \u6570 \xF7 \u76D8\u70B9 SKU \u603B\u6570",
+    dimensions: ["\u4ED3\u5E93", "\u5E93\u533A", "\u671F\u95F4"],
+    chart: "line"
+  },
+  {
+    key: "\u5E93\u5BB9\u5229\u7528\u7387",
+    aliases: ["\u5E93\u4F4D\u5229\u7528\u7387", "\u4ED3\u5BB9\u5229\u7528\u7387"],
+    unit: "%",
+    formula: "\u5DF2\u5360\u7528\u5E93\u4F4D\u6570 \xF7 \u53EF\u7528\u5E93\u4F4D\u603B\u6570\uFF1B\u6216\u5DF2\u7528\u4F53\u79EF \xF7 \u603B\u5E93\u5BB9",
+    dimensions: ["\u4ED3\u5E93", "\u5E93\u533A"],
+    chart: "gauge / ring"
+  },
+  {
+    key: "\u5446\u6EDE\u5E93\u5B58",
+    aliases: ["\u6EDE\u9500\u5E93\u5B58", "\u957F\u5E93\u9F84\u5E93\u5B58"],
+    unit: "\u4EF6 / \u91D1\u989D",
+    formula: "\u5E93\u9F84\u8D85\u8FC7 N \u5929\u4E14\u671F\u95F4\u65E0\u51FA\u5E93\u7684\u5E93\u5B58\uFF1BN \u9700\u660E\u786E\uFF08\u5E38\u89C1 90/180 \u5929\uFF09",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u54C1\u7C7B"],
+    chart: "bar"
+  },
+  {
+    key: "\u4E34\u671F/\u8FC7\u671F\u5E93\u5B58",
+    aliases: ["\u6548\u671F\u9884\u8B66", "\u8FD1\u6548\u671F"],
+    unit: "\u4EF6 / \u91D1\u989D",
+    formula: "\u6309\u6548\u671F\u5269\u4F59\u5929\u6570\u5206\u6863\uFF1A<0 \u5DF2\u8FC7\u671F\u30010-30 \u4E34\u671F\u300131-90 \u5173\u6CE8",
+    dimensions: ["\u4ED3\u5E93", "\u8D27\u4E3B", "\u54C1\u7C7B", "\u6548\u671F\u6BB5"],
+    chart: "stacked-bar"
+  },
+  {
+    key: "\u5F02\u5E38\u5355\u91CF",
+    aliases: ["\u5F02\u5E38\u4EFB\u52A1", "\u4F5C\u4E1A\u5F02\u5E38"],
+    unit: "\u5355 / \u884C",
+    formula: "\u8D85\u65F6\u672A\u53D1\u3001\u5E93\u5B58\u5DEE\u5F02\u3001\u8D1F\u5E93\u5B58\u3001\u7F3A\u8D27\u3001\u7834\u635F\u7B49\u5F02\u5E38\u6309\u7C7B\u578B\u8BA1\u6570",
+    dimensions: ["\u4ED3\u5E93", "\u5F02\u5E38\u7C7B\u578B", "\u65E5\u671F"],
+    chart: "bar / dist"
+  },
+  {
+    key: "\u4EBA\u6548",
+    aliases: ["\u4EBA\u5747\u6548\u7387", "\u4EBA\u5747\u5355\u91CF"],
+    unit: "\u5355/\u4EBA/\u5929",
+    formula: "\u671F\u95F4\u5B8C\u6210\u5355\u91CF \xF7 \u671F\u95F4\u51FA\u52E4\u4EBA\u5929\uFF1B\u65E0\u4EBA\u529B\u6570\u636E\u65F6\u660E\u786E\u8BF4\u660E\u65E0\u6CD5\u8BA1\u7B97",
+    dimensions: ["\u4ED3\u5E93", "\u73ED\u7EC4", "\u65E5\u671F"],
+    chart: "bar / line"
+  }
+];
+var metricLines = WMS_METRICS.map((m) => `- ${m.key}\uFF08\u522B\u540D\uFF1A${m.aliases.join("/")}\uFF1B\u5355\u4F4D\uFF1A${m.unit}\uFF1B\u53E3\u5F84\uFF1A${m.formula}\uFF1B\u7EF4\u5EA6\uFF1A${m.dimensions.join("/")}\uFF1B\u63A8\u8350\u56FE\uFF1A${m.chart}${m.note ? `\uFF1B\u6CE8\u610F\uFF1A${m.note}` : ""}\uFF09`).join("\n");
+var WMS_METRIC_PROMPT = `\u3010WMS \u6307\u6807\u53E3\u5F84\uFF08\u91CD\u8981\uFF09\u3011
+\u7528\u6237\u662F\u505A\u4ED3\u50A8\u7BA1\u7406\u7CFB\u7EDF\u7684\uFF0C\u62A5\u544A\u91CC\u7684\u6307\u6807\u5FC5\u987B\u6309\u4E0B\u9762\u8FD9\u5957\u4E1A\u52A1\u53E3\u5F84\u8BA1\u7B97\uFF0C\u4FDD\u8BC1\u540C\u4E00\u4E2A\u6307\u6807\u6BCF\u6B21\u7B97\u6CD5\u4E00\u81F4\u3002
+${metricLines}
+
+\u6307\u6807\u4F7F\u7528\u89C4\u5219\uFF1A
+1. \u5148 list_tables / get_table_schema \u786E\u8BA4\u771F\u5B9E\u8868\u540D\u548C\u5B57\u6BB5\uFF0C\u518D\u628A\u53E3\u5F84\u6620\u5C04\u5230\u771F\u5B9E\u5B57\u6BB5\uFF1B\u5B57\u6BB5\u5BF9\u4E0D\u4E0A\u5C31\u8BF4\u660E\u201C\u5F53\u524D\u6570\u636E\u5E93\u65E0\u6CD5\u8BA1\u7B97\u8BE5\u6307\u6807\u201D\uFF0C\u4E0D\u8981\u81C6\u9020\u5B57\u6BB5\u6216\u8868\u540D\u3002
+2. \u540C\u4E00\u4E2A\u6307\u6807\u5728\u540C\u4E00\u4EFD\u62A5\u544A\u91CC\u53EA\u80FD\u6709\u4E00\u79CD\u53E3\u5F84\uFF0C\u4E0D\u5141\u8BB8\u524D\u540E\u4E0D\u4E00\u81F4\u3002
+3. \u5355\u91CF\u7C7B\u5FC5\u987B\u533A\u5206\u300C\u5355\u300D\u300C\u884C\u300D\u300C\u4EF6\u300D\u300C\u6258\u300D\uFF0C\u4E0D\u8981\u6DF7\u7528\uFF1B\u5355\u4F4D\u8981\u5199\u5728\u6570\u5B57\u65C1\u8FB9\u3002
+4. \u76EE\u6807\u503C / \u8BA1\u5212\u503C\u53EA\u6709\u5728\u6570\u636E\u5E93\u91CC\u786E\u5B9E\u5B58\u5728\u8BA1\u5212\u8868\u3001\u76EE\u6807\u5B57\u6BB5\u6216\u8003\u6838\u914D\u7F6E\u65F6\u624D\u8F93\u51FA\uFF1B\u67E5\u4E0D\u5230\u5C31\u4E0D\u5199\u76EE\u6807\uFF0C\u4E25\u7981\u7F16\u9020\u76EE\u6807\u3001\u8FBE\u6807\u7387\u6216\u7F3A\u53E3\u3002
+5. \u65F6\u95F4\u8303\u56F4\uFF08\u671F\u95F4\uFF09\u3001\u7EDF\u8BA1\u53E3\u5F84\uFF08\u5168\u4ED3/\u5355\u4ED3\u3001\u542B\u7A0E/\u4E0D\u542B\u7A0E\u3001\u662F\u5426\u542B\u51BB\u7ED3/\u5728\u9014\uFF09\u5FC5\u987B\u80FD\u5728\u6807\u9898\u3001\u526F\u6807\u9898\u6216\u811A\u6CE8\u91CC\u770B\u5230\u3002
+6. \u53CA\u65F6\u7387\u3001\u51C6\u786E\u7387\u3001\u5468\u8F6C\u7387\u8FD9\u7C7B\u6BD4\u7387\u6307\u6807\uFF0C\u8981\u5199\u6E05\u695A\u5206\u5B50\u5206\u6BCD\u548C\u9608\u503C\u5047\u8BBE\uFF1B\u6570\u636E\u7F3A\u5931\u65F6\u76F4\u63A5\u8BF4\u660E\u7F3A\u4EC0\u4E48\u3002`;
+
+// dist/templates.js
+var REPORT_TEMPLATES = {
+  daily: {
+    label: "\u4F5C\u4E1A\u65E5\u62A5",
+    when: "\u7528\u6237\u8BF4\u201C\u65E5\u62A5 / \u4ECA\u5929 / \u6628\u65E5\u4F5C\u4E1A\u60C5\u51B5 / \u4ECA\u65E5\u51FA\u5165\u5E93\u201D",
+    sections: [
+      "1 \u6570\u636E\u6982\u89C8\uFF1A4 \u4E2A\u6838\u5FC3\u6570\u5B57\uFF08.stat\uFF09+ \u4E00\u53E5\u6838\u5FC3\u7ED3\u8BBA\uFF08.callout\uFF09",
+      "2 \u51FA\u5165\u5E93\u8D8B\u52BF\uFF1A\u8FD1 7~14 \u5929\u6298\u7EBF\uFF0C\u6807\u6CE8\u5F02\u5E38\u5CF0\u503C",
+      "3 \u65F6\u6548\u4E0E\u51C6\u786E\u7387\uFF1A\u53CA\u65F6\u7387/\u51C6\u786E\u7387\u8D8B\u52BF\u6216\u5BF9\u6BD4",
+      "4 \u5F02\u5E38\u4E0E\u98CE\u9669\uFF1A\u5F02\u5E38\u5206\u7C7B + Top \u660E\u7EC6 + \u5EFA\u8BAE"
+    ],
+    metrics: ["\u5165\u5E93\u5355\u91CF", "\u51FA\u5E93\u5355\u91CF", "\u51FA\u5E93\u4EF6\u6570", "\u51FA\u5E93\u53CA\u65F6\u7387", "\u62E3\u8D27\u53CA\u65F6\u7387", "\u62E3\u8D27\u51C6\u786E\u7387", "\u5F02\u5E38\u5355\u91CF"],
+    charts: ["line\uFF08\u8D8B\u52BF\uFF09", "bar\uFF08\u4ED3\u5E93/\u54C1\u7C7B\u5BF9\u6BD4\uFF09", "pie\uFF08\u7ED3\u6784\u5360\u6BD4\uFF09"]
+  },
+  weekly: {
+    label: "\u8FD0\u8425\u5468\u62A5",
+    when: "\u7528\u6237\u8BF4\u201C\u5468\u62A5 / \u672C\u5468 / \u4E0A\u5468 / \u5468\u5EA6\u8FD0\u8425\u201D",
+    sections: [
+      "1 \u6838\u5FC3\u7ED3\u8BBA\uFF1A\u4E00\u6BB5\u8BDD + 3~4 \u4E2A\u5173\u952E\u6570\u5B57",
+      "2 \u5173\u952E\u6307\u6807\u4E0E\u76EE\u6807\u8FBE\u6210\uFF1A.stat \u6570\u5B57\u5361 + .ring \u8FBE\u6210\u7387\uFF08\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u5199\u76EE\u6807\uFF09",
+      "3 \u8D8B\u52BF\u5206\u6790\uFF1A\u5468\u5185/\u8FD1 8 \u5468\u8D8B\u52BF\uFF0C\u542B\u540C\u73AF\u6BD4",
+      "4 \u6392\u540D\uFF1A\u4ED3\u5E93 / \u8D27\u4E3B / \u54C1\u7C7B TOP 10\uFF08.rank-list\uFF0C\u5E26\u53D8\u5316\u4E0E\u7D2F\u8BA1\u5360\u6BD4\uFF09",
+      "5 \u5C65\u7EA6\u94FE\u8DEF\uFF1A\u4E0B\u5355\u2192\u5206\u914D\u2192\u62E3\u8D27\u2192\u590D\u6838\u2192\u53D1\u8FD0 \u6F0F\u6597",
+      "6 \u98CE\u9669\u4E0E\u5EFA\u8BAE\uFF1A\u5206\u7EA7\u5F02\u5E38 + \u5F71\u54CD + \u5EFA\u8BAE\u52A8\u4F5C"
+    ],
+    metrics: ["\u5165\u5E93\u5355\u91CF", "\u51FA\u5E93\u5355\u91CF", "\u51FA\u5E93\u53CA\u65F6\u7387", "\u53D1\u8D27\u51C6\u65F6\u7387", "\u62E3\u8D27\u51C6\u786E\u7387", "\u5E93\u5B58\u5468\u8F6C\u7387", "\u5F02\u5E38\u5355\u91CF"],
+    charts: ["line\uFF08\u8D8B\u52BF\uFF09", "funnel\uFF08\u5C65\u7EA6\uFF09", "bar\uFF08\u6392\u540D/\u5BF9\u6BD4\uFF09", "pareto\uFF08ABC\uFF09"]
+  },
+  monthly: {
+    label: "\u8FD0\u8425\u6708\u62A5",
+    when: "\u7528\u6237\u8BF4\u201C\u6708\u62A5 / \u672C\u6708 / \u4E0A\u6708 / \u6708\u5EA6\u8FD0\u8425 / \u6708\u5EA6\u603B\u7ED3\u201D",
+    sections: [
+      "1 \u6838\u5FC3\u7ED3\u8BBA\uFF1A\u4E00\u6BB5\u8BDD + 3~4 \u4E2A\u5173\u952E\u6570\u5B57",
+      "2 \u5173\u952E\u6307\u6807\u4E0E\u76EE\u6807\u8FBE\u6210\uFF1A.stat \u6570\u5B57\u5361 + .ring \u8FBE\u6210\u7387\uFF08\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u5199\u76EE\u6807\uFF09",
+      "3 \u6708\u5EA6\u8D8B\u52BF\uFF1A\u8FD1 12 \u4E2A\u6708\u6298\u7EBF + \u540C\u73AF\u6BD4",
+      "4 \u6392\u540D\uFF1A\u4ED3\u5E93 / \u8D27\u4E3B / \u54C1\u7C7B TOP 10\uFF08\u5E26\u53D8\u5316\u4E0E\u7D2F\u8BA1\u5360\u6BD4\uFF09",
+      "5 \u5C65\u7EA6\u4E0E\u6548\u7387\uFF1A\u6F0F\u6597 + \u53CC\u8F74\uFF08\u5355\u91CF vs \u53CA\u65F6\u7387\uFF09",
+      "6 \u98CE\u9669\u4E0E\u4E0B\u6708\u5EFA\u8BAE\uFF1A\u5206\u7EA7\u5F02\u5E38 + \u5F71\u54CD + \u5EFA\u8BAE\u52A8\u4F5C"
+    ],
+    metrics: ["\u5165\u5E93\u5355\u91CF", "\u51FA\u5E93\u5355\u91CF", "\u5E93\u5B58\u5468\u8F6C\u7387", "\u51FA\u5E93\u53CA\u65F6\u7387", "\u62E3\u8D27\u51C6\u786E\u7387", "\u5446\u6EDE\u5E93\u5B58", "\u5F02\u5E38\u5355\u91CF"],
+    charts: ["line\uFF0812 \u4E2A\u6708\uFF09", "funnel\uFF08\u5C65\u7EA6\uFF09", "pareto\uFF08ABC\uFF09", "dual-axis\uFF08\u5355\u91CF+\u53CA\u65F6\u7387\uFF09"]
+  },
+  inventory: {
+    label: "\u5E93\u5B58\u5FEB\u7167",
+    when: "\u7528\u6237\u8BF4\u201C\u5E93\u5B58 / \u5FEB\u7167 / \u5E93\u5B58\u7ED3\u6784 / \u5E93\u9F84 / \u5468\u8F6C / \u5446\u6EDE / \u4E34\u671F\u201D",
+    sections: [
+      "1 \u5E93\u5B58\u603B\u89C8\uFF1A\u603B\u91CF/\u91D1\u989D/\u5468\u8F6C + \u6838\u5FC3\u7ED3\u8BBA",
+      "2 \u5468\u8F6C\u4E0E\u7ED3\u6784\uFF1A\u5468\u8F6C\u8D8B\u52BF + \u8D27\u4E3B/\u54C1\u7C7B\u5360\u6BD4",
+      "3 \u5E93\u9F84\u5206\u5E03\uFF1A0-30/31-60/61-90/90+ \u5806\u53E0\u67F1",
+      "4 \u5446\u6EDE\u4E0E\u4E34\u671F\uFF1A\u91D1\u989D\u5F71\u54CD + Top \u660E\u7EC6\uFF08\u226410 \u884C\uFF09",
+      "5 \u5E93\u5BB9\u5229\u7528\u7387\uFF1Agauge / .ring\uFF08\u6709\u5E93\u4F4D\u6570\u636E\u65F6\u624D\u5199\uFF09"
+    ],
+    metrics: ["\u5E93\u5B58\u603B\u91CF", "\u5E93\u5B58\u91D1\u989D", "\u5E93\u5B58\u5468\u8F6C\u7387", "\u5E93\u9F84\u7ED3\u6784", "\u5446\u6EDE\u5E93\u5B58", "\u4E34\u671F/\u8FC7\u671F\u5E93\u5B58", "\u5E93\u5BB9\u5229\u7528\u7387"],
+    charts: ["line\uFF08\u5468\u8F6C\uFF09", "stacked-bar\uFF08\u5E93\u9F84/\u6548\u671F\uFF09", "bar\uFF08\u5446\u6EDE Top\uFF09", "gauge\uFF08\u5E93\u5BB9\uFF09"]
+  },
+  exception: {
+    label: "\u5F02\u5E38\u4E13\u62A5",
+    when: "\u7528\u6237\u8BF4\u201C\u5F02\u5E38 / \u9884\u8B66 / \u8D85\u65F6 / \u5DEE\u5F02 / \u7F3A\u8D27 / \u5446\u6EDE / \u5F02\u5E38\u4E13\u62A5\u201D",
+    sections: [
+      "1 \u5F02\u5E38\u603B\u89C8\uFF1A\u5F02\u5E38\u603B\u91CF\u3001\u5F71\u54CD\u5355\u91CF/\u91D1\u989D\u3001\u6309\u4E25\u91CD\u5EA6\u5206\u7EA7",
+      "2 \u5206\u7C7B\u5206\u5E03\uFF1A\u6309\u4ED3\u5E93/\u7C7B\u578B/\u4E25\u91CD\u5EA6\u5206\u5E03",
+      "3 \u660E\u7EC6\uFF1ATop 10\uFF08\u8D85\u8FC7\u7528\u201C\u5176\u4F59 N \u9879\u5408\u8BA1\u201D\uFF09",
+      "4 \u539F\u56E0\u5206\u6790\u4E0E\u5EFA\u8BAE\uFF1A\u6BCF\u6761\u9AD8\u4F18\u5F02\u5E38\u7ED9\u539F\u56E0\u4E0E\u52A8\u4F5C"
+    ],
+    metrics: ["\u5F02\u5E38\u5355\u91CF", "\u51FA\u5E93\u53CA\u65F6\u7387", "\u5E93\u5B58\u51C6\u786E\u7387", "\u5446\u6EDE\u5E93\u5B58", "\u4E34\u671F/\u8FC7\u671F\u5E93\u5B58"],
+    charts: ["dist\uFF08\u5206\u7EA7\u5206\u5E03\uFF09", "bar\uFF08\u5206\u7C7B\u5BF9\u6BD4\uFF09", "table\uFF08Top 10\uFF09"]
+  },
+  compare: {
+    label: "\u591A\u4ED3\u5BF9\u6BD4",
+    when: "\u7528\u6237\u63D0\u5230\u4E24\u4E2A\u53CA\u4EE5\u4E0A\u4ED3\u5E93/\u8D27\u4E3B\u7684\u6A2A\u5411\u5BF9\u6BD4\uFF0C\u6216\u201C\u5404\u4ED3\u6392\u540D\u201D",
+    sections: [
+      "1 \u80FD\u529B\u5BF9\u6BD4\uFF1A\u96F7\u8FBE\uFF08\u5355\u91CF/\u65F6\u6548/\u51C6\u786E\u7387/\u5468\u8F6C/\u6210\u672C\uFF09",
+      "2 \u6307\u6807\u6392\u540D\uFF1A.rank-list\uFF08\u5404\u4ED3\u5355\u91CF\u3001\u53CA\u65F6\u7387\u3001\u51C6\u786E\u7387\uFF09",
+      "3 \u5DEE\u5F02\u8BF4\u660E\uFF1A\u9886\u5148/\u843D\u540E\u9879 + \u5DEE\u8DDD\u6570\u503C",
+      "4 \u6539\u8FDB\u5EFA\u8BAE\uFF1A\u9488\u5BF9\u843D\u540E\u4ED3\u7ED9 2~4 \u6761\u52A8\u4F5C"
+    ],
+    metrics: ["\u5165\u5E93\u5355\u91CF", "\u51FA\u5E93\u5355\u91CF", "\u51FA\u5E93\u53CA\u65F6\u7387", "\u53D1\u8D27\u51C6\u65F6\u7387", "\u62E3\u8D27\u51C6\u786E\u7387", "\u5E93\u5B58\u5468\u8F6C\u7387"],
+    charts: ["radar\uFF08\u80FD\u529B\uFF09", "rank-list\uFF08\u6392\u540D\uFF09", "bar\uFF08\u9010\u9879\u5BF9\u6BD4\uFF09"]
+  }
+};
+var templateLines = Object.keys(REPORT_TEMPLATES).map((k) => {
+  const t = REPORT_TEMPLATES[k];
+  return `- ${k}\uFF08${t.label}\uFF09\u89E6\u53D1\uFF1A${t.when}
+  section\uFF1A${t.sections.join(" \u2192 ")}
+  \u6307\u6807\uFF1A${t.metrics.join("\u3001")}
+  \u56FE\u8868\uFF1A${t.charts.join(" / ")}`;
+}).join("\n");
+var TEMPLATE_PROMPT = `\u3010WMS \u62A5\u544A\u6A21\u677F\u3011
+\u8C03\u7528 render_html_report \u65F6\uFF0C\u6309\u7528\u6237\u610F\u56FE\u9009\u62E9 template \u5B57\u6BB5\uFF1B\u5224\u65AD\u4E0D\u4E86\u5C31\u7528 auto\u3002
+
+${templateLines}
+
+\u6A21\u677F\u4F7F\u7528\u89C4\u5219\uFF1A
+1. \u7528\u6237\u660E\u786E\u8BF4\u65E5\u62A5/\u5468\u62A5/\u6708\u62A5/\u5E93\u5B58/\u5F02\u5E38/\u591A\u4ED3\u5BF9\u6BD4\u65F6\uFF0C\u5FC5\u987B\u9009\u5BF9\u5E94 template\uFF0C\u5E76\u6309\u5B83\u7684 section \u987A\u5E8F\u51FA\u62A5\u544A\u3002
+2. \u6570\u636E\u4E0D\u652F\u6301\u67D0\u4E00\u8282\u65F6\uFF0C\u5220\u6389\u8BE5\u8282\u800C\u4E0D\u662F\u7F16\u6570\u636E\uFF1B\u591A\u4ED3\u5BF9\u6BD4\u53EA\u6709\u5728\u6570\u636E\u5E93\u91CC\u786E\u5B9E\u6709\u591A\u4E2A\u4ED3\u5E93/\u8D27\u4E3B\u65F6\u624D\u7528\u3002
+3. \u7B2C\u4E00\u5C4F\uFF08\u7B2C\u4E00\u4E2A section\uFF09\u5FC5\u987B\u8BA9\u9886\u5BFC\u4E00\u773C\u770B\u5230\u7ED3\u8BBA\uFF1A\u6838\u5FC3\u6570\u5B57 + \u4E00\u53E5\u8BDD\u7ED3\u8BBA\u3002
+4. \u6B63\u6587\u8868\u683C\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u7528 Top 10 + \u201C\u5176\u4F59 N \u9879\u5408\u8BA1\u201D\u3002
+5. \u201C\u76EE\u6807 / \u8FBE\u6210\u7387\u201D\u53EA\u6709\u5E93\u91CC\u786E\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u8F93\u51FA\uFF0C\u5426\u5219\u53EA\u505A\u540C\u73AF\u6BD4\uFF0C\u4E0D\u8981\u7F16\u76EE\u6807\u3002`;
+
 // dist/tools.js
 init_tools2();
 
 // node_modules/zod/index.js
 init_external2();
 init_external2();
+
+// dist/budget.js
+import { AsyncLocalStorage as AsyncLocalStorage2 } from "node:async_hooks";
+var TurnBudget = class {
+  limits;
+  usage = {
+    sqlQueries: 0,
+    schemaCalls: 0,
+    totalChars: 0,
+    exceeded: []
+  };
+  startedAt = Date.now();
+  constructor(limits) {
+    this.limits = limits;
+  }
+  /** 申请一次 SQL 查询；返回 null 表示放行，否则返回给模型看的提示。 */
+  takeSqlQuery() {
+    if (this.usage.sqlQueries >= this.limits.maxSqlQueries) {
+      return this.deny(`\u672C\u6B21\u5206\u6790\u7684 SQL \u67E5\u8BE2\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${this.limits.maxSqlQueries} \u6B21\uFF09\u3002\u8BF7\u57FA\u4E8E\u5DF2\u6709\u67E5\u8BE2\u7ED3\u679C\u76F4\u63A5\u751F\u6210\u62A5\u544A\uFF0C\u4E0D\u8981\u518D\u67E5\u8BE2\u6570\u636E\u5E93\uFF1B\u4E0D\u8DB3\u7684\u6570\u636E\u53EF\u4EE5\u5728\u62A5\u544A\u91CC\u5982\u5B9E\u8BF4\u660E\u201C\u672A\u67E5\u8BE2\u201D\u3002`);
+    }
+    this.usage.sqlQueries += 1;
+    return null;
+  }
+  /** 申请一次表结构查询（list_tables / get_table_schema）。 */
+  takeSchemaCall() {
+    if (this.usage.schemaCalls >= this.limits.maxSchemaCalls) {
+      return this.deny(`\u672C\u6B21\u5206\u6790\u7684\u8868\u7ED3\u6784\u67E5\u8BE2\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${this.limits.maxSchemaCalls} \u6B21\uFF09\u3002\u8BF7\u7528\u5DF2\u7ECF\u4E86\u89E3\u5230\u7684\u5B57\u6BB5\u7EE7\u7EED\uFF0C\u6216\u8005\u76F4\u63A5\u5411\u7528\u6237\u8BF4\u660E\u65E0\u6CD5\u7EE7\u7EED\u67E5\u8BE2\u3002`);
+    }
+    this.usage.schemaCalls += 1;
+    return null;
+  }
+  /** 申请输出 chars 个字符；返回 null 表示放行，否则返回提示。 */
+  takeChars(chars) {
+    if (chars <= 0)
+      return null;
+    if (this.usage.totalChars + chars > this.limits.maxTotalToolChars) {
+      return this.deny("\u672C\u6B21\u5206\u6790\u7684\u5DE5\u5177\u8FD4\u56DE\u5185\u5BB9\u603B\u91CF\u5DF2\u8FBE\u4E0A\u9650\u3002\u8BF7\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u4FE1\u606F\u56DE\u7B54\u6216\u751F\u6210\u62A5\u544A\uFF1B\u5982\u679C\u9700\u8981\u66F4\u7EC6\u7684\u6570\u636E\uFF0C\u8BF7\u7528 SQL \u805A\u5408\uFF08GROUP BY / TOP\uFF09\u800C\u4E0D\u662F\u7EE7\u7EED\u62C9\u660E\u7EC6\u3002");
+    }
+    this.usage.totalChars += chars;
+    return null;
+  }
+  deny(reason) {
+    if (!this.usage.exceeded.includes(reason))
+      this.usage.exceeded.push(reason);
+    return reason;
+  }
+  summary() {
+    const elapsed2 = ((Date.now() - this.startedAt) / 1e3).toFixed(1);
+    return `queries=${this.usage.sqlQueries}/${this.limits.maxSqlQueries} schema=${this.usage.schemaCalls}/${this.limits.maxSchemaCalls} chars=${this.usage.totalChars}/${this.limits.maxTotalToolChars} elapsed=${elapsed2}s`;
+  }
+};
+var storage = new AsyncLocalStorage2();
+function runWithBudget(budget, fn) {
+  return storage.run(budget, fn);
+}
+function currentBudget() {
+  return storage.getStore();
+}
+function budgetMessage(kind, reason) {
+  return JSON.stringify({
+    success: false,
+    budget: kind,
+    error: reason,
+    hint: "\u4E0D\u8981\u91CD\u590D\u8C03\u7528\u5DE5\u5177\uFF0C\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u7EE7\u7EED\u3002"
+  });
+}
 
 // dist/db.js
 var import_msnodesqlv8 = __toESM(require_msnodesqlv82(), 1);
@@ -154871,19 +155224,482 @@ async function closeAllPools() {
   }));
 }
 
+// dist/log.js
+import { appendFile, mkdir as mkdir3, rename as rename2, stat as stat3 } from "node:fs/promises";
+import { join } from "node:path";
+var dir = process.env.AGENT_LOG_DIR || "logs";
+var file2 = join(dir, "agent.log");
+var MAX_SIZE = 5 * 1024 * 1024;
+var queue2 = Promise.resolve();
+function logLine(line) {
+  const text = `${(/* @__PURE__ */ new Date()).toISOString()} ${line}
+`;
+  queue2 = queue2.then(async () => {
+    try {
+      await mkdir3(dir, { recursive: true });
+      const info = await stat3(file2).catch(() => null);
+      if (info && info.size > MAX_SIZE) {
+        await rename2(file2, `${file2}.1`).catch(() => {
+        });
+      }
+      await appendFile(file2, text, "utf8");
+    } catch {
+    }
+  });
+}
+
+// dist/visual-spec.js
+var REPORT_COMPONENT = "ol-report";
+var LEGACY_CHART_COMPONENT = "ol-echarts";
+var REPORT_TOOL_NAME = "render_report";
+var LEGACY_CHART_TOOL_NAME = "render_chart";
+var HTML_REPORT_COMPONENT = "ol-html-report";
+var HTML_REPORT_TOOL_NAME = "render_html_report";
+var VISUAL_TOOL_NAMES = /* @__PURE__ */ new Set([
+  REPORT_TOOL_NAME,
+  LEGACY_CHART_TOOL_NAME,
+  HTML_REPORT_TOOL_NAME
+]);
+var tone = external_exports2.enum(["primary", "success", "danger", "warning", "neutral"]).describe("\u914D\u8272\uFF1Aprimary \u4E3B\u8272 / success \u7EFF / danger \u7EA2 / warning \u6A59 / neutral \u7070");
+var valueSchema = external_exports2.union([external_exports2.number(), external_exports2.string()]);
+var sectionBlock = external_exports2.object({
+  type: external_exports2.literal("section"),
+  no: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe("\u5206\u8282\u5E8F\u53F7\uFF0C\u5982 1\u30012\u30013"),
+  title: external_exports2.string().describe("\u5206\u8282\u6807\u9898\uFF0C\u4E2D\u6587"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF08\u82F1\u6587\u540D\u6216\u8BF4\u660E\uFF09\uFF0C\u5982 Executive Summary")
+});
+var summaryBlock = external_exports2.object({
+  type: external_exports2.literal("summary"),
+  title: external_exports2.string().optional().describe("\u5C0F\u6807\u9898\uFF0C\u9ED8\u8BA4\u300C\u6838\u5FC3\u7ED3\u8BBA\u300D"),
+  text: external_exports2.string().describe("\u7ED3\u8BBA\u6B63\u6587\uFF0C\u4E00\u6BB5\u8BDD\u6982\u62EC"),
+  items: external_exports2.array(external_exports2.string()).max(6).optional().describe("\u53EF\u9009\uFF1A\u8981\u70B9\u6761\u76EE")
+});
+var noticeBlock = external_exports2.object({
+  type: external_exports2.literal("notice"),
+  tone: tone.optional().describe("\u63D0\u793A\u7C7B\u578B\uFF0C\u7531\u5185\u5BB9\u4E25\u91CD\u7A0B\u5EA6\u51B3\u5B9A\uFF0C\u9ED8\u8BA4 warning"),
+  text: external_exports2.string().describe("\u63D0\u793A\u5185\u5BB9\uFF0C\u4E00\u53E5\u8BDD")
+});
+var kpiItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6307\u6807\u540D\u79F0\uFF0C\u4E2D\u6587\uFF0C\u7B80\u77ED"),
+  value: valueSchema.describe("\u6307\u6807\u503C\uFF0C\u6570\u5B57\u4F18\u5148"),
+  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF08\u4E07/\u5143/%/\u53F0/\u5355\uFF09\uFF0C\u53EF\u4E3A\u7A7A"),
+  delta: external_exports2.number().optional().describe("\u540C\u6BD4/\u73AF\u6BD4\u53D8\u5316\u767E\u5206\u6BD4\uFF0C\u6B63\u6570\u4E3A\u589E\u957F\u3001\u8D1F\u6570\u4E3A\u4E0B\u964D"),
+  trend: external_exports2.enum(["up", "down", "flat"]).optional().describe("\u8D8B\u52BF\u65B9\u5411\uFF0C\u7528\u4E8E\u6DA8\u8DCC\u914D\u8272"),
+  note: external_exports2.string().optional().describe('\u5361\u7247\u5E95\u90E8\u8865\u5145\u8BF4\u660E\uFF0C\u5982 "vs plan 88.28% \xB7 \u65F6\u95F4\u8FDB\u5EA6 27.36%"'),
+  spark: external_exports2.array(external_exports2.number()).optional().describe("\u53EF\u9009\uFF1A\u8FF7\u4F60\u8D8B\u52BF\u7EBF\u6570\u503C\u5E8F\u5217\uFF086~24 \u4E2A\u70B9\uFF09")
+});
+var kpiBlock = external_exports2.object({
+  type: external_exports2.literal("kpi"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(kpiItem).min(1).max(8).describe("\u5173\u952E\u6307\u6807\u5361\u7247\uFF0C\u4E00\u6392 2~4 \u4E2A\u6700\u4F73\uFF0C\u6700\u591A 8 \u4E2A")
+});
+var hbarItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6761\u76EE\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: external_exports2.number().describe("\u6570\u503C"),
+  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF0C\u5982 %"),
+  max: external_exports2.number().optional().describe("\u53EF\u9009\u7684\u6807\u5C3A\u4E0A\u9650\uFF08\u9ED8\u8BA4\u6309\u6240\u6709\u6761\u76EE\u6700\u5927\u503C\uFF09"),
+  tone: tone.optional().describe("\u6761\u5F62\u989C\u8272")
+});
+var hbarBlock = external_exports2.object({
+  type: external_exports2.literal("hbar"),
+  title: external_exports2.string().optional(),
+  subtitle: external_exports2.string().optional(),
+  items: external_exports2.array(hbarItem).min(1).max(12).describe("\u6A2A\u6761\u5217\u8868\uFF0C\u9002\u5408\u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4")
+});
+var progressItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6761\u76EE\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: external_exports2.number().describe("\u5B8C\u6210\u767E\u5206\u6BD4\uFF080~100+\uFF09\uFF0C\u53EF\u4E3A\u8FBE\u6210\u7387"),
+  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF0C\u9ED8\u8BA4 %\uFF0C\u53EF\u7559\u7A7A"),
+  status: external_exports2.string().optional().describe("\u72B6\u6001\u8BF4\u660E\uFF0C\u5982\u300C\u8FBE\u6807\u300D\u300C\u9884\u8BA1\u8FBE\u6807\u300D\u300C\u843D\u540E\u300D"),
+  tone: tone.optional()
+});
+var progressBlock = external_exports2.object({
+  type: external_exports2.literal("progress"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(progressItem).min(1).max(8)
+});
+var chipItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6307\u6807\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: valueSchema.describe("\u6307\u6807\u503C"),
+  unit: external_exports2.string().optional(),
+  delta: external_exports2.number().optional(),
+  trend: external_exports2.enum(["up", "down", "flat"]).optional()
+});
+var chipsBlock = external_exports2.object({
+  type: external_exports2.literal("chips"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(chipItem).min(1).max(8).describe("\u4E00\u6392 3~5 \u4E2A\u5C0F\u6307\u6807")
+});
+var distItem = external_exports2.object({
+  label: external_exports2.string().describe("\u5206\u7C7B\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: external_exports2.number().describe("\u6570\u91CF"),
+  tone: tone.optional()
+});
+var distBlock = external_exports2.object({
+  type: external_exports2.literal("dist"),
+  title: external_exports2.string().optional(),
+  subtitle: external_exports2.string().optional().describe("\u5982\u300C10\u670811\u65E5 \xB7 7/15 \u5DE5\u5382\u6B20\u4EA7\u300D"),
+  items: external_exports2.array(distItem).min(1).max(8).describe("\u6309\u4E25\u91CD\u7A0B\u5EA6\u4ECE\u9AD8\u5230\u4F4E\u6392\u5217")
+});
+var chartBlock = external_exports2.object({
+  type: external_exports2.literal("chart"),
+  title: external_exports2.string().describe("\u56FE\u8868\u6807\u9898\uFF0C\u4E2D\u6587"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF0C\u8BF4\u660E\u53E3\u5F84"),
+  span: external_exports2.number().min(1).max(12).optional().describe("12 \u6805\u683C\u5360\u4F4D\u5BBD\u5EA6\uFF0C\u4E3B\u56FE 8\u3001\u8F85\u56FE 4\u3001\u6574\u884C 12\uFF1B\u9ED8\u8BA4 6"),
+  option: external_exports2.record(external_exports2.string(), external_exports2.any()).describe("\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5FC5\u987B\u5185\u5D4C\u5176\u4E2D\uFF0C\u5982 {xAxis, yAxis, series}")
+});
+var tableBlock = external_exports2.object({
+  type: external_exports2.literal("table"),
+  title: external_exports2.string().optional(),
+  subtitle: external_exports2.string().optional(),
+  columns: external_exports2.array(external_exports2.string()).min(1).describe("\u5217\u540D\uFF08\u4E2D\u6587\uFF09\uFF0C\u4E0E rows \u7684 key \u5BF9\u5E94"),
+  rows: external_exports2.array(external_exports2.record(external_exports2.string(), external_exports2.union([external_exports2.string(), external_exports2.number(), external_exports2.boolean(), external_exports2.null()]))).max(30).describe("\u6570\u636E\u884C\uFF0C\u6700\u591A 30 \u884C")
+});
+var riskItem = external_exports2.object({
+  tone: tone.optional().describe("\u98CE\u9669\u7B49\u7EA7\u914D\u8272\uFF1Adanger \u9AD8 / warning \u4E2D / success \u4F4E / primary \u63D0\u793A"),
+  title: external_exports2.string().describe("\u8BE5\u9879\u6807\u9898\uFF0C\u4E2D\u6587"),
+  text: external_exports2.string().describe("\u8BF4\u660E\u6587\u5B57")
+});
+var riskBlock = external_exports2.object({
+  type: external_exports2.literal("risk"),
+  title: external_exports2.string().optional().describe("\u533A\u5757\u6807\u9898\uFF0C\u5982\u300C\u98CE\u9669\u603B\u7ED3\u300D"),
+  items: external_exports2.array(riskItem).min(1).max(8)
+});
+var insightBlock = external_exports2.object({
+  type: external_exports2.literal("insights"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(external_exports2.string()).min(1).max(4).describe("\u7ED3\u8BBA\u8981\u70B9\uFF0C\u6BCF\u6761\u4E00\u53E5\u8BDD")
+});
+var reportBlock = external_exports2.discriminatedUnion("type", [
+  sectionBlock,
+  summaryBlock,
+  noticeBlock,
+  kpiBlock,
+  hbarBlock,
+  progressBlock,
+  chipsBlock,
+  distBlock,
+  chartBlock,
+  tableBlock,
+  riskBlock,
+  insightBlock
+]);
+var reportSchema = external_exports2.object({
+  component: external_exports2.string().default(REPORT_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${REPORT_COMPONENT}`),
+  title: external_exports2.string().describe("\u62A5\u8868\u6807\u9898\uFF0C\u4E2D\u6587\uFF0C\u6982\u62EC\u672C\u6B21\u5206\u6790\u4E3B\u9898"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF0C\u5982\u6570\u636E\u8303\u56F4/\u65F6\u95F4/\u53E3\u5F84"),
+  meta: external_exports2.array(external_exports2.string()).max(5).optional().describe('\u53EF\u9009\uFF1A\u9876\u90E8\u4FE1\u606F\u80F6\u56CA\uFF0C\u5982 ["\u6570\u636E\u622A\u81F3 10-11","\u7B2C11\u5929/30\u5929","\u6709\u6548\u671F 5~11"]'),
+  theme: external_exports2.enum(["light", "dark"]).optional().describe("\u53EF\u9009\u4E3B\u9898\uFF1B\u4E00\u822C\u4E0D\u8981\u586B\uFF0C\u8DDF\u968F\u7528\u6237\u504F\u597D"),
+  blocks: external_exports2.array(reportBlock).min(1).max(40).describe("\u62A5\u8868\u533A\u5757\uFF0C\u6309\u5C55\u793A\u987A\u5E8F\u6392\u5217\uFF1B\u5206\u8282\u7528 section \u5F00\u5934")
+});
+var htmlReportSchema = external_exports2.object({
+  component: external_exports2.string().default(HTML_REPORT_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${HTML_REPORT_COMPONENT}`),
+  title: external_exports2.string().describe("\u62A5\u544A\u6807\u9898\uFF0C\u4E2D\u6587"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898/\u65F6\u95F4\u8303\u56F4"),
+  height: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe('\u9884\u89C8\u9AD8\u5EA6\uFF08px\uFF09\uFF0C\u4F20 320 \u6216 "320px" \u90FD\u53EF\u4EE5'),
+  template: external_exports2.string().optional().describe("\u62A5\u544A\u6A21\u677F\uFF1Adaily=\u4F5C\u4E1A\u65E5\u62A5 / weekly=\u8FD0\u8425\u5468\u62A5 / monthly=\u8FD0\u8425\u6708\u62A5 / inventory=\u5E93\u5B58\u5FEB\u7167 / exception=\u5F02\u5E38\u4E13\u62A5 / compare=\u591A\u4ED3\u5BF9\u6BD4\uFF1B\u5199\u4E2D\u6587\uFF08\u5468\u62A5/\u5E93\u5B58\u5FEB\u7167/\u5F02\u5E38\u4E13\u62A5\u2026\uFF09\u4E5F\u53EF\u4EE5\uFF0C\u5224\u65AD\u4E0D\u4E86\u7528 auto"),
+  period: external_exports2.string().optional().describe("\u7EDF\u8BA1\u671F\u95F4\uFF0C\u5982 2025-08-01 ~ 2025-08-31"),
+  scope: external_exports2.string().optional().describe("\u7EDF\u8BA1\u53E3\u5F84\uFF0C\u5982 \u5168\u4ED3\u5408\u8BA1 / \u534E\u4E1C\u4ED3 / \u67D0\u8D27\u4E3B / \u542B\u51BB\u7ED3\u5E93\u5B58"),
+  sources: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u6765\u6E90\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF0C\u6570\u7EC4\u6216\u201C\u987F\u53F7/\u9017\u53F7\u5206\u9694\u7684\u5B57\u7B26\u4E32\u201D\u90FD\u53EF\u4EE5"),
+  warnings: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF08\u7A7A\u503C/\u622A\u65AD/\u8D1F\u5E93\u5B58\u7B49\uFF09\uFF0C\u6570\u7EC4\u6216\u5206\u9694\u5B57\u7B26\u4E32\u90FD\u53EF\u4EE5"),
+  html: external_exports2.string().describe('\u62A5\u544A\u6B63\u6587 HTML \u7247\u6BB5\uFF08\u4E0D\u8981 <html>/<head>/<body>\uFF0C\u53EF\u542B <style>\uFF09\u3002\u56FE\u8868\u5BB9\u5668\u7528 <div class="ol-chart" data-id="xxx" style="height:320px"></div>\uFF0C\u5BF9\u5E94\u7684 ECharts option \u653E\u5230 charts.xxx \u5B57\u6BB5\u3002\u7981\u6B62\u5F15\u7528\u4EFB\u4F55\u5916\u90E8 CDN/\u811A\u672C/\u56FE\u7247\u94FE\u63A5\u3002'),
+  charts: external_exports2.union([external_exports2.record(external_exports2.string(), external_exports2.record(external_exports2.string(), external_exports2.any())), external_exports2.string()]).optional().describe("\u56FE\u8868\uFF1Akey \u5BF9\u5E94 .ol-chart \u7684 data-id\uFF0Cvalue \u4E3A\u6807\u51C6 ECharts option\uFF08\u6570\u636E\u5185\u5D4C\uFF09\uFF1B\u4E5F\u63A5\u53D7 JSON \u5B57\u7B26\u4E32")
+});
+var HTML_REPORT_TOOL_DESCRIPTION = '\u5F53\u7528\u6237\u8981"\u4E00\u4EFD\u5B8C\u6574\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u6C47\u62A5\u5927\u5C4F"\uFF0C\u9700\u8981\u5206\u8282\u3001\u5927\u91CF\u5361\u7247\u4E0E\u660E\u7EC6\u65F6\uFF0C\u8C03\u7528\u672C\u5DE5\u5177\u76F4\u63A5\u4EA7\u51FA HTML \u62A5\u544A\u3002\n\u3010\u786C\u6027\u8981\u6C42\u3011\n1) html \u53EA\u5199\u6B63\u6587\u7247\u6BB5\uFF08\u4E0D\u8981 <html>/<head>/<body>\uFF09\uFF1B\u7981\u6B62\u4EFB\u4F55\u5916\u90E8 CDN\u3001<script>\u3001<img src="http...">\u3002\n2) \u5FC5\u987B\u4F7F\u7528\u4E0B\u9762\u8FD9\u5957\u56FA\u5B9A\u7C7B\u540D\uFF08\u6837\u5F0F\u5DF2\u5185\u7F6E\uFF0C\u591A\u5199\u5185\u8054 style \u53EA\u4F1A\u7834\u574F\u7EDF\u4E00\uFF09\uFF1A\n- \u5916\u5C42\uFF1A<div class="report"> \u2192 \u9876\u90E8\u533A <div class="report-header"><h1 class="report-title">\u6807\u9898</h1><div class="report-sub">\u65F6\u95F4/\u53E3\u5F84</div><div class="report-meta"><span class="meta-chip">\u2026</span></div></div>\n- \u5206\u8282\uFF1A<section class="section"><div class="section-head"><span class="section-no">1</span><div><div class="section-title">\u62A5\u544A\u6982\u8981</div><div class="section-sub">Executive Summary</div></div></div> \u2026</section>\n- \u5361\u7247\uFF1A<div class="card"><div class="card-title">\u6807\u9898</div> \u2026</div>\uFF08\u5E76\u6392\u7528 <div class="grid grid-2">\u2026</div> \u6216 grid-3\uFF09\n- \u6838\u5FC3\u7ED3\u8BBA\uFF1A<div class="callout"><div class="callout-title">\u6838\u5FC3\u7ED3\u8BBA</div><p>\u2026</p></div>\n- \u63D0\u793A\uFF1A<div class="notice is-warning|is-danger|is-success|is-info">\u2026</div>\n- \u5B8C\u6210\u7387\u6A2A\u6761\uFF1A<div class="bar-row"><div class="bar-label">\u710A\u88C5</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#ef4444"></div></div><div class="bar-value">83.21%</div></div>\n- \u8FDB\u5EA6\u6761\uFF1A<div class="progress-row"><div class="progress-top"><span>\u6708\u5EA6\u76EE\u6807</span><b>91.02%</b></div><div class="progress-track"><div class="progress-fill" style="width:91%"></div></div><div class="progress-status">\u9884\u8BA1\u8FBE\u6807</div></div>\n- \u5C0F\u6307\u6807\uFF1A<div class="chips"><div class="chip"><div class="chip-value">1,280<small>\u4E07</small></div><div class="chip-label">\u9500\u552E\u989D</div></div>\u2026</div>\n- \u5206\u5E03\uFF1A<div class="dist-bar"><div class="dist-seg" style="flex:5;background:#ef4444">5</div>\u2026</div><div class="dist-legend"><span><i style="background:#ef4444"></i>\u9AD8\u98CE\u9669<b>5</b></span>\u2026</div>\n- \u8868\u683C\uFF08\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u53EA\u653E Top 10 \u5E76\u7528\u4E00\u884C\u300C\u5176\u4F59 N \u9879\u5408\u8BA1\u300D\u6536\u5C3E\uFF0C\u4E0D\u8981\u628A\u5B8C\u6574\u660E\u7EC6\u585E\u8FDB\u6B63\u6587\u3001\u4E5F\u4E0D\u8981\u7528\u6298\u53E0\uFF1B\u6BCF\u4E00\u884C\u7684 <td> \u6570\u91CF\u5FC5\u987B\u4E0E\u8868\u5934 <th> \u5B8C\u5168\u4E00\u81F4\uFF0C\u7A7A\u503C\u4E5F\u8981\u8F93\u51FA <td>\u2014</td>\uFF0C\u7F3A\u5355\u5143\u683C\u4F1A\u5BFC\u81F4\u6574\u884C\u9519\u4F4D\uFF1B\u9664\u7B2C\u4E00\u5217\u5916\u6240\u6709\u5217\u9ED8\u8BA4\u53F3\u5BF9\u9F50\uFF0C\u8868\u5934\u4E0E\u6570\u503C\u81EA\u52A8\u5BF9\u9F50\uFF1B\u6570\u5B57\u5217\u52A0 class="num"\uFF0C\u6587\u672C\u5217\u5982\u72B6\u6001/\u5907\u6CE8/\u8D1F\u8D23\u4EBA\u52A0 class="txt" \u8BA9\u5B83\u5DE6\u5BF9\u9F50\uFF09\uFF1A<table><thead><tr><th>\u540D\u79F0</th><th class="num">\u6570\u91CF</th><th class="txt">\u5907\u6CE8</th></tr></thead><tbody><tr><td>A</td><td class="num">123</td><td class="txt">\u6B63\u5E38</td></tr></tbody></table>\n- \u98CE\u9669/\u603B\u7ED3\uFF1A<div class="risk-list"><div class="risk-item is-danger"><div class="risk-title">\u6807\u9898</div><div class="risk-text">\u8BF4\u660E</div></div>\u2026</div>\n- \u56FE\u8868\uFF1A<div class="ol-chart" data-id="c1" style="height:320px"></div>\uFF0Coption \u653E\u8FDB charts.c1\uFF08\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\u3002\n- \u3010\u6570\u5B57\u5C55\u793A\u3011\u62A5\u544A\u662F\u7ED9\u9886\u5BFC\u770B\u7684\uFF0C\u6570\u5B57\u8981\u5927\u3001\u8981\u7A81\u51FA\uFF0C\u4F18\u5148\u7528\u4E0B\u9762\u8FD9\u51E0\u79CD\uFF0C\u4E0D\u8981\u901A\u7BC7\u90FD\u662F\u8868\u683C\uFF1A\n  \xB7 \u82F1\u96C4\u6570\u5B57\u5361\uFF08\u4E00\u5C4F\u6700\u4E0A\u9762\u653E 2~4 \u4E2A\uFF09\uFF1A<div class="stat-grid"><div class="stat"><div class="stat-label">\u672C\u6708\u9500\u552E\u989D<span class="badge is-success">\u8FBE\u6807</span></div><div class="stat-value">1,284.5<span class="unit">\u4E07\u5143</span></div><div class="stat-foot"><span class="delta up">\u2191 12.3%</span><span class="muted">\u73AF\u6BD4</span></div><div class="stat-note">\u53E3\u5F84\uFF1A\u542B\u7A0E \xB7 \u6570\u636E\u622A\u81F3 10-18</div></div>\u2026</div>\uFF08\u53EF\u9009 tone\uFF1Aclass="stat is-success" / is-warning / is-danger\uFF1B\u8FF7\u4F60\u8D8B\u52BF\u5199 <div class="spark"><i style="height:40%"></i><i style="height:62%"></i>\u2026</div>\uFF0C\u6BCF\u6839\u67F1\u4E00\u4E2A i\uFF0C\u6700\u540E\u4E00\u6839\u52A0 class="is-last"\uFF09\n  \xB7 \u540C\u6BD4/\u73AF\u6BD4\u5BF9\u6BD4\uFF1A<div class="compare-grid"><div class="compare"><div class="compare-title">\u9500\u552E\u989D<span class="badge is-warning">\u9884\u8B66</span></div><div class="compare-now">1,284.5<span class="unit">\u4E07\u5143</span></div><div class="compare-foot"><span class="delta up">\u2191 140.6</span><span>\u8F83\u4E0A\u671F</span><span class="compare-prev">1,143.9 \u4E07</span></div></div>\u2026</div>\n  \xB7 \u8FBE\u6210\u7387\u73AF\uFF1A<div class="ring-grid"><div class="ring is-success" style="--v:83"><div class="ring-dial"><div class="ring-center"><span class="ring-value">83<span class="ring-unit">%</span></span></div></div><div class="ring-label">\u6708\u5EA6\u76EE\u6807\u5B8C\u6210\u7387</div></div>\u2026</div>\uFF08--v \u586B 0~100 \u7684\u7EAF\u6570\u5B57\uFF0C\u4E0D\u5E26 %\uFF1Bclass \u53EF\u52A0 is-success / is-warning / is-danger\uFF09\n  \xB7 \u6392\u884C\u699C TOP N\uFF1A<div class="rank-list"><div class="rank-row"><span class="rank-no">1</span><span class="rank-name">\u4EA7\u54C1A</span><span class="rank-bar"><i style="width:82%"></i></span><span class="rank-value">1,280<small>\u4E07</small></span><span class="rank-share">28.4%</span></div>\u2026</div>\uFF08rank-bar \u7684 width \u6309\u672C\u7EC4\u6700\u5927\u503C\u6298\u7B97\u6210 100%\uFF1B\u524D 3 \u540D\u5E8F\u53F7\u81EA\u52A8\u663E\u793A\u91D1/\u94F6/\u94DC\uFF09\n- \u3010\u6570\u5B57\u683C\u5F0F\u3011\u5FC5\u987B\u7EDF\u4E00\uFF1A\u5343\u5206\u4F4D\u5206\u9694\uFF1B\u91D1\u989D/\u6570\u91CF \u22651 \u4EBF\u5199\u300C\u4EBF\u300D\u3001\u22651 \u4E07\u5199\u300C\u4E07\u300D\uFF0C\u4FDD\u7559 1~2 \u4F4D\u5C0F\u6570\uFF0C\u5355\u4F4D\u653E <span class="unit">\uFF1B\u767E\u5206\u6BD4\u4FDD\u7559 1 \u4F4D\u5C0F\u6570\uFF1B\u589E\u957F\u7528 <span class="delta up">\u2191 x.x%</span>\u3001\u4E0B\u964D\u7528 <span class="delta down">\u2193 x.x%</span>\u3001\u6301\u5E73\u7528 <span class="delta flat">\u2192 0.0%</span>\uFF1B\u72B6\u6001\u7528 <span class="badge is-success|is-warning|is-danger|is-info">\u8FBE\u6807/\u9884\u8B66/\u843D\u540E</span>\uFF1B\u6BCF\u4E2A\u5173\u952E\u6570\u5B57\u90FD\u8981\u80FD\u770B\u51FA\u65F6\u95F4\u8303\u56F4\u4E0E\u53E3\u5F84\uFF08\u5199\u5728 report-sub \u6216 stat-note \u91CC\uFF09\uFF1B\u8868\u683C\u91CC\u6570\u5B57\u5217\u52A0 class="num"\u3001\u6587\u672C\u5217\u52A0 class="txt"\uFF08\u9ED8\u8BA4\u9664\u7B2C\u4E00\u5217\u5916\u90FD\u662F\u53F3\u5BF9\u9F50\uFF0C\u8868\u5934\u4E0E\u6570\u503C\u624D\u4F1A\u5BF9\u9F50\uFF09\u3002\n- \u3010\u589E\u5F3A\u5C55\u793A\uFF0C\u6709\u771F\u5B9E\u6570\u636E\u624D\u7528\uFF0C\u6CA1\u6709\u5C31\u7701\u7565\u3011\n  \xB7 \u76EE\u6807/\u7F3A\u53E3\uFF08\u4EC5\u5F53\u5E93\u91CC\u786E\u6709\u76EE\u6807/\u8BA1\u5212\u6570\u636E\uFF09\uFF1A<div class="stat-target"><span>\u76EE\u6807 1,200 \u4E07</span><span>\u7F3A\u53E3 116 \u4E07</span><span class="delta down">\u5DEE 9.7%</span></div>\n  \xB7 \u540C\u73AF\u6BD4\u4E09\u6BB5\u5F0F\uFF1A<span class="delta up">\u2191 140.6 \u4E07 (+12.3%)</span>\n  \xB7 \u6392\u540D\u53D8\u5316 / \u7D2F\u8BA1\u5360\u6BD4\uFF1A<span class="rank-delta up">\u21912</span>\u3001<span class="rank-cum">\u7D2F\u8BA1 62.4%</span>\n  \xB7 \u98CE\u9669\u9879\u5E26\u5206\u7EA7\u4E0E\u5EFA\u8BAE\uFF1A<div class="risk-item is-danger"><div class="risk-title">\u8D85\u65F6\u672A\u53D1<span class="badge is-danger">\u9AD8</span></div><div class="risk-text">\u8BF4\u660E</div><div class="risk-impact">\u5F71\u54CD\uFF1A1,240 \u5355 / 86 \u4E07\u5143</div><div class="risk-action">\u5EFA\u8BAE\uFF1A...</div></div>\n3) \u9664 \u6A2A\u6761\u5BBD\u5EA6/\u989C\u8272\u3001\u5206\u5E03 flex\u3001\u56FE\u8868\u9AD8\u5EA6\u3001.spark i \u7684\u9AD8\u5EA6\u3001.rank-bar i \u7684\u5BBD\u5EA6\u3001.ring \u7684 --v \u5916\uFF0C\u4E0D\u8981\u5199\u5176\u5B83\u5185\u8054 style\uFF1B\u989C\u8272\u53EA\u7528\uFF1A\u4E3B #4f7cff\u3001\u6210\u529F #16a34a\u3001\u5371\u9669 #ef4444\u3001\u8B66\u544A #f59e0b\u3002\n4) \u7ED3\u6784\u53C2\u8003\uFF1Areport-header \u2192 notice \u2192 section(1 \u62A5\u544A\u6982\u8981\uFF1Acallout + stat-grid/ring-grid) \u2192 section(2 \u5206\u6790\uFF1Acard + \u56FE\u8868 + compare-grid/rank-list/dist + \u8868\u683C) \u2192 section(3 \u98CE\u9669\u603B\u7ED3\uFF1Arisk-list)\u3002\n5) \u56FE\u8868\u8981\u591A\u6837\u3001\u597D\u770B\uFF1A\u6BCF\u4EFD\u62A5\u544A\u81F3\u5C11 2~4 \u5F20\u56FE\uFF0C\u7C7B\u578B\u5C3D\u91CF\u4E0D\u540C\uFF08line \u6298\u7EBF / bar \u67F1\u72B6 / \u5806\u53E0\u67F1 / \u6C34\u5E73\u6761 / pie \u997C / \u73AF\u5F62 / radar \u96F7\u8FBE / funnel \u6F0F\u6597 / gauge \u4EEA\u8868\u76D8 / scatter \u6563\u70B9 / heatmap \u70ED\u529B\uFF09\uFF0C\u4E0D\u8981\u91CD\u590D\u540C\u4E00\u7C7B\u578B\u3002\u56FE\u8868\u5BB9\u5668\u5FC5\u987B\u5199\u6B7B\u9AD8\u5EA6\uFF0C\u5982 <div class="ol-chart" data-id="c1" style="height:340px"></div>\uFF0Coption \u653E\u8FDB charts.c1\uFF08\u6570\u636E\u5185\u5D4C\uFF1B\u914D\u8272/tooltip \u524D\u7AEF\u4F1A\u81EA\u52A8\u8865\u5168\uFF09\uFF1B\u5E76\u6392\u56FE\u7528 <div class="grid grid-2"> \u5404\u5305\u4E00\u4E2A card\u3002\n6) \u5E03\u5C40\u8981\u56E0\u5185\u5BB9\u800C\u5F02\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u540C\u4E00\u5957\u7ED3\u6784\uFF1A\u6309\u6570\u636E\u7279\u70B9\u7EC4\u5408 \u5206\u8282 / \u5361\u7247 / \u56FE\u8868 / \u6570\u5B57\u5361 / \u73AF / \u6392\u884C\u699C / \u5BF9\u6BD4 / \u8868\u683C / \u8FDB\u5EA6 / \u5206\u5E03 / \u98CE\u9669 \u7B49\u3002\n7) \u6240\u6709\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199\u4E00\u53E5"\u62A5\u544A\u5DF2\u751F\u6210"\u3002\n8) \u5DE6\u4FA7\u7AE0\u8282\u5BFC\u822A\u3001\u751F\u6210\u65F6\u95F4\u9875\u811A\u3001\u6C34\u5370\u3001\u6570\u5B57\u5343\u5206\u4F4D\u7531\u9875\u9762\u81EA\u52A8\u5904\u7406\uFF0C\u4F60\u4E0D\u8981\u81EA\u5DF1\u5199\u76EE\u5F55/\u9875\u811A\uFF1B\u62A5\u544A\u4F1A\u81EA\u52A8\u5265\u79BB <script> \u4E0E\u6240\u6709\u5916\u90E8\u8D44\u6E90\uFF08CDN/\u56FE\u7247\u94FE\u63A5\uFF09\uFF0C\u5199\u4E86\u4E5F\u4E0D\u4F1A\u751F\u6548\u3002\n9) \u9664 html/charts \u5916\uFF0C\u8FD8\u8981\u586B template\uFF08\u6A21\u677F\uFF09\u3001period\uFF08\u7EDF\u8BA1\u671F\u95F4\uFF09\u3001scope\uFF08\u7EDF\u8BA1\u53E3\u5F84\uFF09\u3001sources\uFF08\u6570\u636E\u8868\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF09\u3001warnings\uFF08\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF1A\u7A7A\u503C/\u622A\u65AD/\u8D1F\u5E93\u5B58\u7B49\uFF09\uFF1B\u8FD9\u4E9B\u4F1A\u6E32\u67D3\u5230\u62A5\u544A\u9875\u811A\u548C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u91CC\u3002\n10) \u672C\u5DE5\u5177\u4E0D\u4F1A\u56E0\u4E3A\u683C\u5F0F\u95EE\u9898\u5931\u8D25\uFF1A\u8868\u683C\u5217\u6570\u4E0D\u4E00\u81F4\u3001\u56FE\u8868\u7F3A option \u4F1A\u7531\u524D\u7AEF\u515C\u5E95\u5E76\u5728\u62A5\u544A\u9876\u90E8\u663E\u793A\u4E3A\u201C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u201D\uFF0C\u4F60\u4E0D\u9700\u8981\u53CD\u590D\u91CD\u8BD5\u6216\u91CD\u65B0\u751F\u6210\u6574\u4EFD\u62A5\u544A\u3002\n11) \u6570\u636E\u5E93\u53EF\u80FD\u5F88\u5927\uFF1A\u4F18\u5148\u7528\u805A\u5408 SQL\uFF08GROUP BY / SUM / COUNT / TOP\uFF09\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\uFF1B\u6574\u4EFD\u62A5\u544A\u7684 SQL \u67E5\u8BE2\u5C3D\u91CF\u63A7\u5236\u5728 3~5 \u6B21\u4EE5\u5185\uFF0C\u4E00\u6B21 SQL \u5C3D\u91CF\u540C\u65F6\u53D6\u56DE\u591A\u4E2A\u6307\u6807\u3002\ncomponent \u56FA\u5B9A\u4E3A ${HTML_REPORT_COMPONENT}\u3002';
+var REPORT_TOOL_DESCRIPTION = `\u5F53\u7528\u6237\u7684\u95EE\u9898\u5C5E\u4E8E\u6570\u636E\u5206\u6790\uFF08\u8D8B\u52BF\u3001\u5206\u5E03\u3001\u5BF9\u6BD4\u3001\u5360\u6BD4\u3001\u6392\u884C\u3001\u6C47\u603B\u3001\u7ED3\u6784\u53D8\u5316\u7B49\uFF09\u6216\u8981\u6C42\u770B\u62A5\u8868/\u65E5\u62A5/\u56FE\u8868\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u524D\u7AEF\u4F1A\u6E32\u67D3\u6210\u4E00\u4EFD\u53EF\u89C6\u5316\u62A5\u8868\uFF08\u7C7B\u4F3C\u4EEA\u8868\u76D8 / \u6C47\u62A5\u5927\u5C4F\uFF09\u3002
+\u6392\u7248\u5EFA\u8BAE\uFF08blocks \u987A\u5E8F\uFF09\uFF1A
+- \u7528 section \u5206\u8282\uFF1A\u6BCF\u4E2A\u4E3B\u9898\u7528 section \u5F00\u5934\uFF08\u7ED9 no \u7F16\u53F7 + title\uFF0C\u53EF\u5E26\u82F1\u6587 subtitle\uFF09\uFF0C\u524D\u7AEF\u4F1A\u636E\u6B64\u751F\u6210\u76EE\u5F55\u5BFC\u822A\uFF1B
+- section \u540E\u63A5 summary\uFF08\u6838\u5FC3\u7ED3\u8BBA\uFF09\u6216 notice\uFF08\u9884\u8B66/\u63D0\u793A\uFF09\uFF1B
+- \u5173\u952E\u6307\u6807\u7528 kpi\uFF082~4 \u4E2A\u4E00\u6392\uFF0C\u8865 note \u8BF4\u660E\u53E3\u5F84\uFF09\uFF1B
+- \u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4\u7528 hbar\uFF1B\u8FBE\u6210\u60C5\u51B5\u7528 progress\uFF1B\u4E00\u6392\u5C0F\u6307\u6807\u7528 chips\uFF1B\u6784\u6210\u5206\u5E03\u7528 dist\uFF1B
+- \u8D8B\u52BF/\u5BF9\u6BD4\u56FE\u7528 chart\uFF08\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\uFF1B
+- \u660E\u7EC6\u7528 table\uFF1B\u98CE\u9669\u4E0E\u603B\u7ED3\u7528 risk\uFF08danger/warning/success \u914D\u8272\uFF09\uFF1B\u6700\u540E\u53EF\u7528 insights \u6536\u5C3E\u3002
+\u89C4\u5219\uFF1A\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u540C\u4E00\u7EF4\u5EA6\u53EA\u653E\u4E00\u5F20\u6700\u5408\u9002\u7684\u56FE\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\uFF0C\u4E0D\u91CD\u590D\u62A5\u8868\u91CC\u7684\u6570\u5B57\u3002
+component \u56FA\u5B9A\u586B ${REPORT_COMPONENT}\u3002`;
+
 // dist/tools.js
+var DEFAULT_VISUAL_COMPONENT = LEGACY_CHART_COMPONENT;
+function cellSpan(rowHtml) {
+  const re = /<(td|th)\b([^>]*)>/gi;
+  let n3 = 0;
+  let m;
+  while (m = re.exec(rowHtml)) {
+    const attrs = m[2] || "";
+    const cs = attrs.match(/colspan\s*=\s*["']?(\d+)/i);
+    n3 += cs ? Math.max(1, parseInt(cs[1], 10) || 1) : 1;
+  }
+  return n3;
+}
+function extractChartIds(html) {
+  const ids = [];
+  const tagRe2 = /<[a-z][^>]*>/gi;
+  let m;
+  while (m = tagRe2.exec(html)) {
+    const tag = m[0];
+    if (!/class\s*=\s*["'][^"']*\bol-chart\b/i.test(tag))
+      continue;
+    const idm = tag.match(/data-id\s*=\s*["']([^"']+)["']/i);
+    if (idm)
+      ids.push(idm[1]);
+  }
+  return ids;
+}
+function validateChartOption(opt) {
+  if (!opt || typeof opt !== "object")
+    return "option \u4E3A\u7A7A";
+  const o = opt;
+  const raw = o.series;
+  const arr3 = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  if (!arr3.length)
+    return "\u7F3A\u5C11 series";
+  const hasData = arr3.some((s) => {
+    if (!s || typeof s !== "object")
+      return false;
+    const series = s;
+    if (Array.isArray(series.data))
+      return series.data.length > 0;
+    if (series.data && typeof series.data === "object")
+      return true;
+    return Boolean(o.dataset);
+  });
+  if (!hasData)
+    return "\u6CA1\u6709\u6570\u636E\uFF08series[].data \u4E3A\u7A7A\uFF09";
+  const needsAxis = arr3.some((s) => {
+    if (!s || typeof s !== "object")
+      return false;
+    const t = s.type;
+    return t === "line" || t === "bar" || t === "scatter" || t === "heatmap" || t === "candlestick";
+  });
+  if (needsAxis && !o.xAxis)
+    return "\u76F4\u89D2\u5750\u6807\u56FE\u7F3A\u5C11 xAxis";
+  if (needsAxis && !o.yAxis)
+    return "\u76F4\u89D2\u5750\u6807\u56FE\u7F3A\u5C11 yAxis";
+  return null;
+}
+function validateReportCharts(html, charts) {
+  const ids = extractChartIds(html);
+  const map2 = charts || {};
+  for (const id of ids) {
+    const opt = map2[id];
+    if (opt === void 0 || opt === null) {
+      return `\u56FE\u8868\u5BB9\u5668 data-id="${id}" \u5728 charts \u91CC\u6CA1\u6709\u5BF9\u5E94\u7684 option`;
+    }
+    const problem = validateChartOption(opt);
+    if (problem)
+      return `\u56FE\u8868 ${id}\uFF1A${problem}`;
+  }
+  return null;
+}
+function validateHtmlTables(html) {
+  const tables = html.match(/<table\b[\s\S]*?<\/table>/gi) || [];
+  for (let i = 0; i < tables.length; i++) {
+    const t = tables[i];
+    const headBlock = t.match(/<thead\b[\s\S]*?<\/thead>/i);
+    const headRow = headBlock ? (headBlock[0].match(/<tr\b[\s\S]*?<\/tr>/i) || [""])[0] : "";
+    let cols = headRow ? cellSpan(headRow) : 0;
+    const bodyBlock = (t.match(/<tbody\b[\s\S]*?<\/tbody>/i) || [t])[0];
+    const rows = bodyBlock.match(/<tr\b[\s\S]*?<\/tr>/gi) || [];
+    if (!cols) {
+      const withTh = rows.find((r) => /<th\b/i.test(r));
+      cols = withTh ? cellSpan(withTh) : rows[0] ? cellSpan(rows[0]) : 0;
+    }
+    if (!cols)
+      continue;
+    let index2 = 0;
+    for (const row of rows) {
+      if (/<th\b/i.test(row) && !/<td\b/i.test(row))
+        continue;
+      index2++;
+      const n3 = cellSpan(row);
+      if (n3 !== cols) {
+        return `\u7B2C ${i + 1} \u5F20\u8868\u683C\u7B2C ${index2} \u4E2A\u6570\u636E\u884C\u53EA\u6709 ${n3} \u4E2A\u5355\u5143\u683C\uFF0C\u4F46\u8868\u5934\u6709 ${cols} \u5217`;
+      }
+    }
+  }
+  return null;
+}
+function toStringArray(value, max = 8) {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v == null ? "" : v).trim()).filter(Boolean).slice(0, max);
+  }
+  if (typeof value === "string") {
+    return value.split(/[、,，;；\n]/).map((s) => s.trim()).filter(Boolean).slice(0, max);
+  }
+  return [];
+}
+var TEMPLATE_ALIASES = {
+  daily: "daily",
+  weekly: "weekly",
+  monthly: "monthly",
+  inventory: "inventory",
+  exception: "exception",
+  compare: "compare",
+  \u65E5\u62A5: "daily",
+  \u4F5C\u4E1A\u65E5\u62A5: "daily",
+  \u65E5\u62A5\u544A: "daily",
+  \u5468\u62A5: "weekly",
+  \u8FD0\u8425\u5468\u62A5: "weekly",
+  \u5468\u62A5\u544A: "weekly",
+  \u6708\u62A5: "monthly",
+  \u8FD0\u8425\u6708\u62A5: "monthly",
+  \u6708\u62A5\u544A: "monthly",
+  \u5E93\u5B58: "inventory",
+  \u5E93\u5B58\u5FEB\u7167: "inventory",
+  \u5E93\u5B58\u62A5\u8868: "inventory",
+  \u5F02\u5E38: "exception",
+  \u5F02\u5E38\u4E13\u62A5: "exception",
+  \u5F02\u5E38\u62A5\u544A: "exception",
+  \u5BF9\u6BD4: "compare",
+  \u591A\u4ED3\u5BF9\u6BD4: "compare",
+  \u4ED3\u5E93\u5BF9\u6BD4: "compare"
+};
+function normalizeTemplate(value) {
+  if (typeof value !== "string")
+    return "auto";
+  const key = value.trim().toLowerCase();
+  if (!key || key === "auto")
+    return "auto";
+  return TEMPLATE_ALIASES[key] || TEMPLATE_ALIASES[value.trim()] || "auto";
+}
+function normalizeHeight(value) {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return Math.round(value);
+  }
+  if (typeof value === "string") {
+    const m = value.match(/(\d+(?:\.\d+)?)/);
+    if (m) {
+      const n3 = Number(m[1]);
+      if (Number.isFinite(n3) && n3 > 0)
+        return Math.round(n3);
+    }
+  }
+  return void 0;
+}
+function normalizeCharts(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch {
+      return void 0;
+    }
+  }
+  return void 0;
+}
+function normalizeHtmlReportInput(input2) {
+  const html = typeof input2.html === "string" ? input2.html : "";
+  const charts = normalizeCharts(input2.charts);
+  const warnings = toStringArray(input2.warnings);
+  const tableProblem = validateHtmlTables(html);
+  if (tableProblem) {
+    warnings.push(`\u8868\u683C\u7ED3\u6784\u63D0\u793A\uFF1A${tableProblem}\uFF08\u524D\u7AEF\u4F1A\u9690\u85CF\u5217\u6570\u4E0D\u4E00\u81F4\u7684\u884C\uFF09`);
+  }
+  const chartProblem = validateReportCharts(html, charts);
+  if (chartProblem) {
+    warnings.push(`\u56FE\u8868\u7ED3\u6784\u63D0\u793A\uFF1A${chartProblem}\uFF08\u524D\u7AEF\u4F1A\u663E\u793A\u201C\u56FE\u8868\u672A\u751F\u6210\u201D\uFF09`);
+  }
+  return {
+    component: HTML_REPORT_COMPONENT,
+    title: typeof input2.title === "string" ? input2.title : "",
+    subtitle: typeof input2.subtitle === "string" ? input2.subtitle : "",
+    height: normalizeHeight(input2.height),
+    template: normalizeTemplate(input2.template),
+    period: typeof input2.period === "string" ? input2.period : "",
+    scope: typeof input2.scope === "string" ? input2.scope : "",
+    sources: toStringArray(input2.sources),
+    warnings: Array.from(new Set(warnings)),
+    html,
+    charts
+  };
+}
+function fitJson(build, total, maxChars) {
+  let lo = 0;
+  let hi = total;
+  let best = JSON.stringify(build(0));
+  while (lo <= hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const text = JSON.stringify(build(mid));
+    if (text.length <= maxChars) {
+      best = text;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+  return best;
+}
+function trimQueryResult(result, maxChars) {
+  const json2 = JSON.stringify(result);
+  if (json2.length <= maxChars)
+    return { json: json2, trimmed: false };
+  const hint = "\u7ED3\u679C\u8FC7\u5927\u5DF2\u622A\u65AD\uFF0C\u8BF7\u6539\u7528\u805A\u5408 SQL\uFF08GROUP BY / SUM / COUNT\uFF09\u6216\u52A0 TOP \u540E\u518D\u67E5\u8BE2";
+  const text = fitJson((keep) => ({
+    ...result,
+    rows: result.rows.slice(0, keep),
+    rowCount: keep,
+    truncated: true,
+    hint
+  }), result.rows.length, maxChars);
+  return { json: text, trimmed: true };
+}
 function createTools(db) {
   const getSchemaTool = tool(async () => {
+    const budget = currentBudget();
+    const blocked = budget ? budget.takeSchemaCall() : null;
+    if (blocked) {
+      logLine(`tool list_tables blocked: ${blocked}`);
+      return budgetMessage("schema", blocked);
+    }
     const schema = await getSchema(db);
-    return JSON.stringify(schema);
+    const maxChars = budget ? budget.limits.maxResultChars : 8e3;
+    const hint = "\u8868\u6570\u91CF\u8F83\u591A\u5DF2\u622A\u65AD\uFF0C\u5EFA\u8BAE\u5148\u6309\u540D\u79F0\u7B5B\u9009\uFF1B\u53EF\u7EE7\u7EED\u7528 get_table_schema \u67E5\u770B\u5177\u4F53\u8868";
+    const json2 = fitJson((keep) => ({
+      ...schema,
+      tables: schema.tables.slice(0, keep),
+      tableCount: schema.tables.length,
+      truncated: keep < schema.tables.length,
+      ...keep < schema.tables.length ? { hint } : {}
+    }), schema.tables.length, maxChars);
+    const deny = budget ? budget.takeChars(json2.length) : null;
+    if (deny) {
+      logLine(`tool list_tables budget blocked: ${deny}`);
+      return budgetMessage("chars", deny);
+    }
+    logLine(`tool list_tables ok tables=${schema.tables.length} chars=${json2.length}`);
+    return json2;
   }, {
     name: "list_tables",
     description: "\u5217\u51FA\u6570\u636E\u5E93\u4E2D\u6240\u6709\u53EF\u7528\u7684\u8868\uFF08\u8868\u540D + \u5B57\u6BB5\u6570\u91CF\uFF09\u3002\u751F\u6210 SQL \u4E4B\u524D\u5148\u8C03\u7528\u672C\u5DE5\u5177\u4E86\u89E3\u6709\u54EA\u4E9B\u8868\uFF0C\u518D\u7528 get_table_schema \u67E5\u770B\u5177\u4F53\u8868\u7684\u5B57\u6BB5\u3002",
     schema: external_exports2.object({})
   });
   const getTableSchemaTool = tool(async ({ table }) => {
+    const budget = currentBudget();
+    const blocked = budget ? budget.takeSchemaCall() : null;
+    if (blocked) {
+      logLine(`tool get_table_schema blocked: ${blocked}`);
+      return budgetMessage("schema", blocked);
+    }
     const schema = await getTableSchema(db, table);
-    return JSON.stringify(schema);
+    const maxChars = budget ? budget.limits.maxResultChars : 8e3;
+    const hint = "\u5B57\u6BB5\u8FC7\u591A\u5DF2\u622A\u65AD\uFF0C\u8BF7\u4F18\u5148\u4F7F\u7528\u4E0E\u4E1A\u52A1\u6307\u6807\u76F8\u5173\u7684\u5B57\u6BB5";
+    const json2 = fitJson((keep) => ({
+      ...schema,
+      columns: schema.columns.slice(0, keep),
+      truncated: keep < schema.columns.length,
+      ...keep < schema.columns.length ? { hint } : {}
+    }), schema.columns.length, maxChars);
+    const deny = budget ? budget.takeChars(json2.length) : null;
+    if (deny) {
+      logLine(`tool get_table_schema budget blocked: ${deny}`);
+      return budgetMessage("chars", deny);
+    }
+    logLine(`tool get_table_schema ok table=${table} columns=${schema.columns.length} chars=${json2.length}`);
+    return json2;
   }, {
     name: "get_table_schema",
     description: "\u67E5\u770B\u6307\u5B9A\u8868\u7684\u5B57\u6BB5\uFF08\u5217\u540D/\u7C7B\u578B/\u662F\u5426\u53EF\u7A7A\uFF09\u3002\u786E\u5B9A\u8981\u67E5\u8BE2\u67D0\u5F20\u8868\u540E\u8C03\u7528\u3002",
@@ -154892,33 +155708,107 @@ function createTools(db) {
     })
   });
   const runQueryTool = tool(async ({ sql: sqlText }) => {
+    const budget = currentBudget();
+    const blocked = budget ? budget.takeSqlQuery() : null;
+    if (blocked) {
+      logLine(`tool run_sql blocked: ${blocked}`);
+      return budgetMessage("sqlQueries", blocked);
+    }
+    const started = Date.now();
     const result = await runQuery(db, sqlText);
-    return JSON.stringify(result);
+    const maxChars = budget ? budget.limits.maxResultChars : 8e3;
+    const { json: json2, trimmed } = trimQueryResult(result, maxChars);
+    const deny = budget ? budget.takeChars(json2.length) : null;
+    if (deny) {
+      logLine(`tool run_sql budget blocked: ${deny}`);
+      return budgetMessage("chars", deny);
+    }
+    logLine(`tool run_sql ${result.success ? "ok" : "error"} rows=${result.rowCount}${trimmed ? "+" : ""} chars=${json2.length} elapsed=${Date.now() - started}ms`);
+    return json2;
   }, {
     name: "run_sql",
-    description: "\u6267\u884C\u4E00\u6761\u53EA\u8BFB\u67E5\u8BE2\u5E76\u8FD4\u56DE JSON \u7ED3\u679C\uFF08columns/rows/rowCount/truncated\uFF09\u3002\u8FD4\u56DE\u884C\u6570\u6709\u4E0A\u9650\u3002",
+    description: "\u6267\u884C\u4E00\u6761\u53EA\u8BFB\u67E5\u8BE2\u5E76\u8FD4\u56DE JSON \u7ED3\u679C\uFF08columns/rows/rowCount/truncated\uFF09\u3002\u8FD4\u56DE\u884C\u6570\u548C\u7ED3\u679C\u5927\u5C0F\u90FD\u6709\u4E0A\u9650\uFF1B\u6570\u636E\u91CF\u5927\u65F6\u8BF7\u7528 GROUP BY / TOP \u805A\u5408\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\u3002",
     schema: external_exports2.object({
       sql: external_exports2.string().describe("\u8981\u6267\u884C\u7684 SQL \u67E5\u8BE2\u8BED\u53E5")
     })
   });
-  return [getSchemaTool, getTableSchemaTool, runQueryTool];
+  const renderChartTool = tool(async (input2) => JSON.stringify(input2), {
+    name: LEGACY_CHART_TOOL_NAME,
+    description: "\u3010\u4EC5\u5355\u56FE\u573A\u666F\u3011\u5F53\u7528\u6237\u53EA\u60F3\u8981\u4E00\u5F20\u56FE\uFF08\u4F8B\u5982\u53EA\u770B\u67D0\u6761\u8D8B\u52BF\uFF09\uFF0C\u4E14\u4E0D\u9700\u8981\u6574\u4EFD\u5206\u6790\u62A5\u8868\u65F6\u8C03\u7528\u3002\u5982\u679C\u7528\u6237\u7684\u95EE\u9898\u6D89\u53CA\u591A\u7EF4\u5206\u6790\u3001\u6C47\u62A5\u62A5\u8868\u6216\u9700\u8981\u591A\u4E2A\u6307\u6807\uFF0C\u8BF7\u6539\u7528 render_report\u3002\u4F20\u5165\u6807\u51C6 ECharts option\uFF1A\u6570\u636E\u5FC5\u987B\u5185\u5D4C\u5728 option \u4E2D\uFF0C\u5750\u6807\u8F74\u3001\u7CFB\u5217\u3001\u6807\u9898\u7B49\u4E00\u5F8B\u7528\u4E2D\u6587\u3002\u8C03\u7528\u540E\u8BF7\u7528\u4E00\u4E24\u53E5\u8BDD\u7ED9\u51FA\u7ED3\u8BBA\u3002\u82E5\u67E5\u8BE2\u7ED3\u679C\u4E3A\u7A7A\uFF0C\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\u3002",
+    schema: external_exports2.object({
+      component: external_exports2.string().default(DEFAULT_VISUAL_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${DEFAULT_VISUAL_COMPONENT}`),
+      title: external_exports2.string().optional().describe("\u56FE\u8868\u6807\u9898\uFF08\u53EF\u9009\uFF09"),
+      height: external_exports2.number().optional().describe("\u56FE\u8868\u9AD8\u5EA6\uFF0C\u5355\u4F4D px\uFF0C\u9ED8\u8BA4 300\uFF08\u53EF\u9009\uFF09"),
+      props: external_exports2.object({
+        option: external_exports2.record(external_exports2.string(), external_exports2.any()).describe("\u6807\u51C6 ECharts option \u5BF9\u8C61\uFF0C\u6570\u636E\u9700\u5185\u5D4C\u5176\u4E2D\uFF0C\u5982 {xAxis, yAxis, series}")
+      }).describe("\u900F\u4F20\u7ED9\u56FE\u8868\u7EC4\u4EF6\u7684 props")
+    })
+  });
+  const renderReportTool = tool(async (input2) => JSON.stringify(input2), {
+    name: REPORT_TOOL_NAME,
+    description: REPORT_TOOL_DESCRIPTION,
+    schema: reportSchema
+  });
+  const renderHtmlReportTool = tool(async (input2) => {
+    const normalized = normalizeHtmlReportInput(input2);
+    if (normalized.warnings.length) {
+      logLine(`tool render_html_report ok warnings=${normalized.warnings.length} ` + normalized.warnings.join(" | ").slice(0, 400));
+    } else {
+      logLine(`tool render_html_report ok chars=${normalized.html.length}`);
+    }
+    return JSON.stringify(normalized);
+  }, {
+    name: HTML_REPORT_TOOL_NAME,
+    description: HTML_REPORT_TOOL_DESCRIPTION,
+    schema: htmlReportSchema
+  });
+  return [
+    getSchemaTool,
+    getTableSchemaTool,
+    runQueryTool,
+    renderReportTool,
+    renderHtmlReportTool,
+    renderChartTool
+  ];
 }
 
 // dist/runtime.js
-var SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u6570\u636E\u5E93\u67E5\u8BE2\u4E0E\u5206\u6790\u52A9\u624B\uFF0C\u5E2E\u52A9\u7528\u6237\u7528\u81EA\u7136\u8BED\u8A00\u67E5\u8BE2\u6570\u636E\u5E93\u3002
+var SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u6570\u636E\u5E93\u67E5\u8BE2\u4E0E\u53EF\u89C6\u5316\u5206\u6790\u52A9\u624B\uFF0C\u5E2E\u52A9\u7528\u6237\u7528\u81EA\u7136\u8BED\u8A00\u67E5\u8BE2\u6570\u636E\u5E93\u5E76\u8F93\u51FA"\u53EF\u6C47\u62A5"\u7684\u5206\u6790\u7ED3\u679C\u3002
 
-\u8F93\u51FA\u8981\u6C42\uFF1A
+\u8F93\u51FA\u603B\u539F\u5219\uFF1A
 - \u59CB\u7EC8\u7528\u4E2D\u6587\u56DE\u7B54\u3002
-- \u53EA\u8F93\u51FA\u6700\u7EC8\u7ED3\u8BBA\uFF0C\u76F4\u63A5\u56DE\u7B54\u7528\u6237\u7684\u95EE\u9898\uFF1B\u4E0D\u8981\u5199"\u6211\u6765\u5E2E\u60A8\u770B\u770B/\u6211\u6B63\u5728\u67E5\u8BE2/\u6211\u8C03\u7528\u4E86\u4EC0\u4E48\u5DE5\u5177"\u8FD9\u7C7B\u8FC7\u7A0B\u65C1\u767D\u3002
-- \u7ED3\u6784\uFF1A\u5148\u7ED9\u7ED3\u8BBA\uFF0C\u518D\u7ED9\u5FC5\u8981\u7684\u6570\u636E\u652F\u6491\uFF08\u53EF\u7528 Markdown \u8868\u683C\uFF09\uFF0C\u6700\u540E\u7ED9\u4E00\u4E24\u53E5\u7B80\u77ED\u5206\u6790\u3002\u4E0D\u8981\u5BA2\u5957\u8BDD\u3002
+- \u53EA\u8F93\u51FA\u6700\u7EC8\u7ED3\u8BBA\uFF0C\u4E0D\u8981\u5199"\u6211\u6765\u5E2E\u60A8\u770B\u770B/\u6211\u6B63\u5728\u67E5\u8BE2/\u6211\u8C03\u7528\u4E86\u4EC0\u4E48\u5DE5\u5177"\u8FD9\u7C7B\u8FC7\u7A0B\u65C1\u767D\u3002
+- \u4F18\u5148\u7528\u53EF\u89C6\u5316\u62A5\u8868\u8868\u8FBE\u5206\u6790\u7ED3\u679C\uFF0C\u800C\u4E0D\u662F\u5927\u6BB5\u6587\u5B57\u3002\u7528\u6237\u662F\u5728\u548C\u9886\u5BFC\u6C47\u62A5\uFF0C\u4E0D\u662F\u770B\u6587\u6863\u3002
+
+\u53EF\u89C6\u5316\u89C4\u5219\uFF08\u91CD\u8981\uFF09\uFF1A
+- \u3010\u9ED8\u8BA4\u8D70 HTML \u62A5\u544A\u3011\u53EA\u8981\u7528\u6237\u7684\u8BDD\u91CC\u51FA\u73B0"\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u6C47\u62A5 / \u5927\u5C4F / \u5B8C\u6574\u5206\u6790 / \u5206\u6790\u62A5\u544A / \u51FA\u4E00\u4EFD\u2026\u5206\u6790"\u7B49\uFF0C**\u5FC5\u987B**\u8C03\u7528 render_html_report \u751F\u6210 HTML \u62A5\u544A\u9875\uFF0C\u4E0D\u8981\u7528 render_report\u3002
+  \xB7 \u4E25\u683C\u6309\u8BE5\u5DE5\u5177\u7684\u8BBE\u8BA1\u89C4\u8303\u5199 HTML\uFF08\u56FA\u5B9A\u7C7B\u540D\u3001section \u5206\u8282\u3001\u56FE\u8868\u7528 .ol-chart + charts\uFF0C\u81F3\u5C11 2~4 \u5F20\u4E0D\u540C\u7C7B\u578B\u7684\u56FE\uFF0C\u5E03\u5C40\u8981\u56E0\u5185\u5BB9\u800C\u5F02\uFF09\uFF1B
+  \xB7 \u6570\u5B57\u4F18\u5148\uFF1A\u4E00\u5C4F\u6700\u4E0A\u9762\u5148\u653E 2~4 \u4E2A\u6838\u5FC3\u6570\u5B57\uFF08.stat \u82F1\u96C4\u6570\u5B57\u5361 / .ring \u8FBE\u6210\u7387\u73AF\uFF09\uFF0C\u518D\u653E .compare \u540C\u73AF\u6BD4\u4E0E .rank-list \u6392\u884C\u699C\uFF0C\u6700\u540E\u624D\u662F\u660E\u7EC6\u8868\uFF1B\u6570\u5B57\u8981\u5343\u5206\u4F4D\u3001\u5E26\u5355\u4F4D\u4E0E\u53E3\u5F84\uFF0C\u4E0D\u662F\u7ED9\u9886\u5BFC\u770B\u4E00\u5927\u5806\u8868\u683C\uFF1B
+  \xB7 \u660E\u7EC6\u8868\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u53EA\u653E Top 10 \u5E76\u7528\u4E00\u884C"\u5176\u4F59 N \u9879\u5408\u8BA1"\u6536\u5C3E\uFF0C\u4E0D\u8981\u7528\u6298\u53E0\u6216\u5B8C\u6574\u5927\u8868\uFF1B
+  \xB7 \u6B63\u6587\u53EA\u56DE\u4E00\u53E5"\u62A5\u544A\u5DF2\u751F\u6210"\u4E4B\u7C7B\uFF0C\u4E0D\u91CD\u590D\u5185\u5BB9\u3002
+- \u3010\u4EC5\u8F7B\u91CF\u573A\u666F\u7528 render_report\u3011\u53EA\u6709\u5F53\u7528\u6237\u660E\u786E\u8868\u793A"\u7B80\u5355\u770B\u4E00\u4E0B / \u4E00\u53E5\u8BDD / \u53EA\u51FA\u4E00\u5F20\u56FE / \u7528\u5361\u7247\u5C31\u884C / \u4E0D\u7528\u62A5\u544A"\u65F6\uFF0C\u624D\u7528 render_report\uFF08\u6C14\u6CE1\u5185\u7684\u7ED3\u6784\u5316\u5361\u7247\uFF09\uFF1A
+  \xB7 \u7EC4\u7EC7\u987A\u5E8F\uFF1Asection \u2192 summary/notice \u2192 kpi \u2192 hbar/progress/chips/dist \u2192 chart \u2192 table \u2192 risk \u2192 insights\uFF1B
+  \xB7 \u6570\u503C\u5355\u4F4D\u7EDF\u4E00\uFF08\u4E07/\u4EBF/%/\u53F0\uFF09\uFF0CKPI \u8865 delta/trend\uFF0C\u6709\u65F6\u95F4\u5E8F\u5217\u8865 spark\u3002
+- \u82E5\u67E5\u8BE2\u7ED3\u679C\u4E3A\u7A7A\uFF1A\u4E0D\u8981\u51FA\u62A5\u8868\uFF0C\u76F4\u63A5\u8BF4\u660E"\u6CA1\u6709\u67E5\u8BE2\u5230\u6570\u636E"\u3002
+- \u53EA\u6709\u7528\u6237\u660E\u786E\u53EA\u60F3\u770B\u4E00\u5F20\u56FE\u3001\u4E14\u4E0D\u6D89\u53CA\u591A\u7EF4\u5206\u6790\u65F6\uFF0C\u624D\u7528 render_chart \u753B\u5355\u56FE\u3002
+- \u8C03\u7528\u53EF\u89C6\u5316\u5DE5\u5177\u540E\uFF0C\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\u603B\u7ED3\uFF0C\u4E0D\u8981\u518D\u91CD\u590D\u62A5\u8868\u91CC\u7684\u6570\u5B57\u3002
+- \u524D\u7AEF\u4F1A\u6839\u636E\u5DE5\u5177\u8C03\u7528\u81EA\u52A8\u6E32\u67D3\uFF0C\u4F60\u65E0\u9700\u3001\u4E5F\u4E0D\u5F97\u8F93\u51FA HTML / JavaScript / ECharts \u6E90\u7801\uFF0C
+  \u4E25\u7981\u8BA9\u7528\u6237"\u4FDD\u5B58\u4E3A .html \u81EA\u5DF1\u6253\u5F00"\u6216"\u53BB\u5B98\u7F51\u793A\u4F8B\u91CC\u8FD0\u884C"\u3002
+- \u5982\u679C\u67E5\u8BE2\u7ED3\u679C\u53EA\u6709\u4E00\u884C\u6C47\u603B\u503C\u3001\u4E14\u7528\u6237\u53EA\u662F\u95EE\u4E00\u4E2A\u6570\uFF0C\u53EF\u4EE5\u76F4\u63A5\u7528\u7B80\u77ED\u6587\u5B57\u56DE\u7B54\uFF1B\u4F46\u6D89\u53CA\u591A\u4E2A\u6570\u5B57\u6216\u5BF9\u6BD4\u65F6\uFF0C\u4ECD\u4F18\u5148\u7528 KPI \u62A5\u8868\u3002
 
 \u5DE5\u4F5C\u89C4\u5219\uFF1A
 1. \u5148\u7528 list_tables \u4E86\u89E3\u6709\u54EA\u4E9B\u8868\uFF1B\u9700\u8981\u67D0\u5F20\u8868\u7684\u5B57\u6BB5\u65F6\uFF0C\u7528 get_table_schema \u67E5\u770B\uFF0C\u4E0D\u8981\u81C6\u9020\u8868\u540D\u6216\u5217\u540D\u3002
-2. \u4F7F\u7528 run_sql \u6267\u884C\u67E5\u8BE2\u3002
+2. \u4F7F\u7528 run_sql \u6267\u884C\u67E5\u8BE2\uFF1B\u62A5\u8868\u9700\u8981\u591A\u4E2A\u53E3\u5F84\u65F6\uFF0C\u53EF\u4EE5\u591A\u6B21\u67E5\u8BE2\u540E\u518D\u4E00\u6B21\u6027\u8C03\u7528 render_report\u3002
 3. \u67E5\u8BE2\u7ED3\u679C\u4E3A\u7A7A\u65F6\uFF0C\u660E\u786E\u8BF4\u660E"\u6CA1\u6709\u67E5\u8BE2\u5230\u6570\u636E"\u3002
 4. \u4E0D\u8981\u7F16\u9020\u6570\u636E\uFF0C\u4E00\u5207\u7ED3\u8BBA\u90FD\u5FC5\u987B\u57FA\u4E8E\u5DE5\u5177\u8FD4\u56DE\u7684\u771F\u5B9E\u7ED3\u679C\u3002
 5. \u5982\u679C\u7528\u6237\u7684\u95EE\u9898\u542B\u7CCA\uFF0C\u5148\u63D0\u51FA\u6F84\u6E05\u95EE\u9898\u3002
-6. \u5982\u679C\u5DE5\u5177\u8FD4\u56DE\u6743\u9650\u6216\u8BED\u6CD5\u9519\u8BEF\uFF0C\u7528\u4E00\u53E5\u4EBA\u8BDD\u5411\u7528\u6237\u8BF4\u660E\uFF0C\u4E0D\u8981\u53CD\u590D\u91CD\u8BD5\u3002`;
+6. \u5982\u679C\u5DE5\u5177\u8FD4\u56DE\u6743\u9650\u6216\u8BED\u6CD5\u9519\u8BEF\uFF0C\u7528\u4E00\u53E5\u4EBA\u8BDD\u5411\u7528\u6237\u8BF4\u660E\uFF0C\u4E0D\u8981\u53CD\u590D\u91CD\u8BD5\u3002
+7. \u6570\u636E\u5E93\u53EF\u80FD\u5F88\u5927\uFF1A\u4F18\u5148\u7528\u805A\u5408\u67E5\u8BE2\uFF08GROUP BY / SUM / COUNT / TOP\uFF09\uFF0C\u4E0D\u8981 SELECT * \u62C9\u5168\u91CF\u660E\u7EC6\uFF1B\u5355\u4E2A\u95EE\u9898\u5C3D\u91CF\u4E00\u6B21 SQL \u53D6\u56DE\u591A\u4E2A\u6307\u6807\u3002
+8. \u540C\u4E00\u6B21\u5BF9\u8BDD\u7684\u67E5\u8BE2\u6B21\u6570\u548C\u8FD4\u56DE\u5185\u5BB9\u90FD\u6709\u4E0A\u9650\u3002\u5982\u679C\u5DE5\u5177\u8FD4\u56DE\u201C\u5DF2\u8FBE\u4E0A\u9650 / \u7ED3\u679C\u8FC7\u5927 / \u5DF2\u622A\u65AD\u201D\u7684\u63D0\u793A\uFF0C**\u4E0D\u8981\u518D\u67E5\u8BE2\u3001\u4E0D\u8981\u91CD\u8BD5**\uFF0C\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u56DE\u7B54\u6216\u751F\u6210\u62A5\u544A\uFF0C\u5E76\u5728\u62A5\u544A\u91CC\u5982\u5B9E\u6CE8\u660E\u6570\u636E\u7F3A\u53E3\u3002
+
+${WMS_METRIC_PROMPT}
+
+${TEMPLATE_PROMPT}`;
 var runtimes = /* @__PURE__ */ new Map();
 var RUNTIME_TTL_MS = 30 * 60 * 1e3;
 var MAX_RUNTIMES = 8;
@@ -154929,6 +155819,7 @@ function buildRuntime(cfg) {
     temperature: 0,
     timeout: cfg.llm.timeoutMs,
     maxRetries: 1,
+    maxTokens: cfg.maxOutputTokens,
     configuration: {
       baseURL: cfg.llm.baseUrl
     }
@@ -155046,7 +155937,13 @@ app.addHook("onRequest", async (_request, reply) => {
 app.options("/*", async (_request, reply) => {
   reply.code(204).send();
 });
-app.get("/health", async () => ({ status: "ok" }));
+var bootedAt = (/* @__PURE__ */ new Date()).toISOString();
+app.get("/health", async () => ({
+  status: "ok",
+  pid: process.pid,
+  startedAt: bootedAt,
+  uptimeSec: Math.round(process.uptime())
+}));
 app.get("/handshake", async () => handshake);
 function toMessage(message) {
   if (message.role === "assistant")
@@ -155064,40 +155961,61 @@ function configFromBody(body) {
   }
   return body.config;
 }
+var SSE_HEADERS = {
+  "Content-Type": "text/event-stream; charset=utf-8",
+  "Cache-Control": "no-cache, no-transform",
+  Connection: "keep-alive",
+  "Access-Control-Allow-Origin": "*"
+};
+app.setErrorHandler((error62, request, reply) => {
+  if (request.url.split("?")[0] === "/chat/stream") {
+    if (!reply.raw.headersSent)
+      reply.raw.writeHead(200, SSE_HEADERS);
+    if (!reply.raw.writableEnded) {
+      const message = error62 instanceof Error ? error62.message : String(error62);
+      reply.raw.write(`data: ${JSON.stringify({ type: "error", message })}
+
+`);
+      reply.raw.end();
+    }
+    return;
+  }
+  reply.send(error62);
+});
 var activeStreams = 0;
 app.post("/chat/stream", async (request, reply) => {
   const body = request.body;
+  reply.hijack();
+  const raw = reply.raw;
+  raw.writeHead(200, SSE_HEADERS);
+  const send = (payload) => {
+    raw.write(`data: ${JSON.stringify(payload)}
+
+`);
+  };
+  const fail = (message) => {
+    send({ type: "error", message });
+    raw.end();
+  };
   if (!body || !Array.isArray(body.messages)) {
-    reply.code(400).send({ error: "messages \u5FC5\u987B\u662F\u6570\u7EC4" });
+    fail("messages \u5FC5\u987B\u662F\u6570\u7EC4");
     return;
   }
   let resolved;
   try {
     resolved = resolveOrThrow(configFromBody(body));
   } catch (e) {
-    reply.code(400).send({ error: e instanceof Error ? e.message : String(e) });
+    const message = e instanceof Error ? e.message : String(e);
+    request.log.warn({ err: e }, "chat/stream config error");
+    fail(message);
     return;
   }
   request.log.info({ db: describeDb(resolved.db), model: resolved.llm.model }, "chat/stream config");
   if (activeStreams >= resolved.maxConcurrent) {
-    reply.code(429).send({ error: "\u5F53\u524D\u4F1A\u8BDD\u8FC7\u591A\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5" });
+    fail("\u5F53\u524D\u4F1A\u8BDD\u8FC7\u591A\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5");
     return;
   }
   const messages = body.messages.map(toMessage);
-  const agent = getRuntime(resolved);
-  reply.hijack();
-  const raw = reply.raw;
-  raw.writeHead(200, {
-    "Content-Type": "text/event-stream; charset=utf-8",
-    "Cache-Control": "no-cache, no-transform",
-    Connection: "keep-alive",
-    "Access-Control-Allow-Origin": "*"
-  });
-  const send = (payload) => {
-    raw.write(`data: ${JSON.stringify(payload)}
-
-`);
-  };
   const controller = new AbortController();
   let timedOut = false;
   let finished = false;
@@ -155109,42 +156027,67 @@ app.post("/chat/stream", async (request, reply) => {
     if (!finished)
       controller.abort();
   };
-  reply.raw.on("close", onClientClose);
+  raw.on("close", onClientClose);
   activeStreams += 1;
-  try {
-    const stream = await agent.streamEvents({ messages }, { version: "v2", recursionLimit: resolved.recursionLimit, signal: controller.signal });
-    for await (const event of stream) {
-      if (event.event === "on_chat_model_stream") {
-        const chunk = event.data?.chunk;
-        const text = extractText(chunk?.content);
-        if (text)
-          send({ type: "token", content: text });
-      } else if (event.event === "on_tool_start") {
-        send({
-          type: "tool_start",
-          name: event.name,
-          input: event.data?.input
-        });
-      } else if (event.event === "on_tool_end") {
-        send({
-          type: "tool_result",
-          name: event.name,
-          output: extractText(event.data?.output)
-        });
+  const budget = new TurnBudget({
+    maxSqlQueries: resolved.maxSqlQueries,
+    maxSchemaCalls: resolved.maxSchemaCalls,
+    maxResultChars: resolved.maxResultChars,
+    maxTotalToolChars: resolved.maxTotalToolChars
+  });
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let turnError = "";
+  logLine(`turn start model=${resolved.llm.model}`);
+  await runWithBudget(budget, async () => {
+    try {
+      const agent = getRuntime(resolved);
+      const stream = await agent.streamEvents({ messages }, { version: "v2", recursionLimit: resolved.recursionLimit, signal: controller.signal });
+      for await (const event of stream) {
+        if (event.event === "on_chat_model_stream") {
+          const chunk = event.data?.chunk;
+          const text = extractText(chunk?.content);
+          if (text)
+            send({ type: "token", content: text });
+        } else if (event.event === "on_tool_start") {
+          send({
+            type: "tool_start",
+            name: event.name,
+            input: event.data?.input
+          });
+        } else if (event.event === "on_tool_end") {
+          const output2 = extractText(event.data?.output);
+          const spec = VISUAL_TOOL_NAMES.has(event.name) ? safeParseObject(output2) : null;
+          if (spec) {
+            send({ type: "visual", ...spec });
+          } else {
+            send({ type: "tool_result", name: event.name, output: output2 });
+          }
+        } else if (event.event === "on_chat_model_end") {
+          const usage = event.data?.output?.usage_metadata;
+          if (usage) {
+            inputTokens += usage.input_tokens || 0;
+            outputTokens += usage.output_tokens || 0;
+          }
+        }
       }
+      send({ type: "done" });
+    } catch (error62) {
+      const rawMessage = error62 instanceof Error ? error62.message : String(error62);
+      const message = timedOut ? "\u5904\u7406\u8D85\u65F6\uFF0C\u5DF2\u4E2D\u65AD" : /recursion limit/i.test(rawMessage) ? "\u672C\u6B21\u5206\u6790\u6B65\u9AA4\u8FC7\u591A\u5DF2\u4E2D\u65AD\u3002\u8BF7\u7F29\u5C0F\u65F6\u95F4\u8303\u56F4\u3001\u51CF\u5C11\u6307\u6807\uFF0C\u6216\u628A\u95EE\u9898\u62C6\u6210\u51E0\u6B65\u518D\u95EE\u3002" : rawMessage;
+      turnError = rawMessage;
+      request.log.error({ err: error62 }, "agent stream failed");
+      logLine(`turn error ${rawMessage}`);
+      send({ type: "error", message });
+    } finally {
+      finished = true;
+      clearTimeout(turnTimer);
+      raw.off("close", onClientClose);
+      activeStreams -= 1;
+      logLine(`turn end ${budget.summary()} tokens_in=${inputTokens} tokens_out=${outputTokens}${turnError ? " error=1" : ""}${budget.usage.exceeded.length ? " exceeded=1" : ""}`);
+      raw.end();
     }
-    send({ type: "done" });
-  } catch (error62) {
-    const message = error62 instanceof Error ? error62.message : String(error62);
-    request.log.error({ err: error62 }, "agent stream failed");
-    send({ type: "error", message: timedOut ? "\u5904\u7406\u8D85\u65F6\uFF0C\u5DF2\u4E2D\u65AD" : message });
-  } finally {
-    finished = true;
-    clearTimeout(turnTimer);
-    reply.raw.off("close", onClientClose);
-    activeStreams -= 1;
-    raw.end();
-  }
+  });
 });
 app.post("/config/check", async (request, reply) => {
   const body = request.body;
@@ -155200,6 +156143,14 @@ function withTimeout(p, ms, message) {
       reject(err);
     });
   });
+}
+function safeParseObject(text) {
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
 }
 function extractText(content) {
   if (typeof content === "string")

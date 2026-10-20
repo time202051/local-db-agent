@@ -238,7 +238,12 @@ Vue.use(OlCom, {
 | `llmBaseUrl` | `https://api.deepseek.com/v1` | 大模型地址 |
 | `llmModel` | `deepseek-chat` | 模型名 |
 | `llmTimeoutSec` | 60 | 大模型调用超时 |
-| `recursionLimit` | 12 | agent 最大工具循环次数 |
+| `recursionLimit` | 80 | agent 最大工具循环次数 |
+| `maxSqlQueries` | 6 | 单轮 SQL 查询次数上限（超出后提示模型收尾，不抛错） |
+| `maxSchemaCalls` | 6 | 单轮表结构查询次数上限（list_tables + get_table_schema） |
+| `maxResultChars` | 8000 | 单次工具结果字符数上限（超出按行截断） |
+| `maxTotalToolChars` | 40000 | 单轮所有工具输出字符数上限 |
+| `maxOutputTokens` | 8000 | 单次大模型输出 token 上限 |
 | `turnTimeoutSec` | 120 | 单轮对话总时长 |
 | `maxConcurrent` | 3 | 并发会话上限 |
 | `summaryTriggerTokens` | 6000 | 触发历史摘要的 token 阈值 |

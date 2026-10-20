@@ -44,11 +44,17 @@ const DEFAULTS = {
     llmBaseUrl: 'https://api.deepseek.com/v1',
     llmModel: 'deepseek-chat',
     llmTimeoutSec: 60,
-    recursionLimit: 12,
+    recursionLimit: 80,
     turnTimeoutSec: 120,
     maxConcurrent: 3,
     summaryTriggerTokens: 6000,
     summaryKeepMessages: 12,
+    // 单轮预算：防止海量数据被反复查询、把上下文和 token 撑爆
+    maxSqlQueries: 6,
+    maxSchemaCalls: 6,
+    maxResultChars: 8000,
+    maxTotalToolChars: 40000,
+    maxOutputTokens: 8000,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
 export class ConfigError extends Error {
@@ -145,7 +151,23 @@ export function resolveRequestConfig(raw) {
     const maxConcurrent = Math.max(1, num(lim.maxConcurrent, DEFAULTS.maxConcurrent));
     const summaryTriggerTokens = Math.max(500, num(lim.summaryTriggerTokens, DEFAULTS.summaryTriggerTokens));
     const summaryKeepMessages = Math.max(1, num(lim.summaryKeepMessages, DEFAULTS.summaryKeepMessages));
-    const key = hashKey(JSON.stringify({ db, llm, recursionLimit, summaryTriggerTokens, summaryKeepMessages }));
+    const maxSqlQueries = Math.max(1, num(lim.maxSqlQueries, DEFAULTS.maxSqlQueries));
+    const maxSchemaCalls = Math.max(1, num(lim.maxSchemaCalls, DEFAULTS.maxSchemaCalls));
+    const maxResultChars = Math.max(1000, num(lim.maxResultChars, DEFAULTS.maxResultChars));
+    const maxTotalToolChars = Math.max(2000, num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars));
+    const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+    const key = hashKey(JSON.stringify({
+        db,
+        llm,
+        recursionLimit,
+        summaryTriggerTokens,
+        summaryKeepMessages,
+        maxSqlQueries,
+        maxSchemaCalls,
+        maxResultChars,
+        maxTotalToolChars,
+        maxOutputTokens,
+    }));
     return {
         db,
         llm,
@@ -154,6 +176,11 @@ export function resolveRequestConfig(raw) {
         maxConcurrent,
         summaryTriggerTokens,
         summaryKeepMessages,
+        maxSqlQueries,
+        maxSchemaCalls,
+        maxResultChars,
+        maxTotalToolChars,
+        maxOutputTokens,
         key,
     };
 }
