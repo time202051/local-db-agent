@@ -1,8 +1,10 @@
 import Fastify from 'fastify';
+import { Command } from '@langchain/langgraph';
 import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { countTokensApproximately } from 'langchain';
 import { serverConfig, describeDb, resolveRequestConfig } from './config.js';
 import type { RequestConfigInput, ResolvedConfig } from './config.js';
-import { getRuntime, pingModel } from './runtime.js';
+import { buildSystemPrompt, getRuntime, pingModel } from './runtime.js';
 import { VISUAL_TOOL_NAMES } from './tools.js';
 import { closeAllPools, pingDatabase } from './db.js';
 import { decryptConfigPayload, handshake } from './crypto.js';
@@ -107,6 +109,7 @@ app.post('/chat/stream', async (request, reply) => {
   raw.writeHead(200, SSE_HEADERS);
 
   const send = (payload: unknown) => {
+    if (raw.writableEnded || raw.destroyed) return;
     raw.write(`data: ${JSON.stringify(payload)}\n\n`);
   };
   const fail = (message: string) => {
@@ -208,52 +211,76 @@ app.post('/chat/stream', async (request, reply) => {
     maxResultChars: resolved.maxResultChars,
     maxTotalToolChars: resolved.maxTotalToolChars,
   });
-  let inputTokens = 0;
-  let outputTokens = 0;
   let turnError = '';
+  const turnStartedAt = Date.now();
+  const bridge = createTurnBridge({ send, resolved, budget, turnStartedAt });
+  const threadId = resolved.requireSqlApproval
+    ? `${body.conversationId || 'anonymous'}:${Date.now().toString(36)}:${Math.random()
+        .toString(36)
+        .slice(2, 8)}`
+    : undefined;
+
   logLine(`turn start model=${resolved.llm.model}`);
+
+  const heartbeat = setInterval(() => {
+    send({ type: 'heartbeat', ts: Date.now() });
+  }, 15000);
+
+  let agent: ReturnType<typeof getRuntime> | null = null;
 
   await runWithBudget(budget, async () => {
   try {
-    const agent = getRuntime(resolved);
+    agent = getRuntime(resolved);
+
+    // 用 LangChain 自带的近似 token 统计判断本轮是否会触发摘要。
+    // 只用于给前端一个轻量提示，不参与上下文裁剪。
+    const approxTokens = countTokensApproximately([
+      new SystemMessage(buildSystemPrompt(resolved)),
+      ...messages,
+    ]);
+    if (approxTokens >= resolved.summaryTriggerTokens) {
+      logLine(`context summary expected tokens~${approxTokens}`);
+      send({ type: 'status', message: '上下文较长，正在压缩…' });
+    }
+
+    // LangChain 的 summarizationMiddleware 会给内部摘要调用打 nostream 标签；
+    // 用 streamEvents 自带的 excludeTags 过滤，不把内部摘要转发给用户。
+    const streamConfig: Record<string, unknown> = {
+      version: 'v2',
+      recursionLimit: resolved.recursionLimit,
+      signal: controller.signal,
+    };
+    if (threadId) streamConfig.configurable = { thread_id: threadId };
     const stream = await agent.streamEvents(
       { messages },
-      { version: 'v2', recursionLimit: resolved.recursionLimit, signal: controller.signal },
+      streamConfig,
+      { excludeTags: ['nostream'] },
     );
 
     for await (const event of stream) {
-      if (event.event === 'on_chat_model_stream') {
-        const chunk = event.data?.chunk as { content?: unknown } | undefined;
-        const text = extractText(chunk?.content);
-        if (text) send({ type: 'token', content: text });
-      } else if (event.event === 'on_tool_start') {
-        send({
-          type: 'tool_start',
-          name: event.name,
-          input: (event.data as { input?: unknown })?.input,
-        });
-      } else if (event.event === 'on_tool_end') {
-        const output = extractText((event.data as { output?: unknown })?.output);
-        const spec = VISUAL_TOOL_NAMES.has(event.name) ? safeParseObject(output) : null;
-        if (spec) {
-          // 可视化工具有效 → 作为独立的 visual 事件下发，前端直接渲染组件
-          send({ type: 'visual', ...spec });
-        } else {
-          send({ type: 'tool_result', name: event.name, output });
-        }
-      } else if (event.event === 'on_chat_model_end') {
-        const usage = (event.data?.output as {
-          usage_metadata?: { input_tokens?: number; output_tokens?: number };
-        })?.usage_metadata;
-        if (usage) {
-          inputTokens += usage.input_tokens || 0;
-          outputTokens += usage.output_tokens || 0;
-        }
+      bridge.handle(event as StreamEventLike);
+    }
+
+    if (agent && threadId) {
+      const interrupts = await collectInterrupts(agent, threadId);
+      if (interrupts.length) {
+        bridge.sendEnrichment();
+        send({ type: 'interrupt', threadId, interrupts });
+        return;
       }
     }
 
+    bridge.sendEnrichment();
     send({ type: 'done' });
   } catch (error) {
+    if (agent && threadId) {
+      const interrupts = await collectInterrupts(agent, threadId);
+      if (interrupts.length) {
+        bridge.sendEnrichment();
+        send({ type: 'interrupt', threadId, interrupts });
+        return;
+      }
+    }
     const rawMessage = error instanceof Error ? error.message : String(error);
     const message = timedOut
       ? '处理超时，已中断'
@@ -263,18 +290,156 @@ app.post('/chat/stream', async (request, reply) => {
     turnError = rawMessage;
     request.log.error({ err: error }, 'agent stream failed');
     logLine(`turn error ${rawMessage}`);
+    bridge.sendEnrichment();
     send({ type: 'error', message });
   } finally {
     finished = true;
     clearTimeout(turnTimer);
+    clearInterval(heartbeat);
     raw.off('close', onClientClose);
     activeStreams -= 1;
     logLine(
-      `turn end ${budget.summary()} tokens_in=${inputTokens} tokens_out=${outputTokens}` +
-        `${turnError ? ' error=1' : ''}${budget.usage.exceeded.length ? ' exceeded=1' : ''}`,
+      `turn end ${budget.summary()}${turnError ? ' error=1' : ''}` +
+        `${budget.usage.exceeded.length ? ' exceeded=1' : ''}`,
     );
     raw.end();
   }
+  });
+});
+
+// SQL 审批恢复：配合 /chat/stream 的 interrupt 事件，用 LangChain Command 继续执行
+app.post('/chat/resume', async (request, reply) => {
+  const body = request.body as
+    | {
+        threadId?: string;
+        decisions?: unknown[];
+        config?: RequestConfigInput;
+        configEnc?: ConfigEncPayload;
+      }
+    | undefined;
+
+  reply.hijack();
+  const raw = reply.raw;
+  raw.writeHead(200, SSE_HEADERS);
+
+  const send = (payload: unknown) => {
+    if (raw.writableEnded || raw.destroyed) return;
+    raw.write(`data: ${JSON.stringify(payload)}\n\n`);
+  };
+  const fail = (message: string) => {
+    send({ type: 'error', message });
+    raw.end();
+  };
+
+  if (!body || typeof body.threadId !== 'string' || !body.threadId.trim()) {
+    fail('缺少 threadId，无法恢复审批');
+    return;
+  }
+  if (!Array.isArray(body.decisions) || !body.decisions.length) {
+    fail('缺少审批结果 decisions');
+    return;
+  }
+
+  let resolved: ResolvedConfig;
+  try {
+    resolved = resolveOrThrow(configFromBody(body));
+  } catch (e) {
+    fail(e instanceof Error ? e.message : String(e));
+    return;
+  }
+  if (!resolved.requireSqlApproval) {
+    fail('当前未启用 SQL 审批');
+    return;
+  }
+  if (activeStreams >= resolved.maxConcurrent) {
+    fail('当前会话过多，请稍后再试');
+    return;
+  }
+
+  const controller = new AbortController();
+  let timedOut = false;
+  let finished = false;
+  const turnTimer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, resolved.turnTimeoutMs);
+  const onClientClose = () => {
+    if (!finished) controller.abort();
+  };
+  raw.on('close', onClientClose);
+  activeStreams += 1;
+
+  const budget = new TurnBudget({
+    maxSqlQueries: resolved.maxSqlQueries,
+    maxSchemaCalls: resolved.maxSchemaCalls,
+    maxResultChars: resolved.maxResultChars,
+    maxTotalToolChars: resolved.maxTotalToolChars,
+  });
+  const bridge = createTurnBridge({
+    send,
+    resolved,
+    budget,
+    turnStartedAt: Date.now(),
+  });
+  const heartbeat = setInterval(() => {
+    send({ type: 'heartbeat', ts: Date.now() });
+  }, 15000);
+  let turnError = '';
+
+  await runWithBudget(budget, async () => {
+    try {
+      const agent = getRuntime(resolved);
+      const stream = await agent.streamEvents(
+        new Command({ resume: { decisions: body.decisions } }),
+        {
+          version: 'v2',
+          recursionLimit: resolved.recursionLimit,
+          signal: controller.signal,
+          configurable: { thread_id: body.threadId },
+        },
+        { excludeTags: ['nostream'] },
+      );
+      for await (const event of stream) {
+        bridge.handle(event as StreamEventLike);
+      }
+
+      const interrupts = await collectInterrupts(agent, body.threadId as string);
+      bridge.sendEnrichment();
+      if (interrupts.length) {
+        send({ type: 'interrupt', threadId: body.threadId, interrupts });
+      } else {
+        send({ type: 'done' });
+      }
+    } catch (error) {
+      const interrupts = await collectInterrupts(
+        getRuntime(resolved),
+        body.threadId as string,
+      ).catch(() => []);
+      if (interrupts.length) {
+        bridge.sendEnrichment();
+        send({ type: 'interrupt', threadId: body.threadId, interrupts });
+        return;
+      }
+      const rawMessage = error instanceof Error ? error.message : String(error);
+      const message = timedOut
+        ? '处理超时，已中断'
+        : /recursion limit/i.test(rawMessage)
+          ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
+          : rawMessage;
+      turnError = rawMessage;
+      request.log.error({ err: error }, 'agent resume failed');
+      logLine(`resume error ${rawMessage}`);
+      bridge.sendEnrichment();
+      send({ type: 'error', message });
+    } finally {
+      finished = true;
+      clearTimeout(turnTimer);
+      clearInterval(heartbeat);
+      raw.off('close', onClientClose);
+      activeStreams = Math.max(0, activeStreams - 1);
+      logLine(`resume end ${budget.summary()}${turnError ? ' error=1' : ''}`);
+      raw.end();
+    }
   });
 });
 
@@ -306,9 +471,12 @@ app.post('/config/check', async (request, reply) => {
     const ping = await withTimeout(pingDatabase(resolved.db), 12000, '数据库连接超时');
     result.db = {
       ok: true,
+      type: resolved.db.type,
       target: describeDb(resolved.db),
       database: ping.database,
       tableCount: ping.tableCount,
+      ...(ping.version ? { version: ping.version } : {}),
+      ...(ping.readOnly !== undefined ? { readOnly: ping.readOnly } : {}),
     };
   } catch (e) {
     result.db = {
@@ -365,6 +533,90 @@ function safeParseObject(text: string): Record<string, unknown> | null {
   }
 }
 
+const TOOL_LABELS: Record<string, string> = {
+  list_tables: '浏览数据表',
+  get_table_schema: '查看表结构',
+  run_sql: '执行查询',
+  render_report: '生成分析报表',
+  render_html_report: '生成 HTML 报告',
+  render_chart: '生成图表',
+};
+
+function toolLabel(name: string): string {
+  return TOOL_LABELS[name] || name;
+}
+
+/** 工具入参里可能带整份 HTML/CSS，SSE 只下发页面真正需要的轻量字段。 */
+function compactToolInput(name: string, input: unknown): unknown {
+  if (!input || typeof input !== 'object') return undefined;
+  const raw = input as Record<string, unknown>;
+  if (name === 'run_sql') return { sql: raw.sql };
+  if (name === 'get_table_schema') return { table: raw.table };
+  if (name === 'list_tables') return { keyword: raw.keyword || '' };
+  return undefined;
+}
+
+interface ToolSummary {
+  success: boolean;
+  rowCount: number;
+  truncated: boolean;
+  columns: number;
+  tableCount: number;
+  table: string;
+  component: string;
+  title: string;
+  template: string;
+  layout: string;
+  visualStyle: string;
+  warnings: string[];
+  error: string;
+}
+
+function summarizeToolOutput(name: string, output: string): ToolSummary {
+  const parsed = safeParseObject(output) || {};
+  const warnings = Array.isArray(parsed.warnings)
+    ? parsed.warnings.map(item => String(item)).filter(Boolean)
+    : [];
+  const summary: ToolSummary = {
+    success: parsed.success !== false,
+    rowCount: 0,
+    truncated: parsed.truncated === true,
+    columns: 0,
+    tableCount: 0,
+    table: '',
+    component: '',
+    title: '',
+    template: '',
+    layout: '',
+    visualStyle: '',
+    warnings,
+    error: typeof parsed.error === 'string' ? parsed.error : '',
+  };
+
+  if (name === 'run_sql') {
+    summary.rowCount = Number(parsed.rowCount) || (Array.isArray(parsed.rows) ? parsed.rows.length : 0);
+    summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
+    summary.truncated = parsed.truncated === true;
+  } else if (name === 'get_table_schema') {
+    summary.table = typeof parsed.table === 'string' ? parsed.table : '';
+    summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
+  } else if (name === 'list_tables') {
+    summary.tableCount = Number(parsed.tableCount) || 0;
+  } else if (
+    name === 'render_report' ||
+    name === 'render_html_report' ||
+    name === 'render_chart'
+  ) {
+    summary.component = typeof parsed.component === 'string' ? parsed.component : '';
+    summary.title = typeof parsed.title === 'string' ? parsed.title : '';
+    summary.template = typeof parsed.template === 'string' ? parsed.template : '';
+    summary.layout = typeof parsed.layout === 'string' ? parsed.layout : '';
+    summary.visualStyle = typeof parsed.visualStyle === 'string' ? parsed.visualStyle : '';
+  }
+
+  return summary;
+}
+
 function extractText(content: unknown): string {
   if (typeof content === 'string') return content;
   if (Array.isArray(content)) {
@@ -382,6 +634,205 @@ function extractText(content: unknown): string {
     return extractText((content as { content: unknown }).content);
   }
   return '';
+}
+
+interface StreamEventLike {
+  event: string;
+  name?: string;
+  run_id?: string;
+  data?: Record<string, unknown>;
+}
+
+interface TurnBridgeOptions {
+  send: (payload: unknown) => void;
+  resolved: ResolvedConfig;
+  budget: TurnBudget;
+  turnStartedAt: number;
+}
+
+/** 把 LangChain 的 streamEvents 统一映射成前端 SSE 事件（普通对话与 HITL 恢复共用）。 */
+function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeOptions) {
+  const toolStarts = new Map<string, { name: string; startedAt: number }>();
+  const tablesUsed = new Set<string>();
+  const dataWarnings = new Set<string>();
+  let inputTokens = 0;
+  let outputTokens = 0;
+  let totalRowCount = 0;
+  let anyTruncated = false;
+  let lastReportSpec: Record<string, unknown> | null = null;
+
+  const addUsage = (usage?: { input_tokens?: number; output_tokens?: number }) => {
+    if (!usage) return;
+    inputTokens += usage.input_tokens || 0;
+    outputTokens += usage.output_tokens || 0;
+  };
+
+  const reportMeta = () => {
+    if (!lastReportSpec) return null;
+    return {
+      component: lastReportSpec.component,
+      title: lastReportSpec.title,
+      template: lastReportSpec.template,
+      layout: lastReportSpec.layout,
+      visualStyle: lastReportSpec.visualStyle,
+      period: lastReportSpec.period,
+      scope: lastReportSpec.scope,
+      sources: lastReportSpec.sources,
+      warnings: lastReportSpec.warnings,
+    };
+  };
+
+  const sendEnrichment = () => {
+    const elapsedMs = Date.now() - turnStartedAt;
+    send({ type: 'usage', model: resolved.llm.model, inputTokens, outputTokens, elapsedMs });
+    send({
+      type: 'meta',
+      elapsedMs,
+      queries: budget.usage.sqlQueries,
+      schemaCalls: budget.usage.schemaCalls,
+      rowCount: totalRowCount,
+      truncated: anyTruncated,
+      tables: Array.from(tablesUsed),
+      warnings: Array.from(dataWarnings),
+      report: reportMeta(),
+    });
+  };
+
+  const handle = (event: StreamEventLike) => {
+    if (event.event === 'on_chat_model_stream') {
+      const chunk = event.data?.chunk as { content?: unknown } | undefined;
+      const text = extractText(chunk?.content);
+      if (text) send({ type: 'token', content: text });
+      return;
+    }
+    if (event.event === 'on_tool_start') {
+      const name = event.name || 'tool';
+      const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
+      const input = event.data?.input;
+      const startedAt = Date.now();
+      toolStarts.set(runId, { name, startedAt });
+      if (name === 'get_table_schema') {
+        const table = (input as { table?: unknown } | undefined)?.table;
+        if (typeof table === 'string' && table.trim()) tablesUsed.add(table.trim());
+      }
+      send({
+        type: 'tool_start',
+        id: runId,
+        name,
+        label: toolLabel(name),
+        input: compactToolInput(name, input),
+        startedAt,
+      });
+      return;
+    }
+    if (event.event === 'on_tool_end') {
+      const name = event.name || 'tool';
+      const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
+      const output = extractText(event.data?.output);
+      const summary = summarizeToolOutput(name, output);
+      const started = toolStarts.get(runId);
+      if (summary.table) tablesUsed.add(summary.table);
+      if (name === 'run_sql') {
+        totalRowCount += summary.rowCount;
+        if (summary.truncated) anyTruncated = true;
+      }
+      summary.warnings.forEach(item => dataWarnings.add(item));
+
+      const isVisual = VISUAL_TOOL_NAMES.has(name);
+      const spec = isVisual ? safeParseObject(output) : null;
+      if (spec) {
+        lastReportSpec = spec;
+        const specWarnings = Array.isArray(spec.warnings) ? spec.warnings : [];
+        specWarnings.forEach(item => dataWarnings.add(String(item)));
+      }
+      const visualError = isVisual && !spec ? '可视化结果解析失败' : '';
+      send({
+        type: 'tool_end',
+        id: runId,
+        name,
+        label: toolLabel(name),
+        ok: summary.success && !visualError,
+        durationMs: started ? Date.now() - started.startedAt : undefined,
+        summary: {
+          rowCount: summary.rowCount,
+          truncated: summary.truncated,
+          columns: summary.columns,
+          tableCount: summary.tableCount,
+          table: summary.table,
+          component: summary.component,
+          title: summary.title,
+          template: summary.template,
+          layout: summary.layout,
+          visualStyle: summary.visualStyle,
+          warnings: summary.warnings,
+          error: summary.error || visualError,
+        },
+      });
+      if (spec) {
+        send({ type: 'visual', ...spec, toolId: runId });
+      } else if (isVisual) {
+        send({
+          type: 'tool_result',
+          id: runId,
+          name,
+          output: JSON.stringify({ success: false, error: visualError }),
+        });
+      } else {
+        send({ type: 'tool_result', id: runId, name, output });
+      }
+      return;
+    }
+    if (event.event === 'on_tool_error') {
+      const name = event.name || 'tool';
+      const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
+      const started = toolStarts.get(runId);
+      const rawError = event.data?.error;
+      const message =
+        rawError instanceof Error
+          ? rawError.message || '工具执行失败'
+          : typeof rawError === 'string' && rawError
+            ? rawError
+            : '工具执行失败';
+      send({
+        type: 'tool_end',
+        id: runId,
+        name,
+        label: toolLabel(name),
+        ok: false,
+        durationMs: started ? Date.now() - started.startedAt : undefined,
+        summary: { error: message },
+      });
+      return;
+    }
+    if (event.event === 'on_chat_model_end') {
+      addUsage(
+        (event.data?.output as {
+          usage_metadata?: { input_tokens?: number; output_tokens?: number };
+        })?.usage_metadata,
+      );
+    }
+  };
+
+  return { handle, sendEnrichment };
+}
+
+async function collectInterrupts(
+  agent: ReturnType<typeof getRuntime>,
+  threadId: string,
+): Promise<Array<{ id: string; value: unknown }>> {
+  try {
+    const graph = agent.graph as unknown as {
+      getState: (config: unknown) => Promise<{
+        tasks?: Array<{ interrupts?: Array<{ id: string; value: unknown }> }>;
+      }>;
+    };
+    const state = await graph.getState({ configurable: { thread_id: threadId } });
+    const tasks = Array.isArray(state.tasks) ? state.tasks : [];
+    const interrupts = tasks.flatMap(task => (Array.isArray(task.interrupts) ? task.interrupts : []));
+    return interrupts.map(item => ({ id: item.id, value: item.value }));
+  } catch {
+    return [];
+  }
 }
 
 async function shutdown(signal: string): Promise<void> {

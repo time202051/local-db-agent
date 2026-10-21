@@ -3,27 +3,39 @@ agent-local 部署说明（方案A：装在每台用户电脑）
 
 一、前置条件
 1. Windows x64
-2. 安装 "ODBC Driver 17 for SQL Server"
-   - 一般已随 SQL Server/Office 安装；没有则到微软官网下载安装
-   - 验证：控制面板 → ODBC 数据源 → 驱动程序，能看到 ODBC Driver 17 for SQL Server
+2. 按数据库类型准备驱动：
+   - SQL Server：安装 "ODBC Driver 17 for SQL Server"（一般已随 SQL Server/Office 安装）
+   - KingbaseES（PG 模式）：无需安装 ODBC，只需能连通数据库端口（如 20036）
 
-二、配置
-  1) .env 里只需要配"端口/监听地址"两项：
+二、配置（全部在前端，agent 端不用配数据库）
+  1) .env 里只需要配"端口/监听地址"两项（不建也能用默认值）：
        PORT=52310
        HOST=127.0.0.1     # 仅本机；要让局域网访问改成 0.0.0.0
-  2) 数据库与大模型在接入的页面里、注册组件库时下发：
+  2) 数据库与大模型在接入的页面里、注册组件库时下发（随 configEnc 加密传输）：
        Vue.use(OlCom, {
          agentChat: {
            agentBaseUrl: 'http://127.0.0.1:52310',
-           db: { server: 'IP,端口', database: '库名', user: '只读账号', password: '密码' },
+            db: {
+              type: 'kingbase',          // 'sqlserver'（默认）| 'kingbase'
+              server: 'IP,20036',        // 统一写 "host,port"
+              database: '库名',
+              user: '账号',
+              password: '密码',
+              schemas: ['public'],       // 只展示这些 schema（SQL Server 默认全部）
+              hiddenTables: [],          // 不在 list_tables 显示的表，支持 *
+              blockedTables: [],         // 拒绝查询的表
+              profile: 'wms',            // 'wms' | 'generic'
+              businessPrompt: '',        // 追加业务口径/表说明
+            },
            llm: { apiKey: '密钥', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
          },
        })
+     切回 SQL Server 只改 db（server 写法一致）：
+           db: { type: 'sqlserver', server: 'IP,60001', database: '库名', user: '账号', password: '密码' }
   说明：
-    - 强烈建议用"只读账号"（见随附 db-scripts 脚本）。
-    - 数据库若为 Windows 集成认证，改用 trusted: true，不要填 user/password。
-    - 安全提示：下发到页面意味着"能打开页面的人都能看到这些凭据"；
-      务必用只读账号，并把 HOST 设为 127.0.0.1（凭据不出本机）。
+    - agent 端不保存数据库配置；换库只改前端，不用重新打包 agent。
+    - SQL Server 若为 Windows 集成认证，改用 trusted: true，不要填 user/password。
+    - 金仓默认强制只读会话；建议业务上仍使用专用账号。
     - 组件打开时会自动做一次连接自检，失败会在面板顶部给出人话提示。
 
 三、一键安装（推荐）

@@ -659,7 +659,7 @@ export const HTML_REPORT_TOOL_DESCRIPTION =
   '这些会渲染到报告页脚和数据质量提示里。' +
   '\n10) 本工具不会因为格式问题失败：表格列数不一致、图表缺 option 会由前端兜底并显示为“数据质量提示”，' +
   '你不需要反复重试或重新生成整份报告。' +
-  '\n11) 数据库可能很大：优先用聚合 SQL（GROUP BY / SUM / COUNT / TOP），不要拉全量明细；' +
+  '\n11) 数据库可能很大：优先用聚合 SQL（GROUP BY / SUM / COUNT 等聚合），不要拉全量明细；' +
   '整份报告的 SQL 查询尽量控制在 3~5 次以内，一次 SQL 尽量同时取回多个指标。' +
   "\ncomponent 固定为 ${HTML_REPORT_COMPONENT}。";
 

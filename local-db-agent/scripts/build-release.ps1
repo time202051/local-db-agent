@@ -93,11 +93,12 @@ Copy-Item (Join-Path $appDir 'packaging\README-deploy.txt') $outDir
 
 # Minimal package.json: only the native module needed at runtime, so npm installs
 # a few hundred files instead of tens of thousands.
-$msnodesqlVersion = (Get-Content (Join-Path $appDir 'package.json') -Raw | ConvertFrom-Json).dependencies.msnodesqlv8
+$appPkg = Get-Content (Join-Path $appDir 'package.json') -Raw | ConvertFrom-Json
+$msnodesqlVersion = $appPkg.dependencies.msnodesqlv8
 $minimalPkg = @"
 {
   "name": "agent-local",
-  "version": "1.0.0",
+  "version": "$($appPkg.version)",
   "private": true,
   "type": "module",
   "dependencies": { "msnodesqlv8": "$msnodesqlVersion" }

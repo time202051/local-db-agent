@@ -11,7 +11,7 @@ await build({
   platform: "node",
   target: "node22",
   format: "esm",
-  external: ["msnodesqlv8"],
+  external: ["msnodesqlv8", "pg-native"],
   banner: {
     js: "import{createRequire}from'module';const require=createRequire(import.meta.url);",
   },

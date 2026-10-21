@@ -1,141 +1,36 @@
-2026-10-20T16:22:58.723Z turn start model=deepseek-chat
-2026-10-20T16:23:00.012Z tool list_tables ok tables=70 chars=2970
-2026-10-20T16:23:01.408Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T16:23:01.434Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T16:23:01.440Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T16:23:01.450Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=537
-2026-10-20T16:23:02.851Z tool get_table_schema blocked: 本次分析的表结构查询次数已达上限（6 次）。请用已经了解到的字段继续，或者直接向用户说明无法继续查询。
-2026-10-20T16:23:02.854Z tool get_table_schema blocked: 本次分析的表结构查询次数已达上限（6 次）。请用已经了解到的字段继续，或者直接向用户说明无法继续查询。
-2026-10-20T16:23:02.962Z tool get_table_schema ok table=CORE_StockDetail columns=10 chars=609
-2026-10-20T16:23:04.411Z tool run_sql ok rows=5 chars=861 elapsed=239ms
-2026-10-20T16:23:06.436Z tool run_sql ok rows=9 chars=664 elapsed=232ms
-2026-10-20T16:23:07.887Z tool run_sql ok rows=2 chars=325 elapsed=247ms
-2026-10-20T16:23:09.717Z tool run_sql ok rows=10 chars=678 elapsed=279ms
-2026-10-20T16:23:10.942Z tool run_sql ok rows=1 chars=293 elapsed=131ms
-2026-10-20T16:23:12.632Z tool run_sql ok rows=4 chars=324 elapsed=103ms
-2026-10-20T16:23:14.001Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T16:23:35.577Z tool render_html_report ok warnings=8 elements=report-cover,timeline,finding-list,pull-quote,action-list,report-appendix,hero-kpi charts=line,pie ["库内无成本单价字段 | 库存金额 | 库存周转率（成本口径）无法计算" | "库内无计划发运时间与作业时效配置 | 出库及时率 | 拣货及时率 | 发货准时率无法计算" | "库内无库位容量与出勤人力数据
-2026-10-20T16:23:40.658Z turn end queries=6/6 schema=6/6 chars=9742/40000 elapsed=41.9s tokens_in=206787 tokens_out=9069 exceeded=1
-2026-10-20T16:24:29.343Z turn start model=deepseek-chat
-2026-10-20T16:24:30.511Z tool list_tables ok tables=70 chars=2970
-2026-10-20T16:24:31.696Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T16:24:31.756Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T16:24:31.764Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=537
-2026-10-20T16:24:32.612Z tool get_table_schema blocked: 本次分析的表结构查询次数已达上限（6 次）。请用已经了解到的字段继续，或者直接向用户说明无法继续查询。
-2026-10-20T16:24:32.704Z tool get_table_schema ok table=CORE_StockDetail columns=10 chars=609
-2026-10-20T16:24:32.722Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T16:24:33.154Z turn error This operation was aborted
-2026-10-20T16:24:33.154Z turn end queries=0/6 schema=6/6 chars=6597/40000 elapsed=3.8s tokens_in=41255 tokens_out=255 error=1 exceeded=1
-2026-10-20T16:24:43.903Z turn start model=deepseek-chat
-2026-10-20T16:24:45.140Z tool list_tables ok tables=70 chars=2970
-2026-10-20T16:24:46.596Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T16:24:46.601Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T16:24:46.618Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T16:24:46.661Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=537
-2026-10-20T16:24:47.584Z tool get_table_schema blocked: 本次分析的表结构查询次数已达上限（6 次）。请用已经了解到的字段继续，或者直接向用户说明无法继续查询。
-2026-10-20T16:24:47.584Z tool get_table_schema blocked: 本次分析的表结构查询次数已达上限（6 次）。请用已经了解到的字段继续，或者直接向用户说明无法继续查询。
-2026-10-20T16:24:47.740Z tool get_table_schema ok table=CORE_StockDetail columns=10 chars=609
-2026-10-20T16:24:48.712Z tool run_sql ok rows=5 chars=640 elapsed=92ms
-2026-10-20T16:24:50.103Z tool run_sql ok rows=1 chars=135 elapsed=244ms
-2026-10-20T16:24:50.129Z tool run_sql ok rows=2 chars=325 elapsed=271ms
-2026-10-20T16:24:51.881Z tool run_sql ok rows=9 chars=644 elapsed=337ms
-2026-10-20T16:24:51.891Z tool run_sql ok rows=2 chars=224 elapsed=346ms
-2026-10-20T16:24:53.094Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T16:24:53.254Z tool run_sql ok rows=1 chars=174 elapsed=160ms
-2026-10-20T16:25:12.201Z tool render_html_report ok warnings=4 elements=report-cover,pull-quote,timeline,finding-list,so-what,action-list,report-appendix charts=line 库存快照、库龄、及时率/准确率相关表未在本次查询预算内取到，报告不含这些指标 | 明细表 OwnerID 全为空值，货主维度无法拆分 | 2024-12 为不完整月份（数据截至 12-24），环比不可直接比较 | 无目标值/计划值数据，报告不输出达成率
-2026-10-20T16:25:16.215Z turn end queries=6/6 schema=6/6 chars=8739/40000 elapsed=32.3s tokens_in=152253 tokens_out=7768 exceeded=1
-2026-10-20T16:26:01.011Z turn start model=deepseek-chat
-2026-10-20T16:26:02.146Z tool list_tables ok tables=70 chars=2970
-2026-10-20T16:26:03.010Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T16:26:03.015Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T16:26:04.606Z tool run_sql ok rows=1 chars=233 elapsed=256ms
-2026-10-20T16:26:04.656Z tool run_sql ok rows=10 chars=1431 elapsed=307ms
-2026-10-20T16:26:06.535Z tool run_sql ok rows=10 chars=803 elapsed=282ms
-2026-10-20T16:26:06.609Z tool run_sql ok rows=9 chars=575 elapsed=356ms
-2026-10-20T16:26:08.473Z tool run_sql ok rows=9 chars=1034 elapsed=347ms
-2026-10-20T16:26:08.480Z tool run_sql ok rows=5 chars=380 elapsed=353ms
-2026-10-20T16:26:26.269Z tool render_html_report ok warnings=5 elements=report-cover,pull-quote,timeline,finding-list,action-list,report-appendix charts=line,bar,pie 库内无成本单价字段，库存金额与库存周转率无法计算 | 无库位容量与批次入库日期，库容利用率、库龄结构未纳入 | 无计划发运时间与作业时效配置，及时率/准时率未计算 | 2024-12 数据截至 12-24，为不完整月份 | Outofstock / delayTaskFlag 全为 0，缺货与超时异常无法统计
-2026-10-20T16:26:29.394Z turn end queries=6/6 schema=3/6 chars=9371/40000 elapsed=28.4s tokens_in=123242 tokens_out=7366
-2026-10-20T17:09:56.146Z turn start model=deepseek-chat
-2026-10-20T17:09:57.735Z tool list_tables ok tables=70 chars=2970
-2026-10-20T17:09:58.839Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T17:09:58.885Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T17:09:59.737Z tool get_table_schema ok table=CORE_TaskList columns=13 chars=751
-2026-10-20T17:09:59.745Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T17:10:00.949Z tool run_sql ok rows=1 chars=135 elapsed=304ms
-2026-10-20T17:10:00.962Z tool run_sql ok rows=2 chars=325 elapsed=320ms
-2026-10-20T17:10:03.099Z tool run_sql ok rows=9 chars=515 elapsed=442ms
-2026-10-20T17:10:03.104Z tool run_sql ok rows=2 chars=224 elapsed=447ms
-2026-10-20T17:10:04.493Z tool run_sql error rows=0 chars=169 elapsed=96ms
-2026-10-20T17:10:04.554Z tool run_sql ok rows=1 chars=183 elapsed=157ms
-2026-10-20T17:10:05.577Z tool get_table_schema ok table=CORE_Product columns=20 chars=1125
-2026-10-20T17:10:06.666Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:10:06.667Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:10:27.213Z tool render_html_report ok warnings=3 elements=hero-kpi,heat-table,small-multiples,finding-list,so-what,action-list,report-appendix data=3(hero-kpi,heat-table,small-multiples) narrative=4(so-what,finding-list,action-list,report-appendix) sections=6 tables=1 charts=line,bar 及时率、准确率、周转率、库龄、库存金额所需字段（承诺时效、复核差异、成本单价、批次入库日期）在库内未取到，本报告未计算 | 商品维度与 ABC 分类查询超出本次查询预算，未纳入 | 2024-12 为不完整月份（数据截至 12-24）
-2026-10-20T17:10:30.636Z turn end queries=6/6 schema=6/6 chars=8878/40000 elapsed=34.5s tokens_in=171242 tokens_out=8502 exceeded=1
-2026-10-20T17:11:16.239Z turn start model=deepseek-chat
-2026-10-20T17:11:16.978Z tool list_tables ok tables=70 chars=2970
-2026-10-20T17:11:18.280Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T17:11:18.294Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T17:11:19.718Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=537
-2026-10-20T17:11:19.795Z tool run_sql ok rows=5 chars=673 elapsed=173ms
-2026-10-20T17:11:21.743Z tool run_sql ok rows=9 chars=625 elapsed=424ms
-2026-10-20T17:11:21.849Z tool run_sql ok rows=1 chars=202 elapsed=528ms
-2026-10-20T17:11:23.115Z tool run_sql error rows=0 chars=169 elapsed=67ms
-2026-10-20T17:11:23.121Z tool run_sql error rows=0 chars=170 elapsed=72ms
-2026-10-20T17:11:24.177Z tool get_table_schema ok table=CORE_TaskList columns=13 chars=751
-2026-10-20T17:11:24.201Z tool get_table_schema ok table=CORE_Product columns=20 chars=1125
-2026-10-20T17:11:25.583Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:11:25.902Z tool run_sql ok rows=10 chars=643 elapsed=320ms
-2026-10-20T17:11:47.698Z tool render_html_report ok warnings=8 elements=report-cover,hero-kpi,small-multiples,heat-table,top-bottom,finding-list,so-what,action-list,report-appendix data=2(hero-kpi,heat-table) narrative=4(so-what,finding-list,action-list,report-appendix) sections=6 tables=1 charts=line,bar 1) 库内仅 1 个仓库 | 无法做多仓对比 | 2) 无计划/目标表 | 未输出目标达成率 | 3) 无出勤人天数据 | 人效无法计算 | 4) 无成本单价字段 | 库存金额无法计算
-2026-10-20T17:11:51.453Z turn end queries=6/6 schema=6/6 chars=9810/40000 elapsed=35.2s tokens_in=157327 tokens_out=8857 exceeded=1
-2026-10-20T17:12:22.901Z turn start model=deepseek-chat
-2026-10-20T17:12:24.128Z tool list_tables ok tables=70 chars=2970
-2026-10-20T17:12:25.393Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T17:12:25.404Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T17:12:26.669Z tool get_table_schema ok table=CORE_StockDetail columns=10 chars=609
-2026-10-20T17:12:26.700Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T17:12:26.728Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=537
-2026-10-20T17:12:28.207Z tool run_sql ok rows=1 chars=209 elapsed=157ms
-2026-10-20T17:12:28.252Z tool run_sql ok rows=2 chars=325 elapsed=206ms
-2026-10-20T17:12:29.318Z tool run_sql ok rows=3 chars=181 elapsed=170ms
-2026-10-20T17:12:29.343Z tool run_sql ok rows=1 chars=135 elapsed=195ms
-2026-10-20T17:12:30.868Z tool run_sql ok rows=2 chars=224 elapsed=392ms
-2026-10-20T17:12:30.874Z tool run_sql ok rows=9 chars=515 elapsed=398ms
-2026-10-20T17:12:31.963Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:12:31.964Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:12:49.223Z tool render_html_report ok warnings=3 elements=report-cover,hero-kpi,finding-list,so-what,pull-quote,action-list,report-appendix,heat-table data=2(hero-kpi,heat-table) narrative=6(report-cover,so-what,pull-quote,finding-list,action-list,report-appendix) sections=4 tables=1 charts=line 本次为效果演示，SQL 查询次数受限，库存结构、库龄、及时率/准确率、Top 商品等模块未取数，已在报告中标注 | 数据库仅有一个仓库（E），无法做多仓对比 | 及时率/准确率缺少时效配置与复核差异数据，未计算
-2026-10-20T17:12:52.346Z turn end queries=6/6 schema=6/6 chars=8186/40000 elapsed=29.4s tokens_in=151688 tokens_out=6906 exceeded=1
-2026-10-20T17:13:25.836Z turn start model=deepseek-chat
-2026-10-20T17:13:26.707Z tool list_tables ok tables=70 chars=2970
-2026-10-20T17:13:27.819Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T17:13:27.826Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T17:13:27.870Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=537
-2026-10-20T17:13:27.881Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T17:13:28.930Z tool get_table_schema blocked: 本次分析的表结构查询次数已达上限（6 次）。请用已经了解到的字段继续，或者直接向用户说明无法继续查询。
-2026-10-20T17:13:29.062Z tool get_table_schema ok table=CORE_StockDetail columns=10 chars=609
-2026-10-20T17:13:29.089Z tool run_sql ok rows=2 chars=325 elapsed=158ms
-2026-10-20T17:13:30.663Z tool run_sql ok rows=9 chars=704 elapsed=363ms
-2026-10-20T17:13:30.759Z tool run_sql ok rows=1 chars=224 elapsed=457ms
-2026-10-20T17:13:32.774Z tool run_sql ok rows=1 chars=180 elapsed=173ms
-2026-10-20T17:13:32.781Z tool run_sql ok rows=4 chars=329 elapsed=179ms
-2026-10-20T17:13:34.128Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:13:34.560Z tool run_sql ok rows=10 chars=669 elapsed=433ms
-2026-10-20T17:14:00.916Z tool render_html_report ok warnings=5 elements=report-cover,hero-kpi,timeline,heat-table,finding-list,so-what,pull-quote,action-list,report-appendix data=2(hero-kpi,heat-table) narrative=7(report-cover,so-what,timeline,pull-quote,finding-list,action-list,report-appendix) sections=6 tables=1 charts=line,pie 库龄分档以 2024-12-31 为基准日，非实时 | 数据库无成本单价字段，库存金额无法计算 | 无人力出勤数据，人效无法计算 | 无计划/目标表，报告不含目标达成率 | 异常单量（超时/差异）未查询，未纳入本次分析
-2026-10-20T17:14:04.323Z turn end queries=6/6 schema=6/6 chars=9028/40000 elapsed=38.5s tokens_in=145657 tokens_out=10809 exceeded=1
-2026-10-20T17:14:23.234Z turn start model=deepseek-chat
-2026-10-20T17:14:24.486Z tool list_tables ok tables=70 chars=2970
-2026-10-20T17:14:25.847Z tool get_table_schema ok table=CORE_Order columns=12 chars=728
-2026-10-20T17:14:25.878Z tool get_table_schema ok table=CORE_Stock columns=9 chars=536
-2026-10-20T17:14:27.230Z tool get_table_schema ok table=CORE_TaskList columns=13 chars=751
-2026-10-20T17:14:27.254Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1217
-2026-10-20T17:14:28.894Z tool run_sql ok rows=1 chars=202 elapsed=99ms
-2026-10-20T17:14:29.001Z tool run_sql ok rows=10 chars=1431 elapsed=209ms
-2026-10-20T17:14:31.289Z tool run_sql ok rows=1 chars=209 elapsed=310ms
-2026-10-20T17:14:31.309Z tool run_sql ok rows=9 chars=764 elapsed=331ms
-2026-10-20T17:14:33.049Z tool run_sql error rows=0 chars=173 elapsed=69ms
-2026-10-20T17:14:33.225Z tool run_sql ok rows=5 chars=378 elapsed=246ms
-2026-10-20T17:14:34.541Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:14:34.543Z tool run_sql blocked: 本次分析的 SQL 查询次数已达上限（6 次）。请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。
-2026-10-20T17:14:55.211Z tool render_html_report ok warnings=8 elements=report-cover,hero-kpi,finding-list,heat-table,so-what,action-list,report-appendix data=2(hero-kpi,heat-table) narrative=5(report-cover,so-what,finding-list,action-list,report-appendix) sections=5 tables=1 charts=line,bar 1) 库内仅一个仓库（E） | 无法做多仓对比 | 2) 无成本单价字段 | 库存金额与周转率无法计算 | 3) 无计划/目标表 | 报告不含目标达成率 | 4) 及时率 | 准确率缺少时效与差错字段
-2026-10-20T17:14:58.914Z turn end queries=6/6 schema=5/6 chars=9359/40000 elapsed=35.7s tokens_in=157559 tokens_out=8632 exceeded=1
+2026-10-21T13:15:01.383Z turn start model=deepseek-chat
+2026-10-21T13:15:04.065Z tool list_tables ok tables=12 chars=1305
+2026-10-21T13:15:06.180Z tool list_tables ok tables=16 chars=1688
+2026-10-21T13:15:07.816Z tool get_table_schema ok table=public."WMS_Stocks" columns=72 chars=6124
+2026-10-21T13:15:11.187Z tool run_sql ok rows=13 chars=1500 elapsed=1520ms
+2026-10-21T13:15:11.260Z tool run_sql ok rows=1 chars=428 elapsed=1607ms
+2026-10-21T13:15:13.486Z tool run_sql error rows=0 chars=140 elapsed=68ms
+2026-10-21T13:15:14.868Z tool run_sql error rows=0 chars=142 elapsed=1445ms
+2026-10-21T13:15:17.411Z tool get_table_schema ok table=public."SAP_STORAGE_LOCATION" columns=17 chars=1534
+2026-10-21T13:15:17.829Z tool list_tables ok tables=9 chars=926
+2026-10-21T13:15:19.244Z tool get_table_schema ok table=public."WMS_Products" columns=78 chars=5764
+2026-10-21T13:15:24.827Z tool run_sql ok rows=10 chars=2761 elapsed=2831ms
+2026-10-21T13:15:25.330Z tool run_sql ok rows=15 chars=2885 elapsed=3335ms
+2026-10-21T13:15:33.360Z tool run_sql ok rows=5 chars=378 elapsed=1290ms
+2026-10-21T13:15:34.070Z tool run_sql ok rows=10 chars=2300 elapsed=1999ms
+2026-10-21T13:15:41.630Z tool run_sql ok rows=1 chars=212 elapsed=1019ms
+2026-10-21T13:15:42.364Z tool run_sql ok rows=10 chars=2570 elapsed=1757ms
+2026-10-21T13:16:08.287Z turn end queries=10/10 schema=6/8 chars=30657/40000 elapsed=66.9s
+2026-10-21T14:17:54.247Z turn start model=deepseek-chat
+2026-10-21T14:17:55.720Z tool list_tables ok tables=0 chars=51
+2026-10-21T14:17:56.802Z tool list_tables ok tables=0 chars=51
+2026-10-21T14:17:58.008Z tool run_sql error rows=0 chars=166 elapsed=72ms
+2026-10-21T14:17:59.372Z tool run_sql ok rows=70 chars=3769 elapsed=118ms
+2026-10-21T14:18:00.840Z tool get_table_schema ok table=CORE_Order columns=12 chars=732
+2026-10-21T14:18:00.856Z tool get_table_schema ok table=CORE_OrderDetail columns=21 chars=1221
+2026-10-21T14:18:02.733Z tool run_sql ok rows=10 chars=1431 elapsed=302ms
+2026-10-21T14:18:04.312Z tool run_sql ok rows=12 chars=1521 elapsed=133ms
+2026-10-21T14:18:04.378Z tool run_sql ok rows=18 chars=1193 elapsed=199ms
+2026-10-21T14:18:06.617Z tool run_sql ok rows=5 chars=553 elapsed=391ms
+2026-10-21T14:18:06.625Z tool run_sql ok rows=22 chars=1823 elapsed=399ms
+2026-10-21T14:18:08.655Z tool run_sql error rows=0 chars=173 elapsed=55ms
+2026-10-21T14:18:08.915Z tool run_sql ok rows=4 chars=325 elapsed=314ms
+2026-10-21T14:18:10.155Z tool get_table_schema ok table=CORE_WareHouse columns=9 chars=541
+2026-10-21T14:18:11.956Z tool run_sql ok rows=1 chars=222 elapsed=195ms
+2026-10-21T14:18:32.346Z tool render_html_report ok warnings=8 elements=hero-kpi,heat-table,small-multiples,finding-list,so-what,action-list,report-appendix data=2(hero-kpi,heat-table) narrative=4(so-what,finding-list,action-list,report-appendix) sections=4 tables=1 charts=line,bar,pie 1) 数据库最新数据日为 2024-12-24 | 12 月为不完整月份 | 同环比仅作参考 | 2) 12-01 | 12-21 无单据记录 | 12-07 仅 1 单 | 疑为周末/停机 | 3) 12-15 入库件数 41
+2026-10-21T14:18:37.221Z turn end queries=10/10 schema=5/8 chars=13772/40000 elapsed=43.0s

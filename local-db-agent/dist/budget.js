@@ -35,7 +35,7 @@ export class TurnBudget {
             return null;
         if (this.usage.totalChars + chars > this.limits.maxTotalToolChars) {
             return this.deny('本次分析的工具返回内容总量已达上限。' +
-                '请直接基于已有信息回答或生成报告；如果需要更细的数据，请用 SQL 聚合（GROUP BY / TOP）而不是继续拉明细。');
+                '请直接基于已有信息回答或生成报告；如果需要更细的数据，请用 SQL 聚合（GROUP BY / SUM / COUNT）而不是继续拉明细。');
         }
         this.usage.totalChars += chars;
         return null;

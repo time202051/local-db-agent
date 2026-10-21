@@ -1,6 +1,6 @@
 ﻿{
   "name": "agent-local",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "dependencies": { "msnodesqlv8": "^5.6.0" }

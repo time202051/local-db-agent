@@ -7,7 +7,18 @@ if (!connectionString) {
   console.error('请先设置环境变量 DB_CONNECTION_STRING 再运行本脚本');
   process.exit(1);
 }
-const db: DbRuntime = { connectionString, requestTimeoutMs: 15000, costLimit: 30, maxRows: 200 };
+const db: DbRuntime = {
+  type: 'sqlserver',
+  connectionString,
+  requestTimeoutMs: 15000,
+  costLimit: 30,
+  maxRows: 200,
+  schemas: [],
+  hiddenTables: [],
+  blockedTables: [],
+  profile: 'wms',
+  businessPrompt: '',
+};
 
 const sql =
   process.argv[2] ?? 'SELECT COUNT(*) AS c FROM CORE_TaskList a CROSS JOIN CORE_TaskList b';

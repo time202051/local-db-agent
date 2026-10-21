@@ -1,16 +1,25 @@
 import { ChatOpenAI } from '@langchain/openai';
-import { createAgent, summarizationMiddleware } from 'langchain';
+import { MemorySaver } from '@langchain/langgraph';
+import {
+  createAgent,
+  humanInTheLoopMiddleware,
+  summarizationMiddleware,
+} from 'langchain';
 import type { LlmRuntime, ResolvedConfig } from './config.js';
 import { WMS_METRIC_PROMPT } from './metrics.js';
 import { TEMPLATE_PROMPT } from './templates.js';
 import { CHART_RECIPE_PROMPT } from './visual-spec.js';
 import { createTools } from './tools.js';
 
-export const SYSTEM_PROMPT = `你是一个数据库查询与可视化分析助手，帮助用户用自然语言查询数据库并输出"可汇报"的分析结果。
+const BASE_SYSTEM_PROMPT = `你是一个数据库查询与可视化分析助手，帮助用户用自然语言查询数据库并输出"可汇报"的分析结果。
 
 输出总原则：
 - 始终用中文回答。
 - 只输出最终结论，不要写"我来帮您看看/我正在查询/我调用了什么工具"这类过程旁白。
+- 每次只回答最新一条用户消息，不要复述、总结或罗列之前已经完成的任务、历史统计、工具调用过程。
+- 用户没有明确要求"回顾/总结前面"时，禁止输出"已完成任务""分析中已取得的关键统计""当前任务（新问题）"等章节。
+- 历史摘要只用于理解指代，禁止原样输出；需要引用上文时最多一句话，例如"基于上一轮的到货数据"。
+- 用户明确说"总结一下前面 / 回顾刚才的结论"时，才允许输出历史回顾。
 - 优先用可视化报表表达分析结果，而不是大段文字。用户是在和领导汇报，不是看文档。
 
 可视化规则（重要）：
@@ -42,15 +51,41 @@ export const SYSTEM_PROMPT = `你是一个数据库查询与可视化分析助�
 4. 不要编造数据，一切结论都必须基于工具返回的真实结果。
 5. 如果用户的问题含糊，先提出澄清问题。
 6. 如果工具返回权限或语法错误，用一句人话向用户说明，不要反复重试。
-7. 数据库可能很大：优先用聚合查询（GROUP BY / SUM / COUNT / TOP），不要 SELECT * 拉全量明细；单个问题尽量一次 SQL 取回多个指标。
+7. 数据库可能很大：优先用聚合查询（GROUP BY / SUM / COUNT 等），不要 SELECT * 拉全量明细；单个问题尽量一次 SQL 取回多个指标。行数限制按当前数据库方言使用 LIMIT（金仓）或 TOP（SQL Server）。
 8. 年度/完整报告轮次的预算已放宽到 SQL 10 次、表结构 8 次；报告需要多个口径时，可以查 6~10 次，但每次都要尽量同时取回多个指标。
-9. 同一次对话的查询次数和返回内容都有上限。如果工具返回“已达上限 / 结果过大 / 已截断”的提示，**不要再查询、不要重试**，直接基于已有结果回答或生成报告，并在报告里如实注明数据缺口。
+9. 同一次对话的查询次数和返回内容都有上限。如果工具返回“已达上限 / 结果过大 / 已截断”的提示，**不要再查询、不要重试**，直接基于已有结果回答或生成报告，并在报告里如实注明数据缺口。`;
 
-${WMS_METRIC_PROMPT}
+/** 金仓（PostgreSQL 兼容模式）方言与安全提示。 */
+const KINGBASE_PROMPT = `【当前数据库：KingbaseES（PostgreSQL 兼容模式，只读）】
+- 只允许 SELECT / WITH 查询，禁止任何写操作、DDL、存储过程调用。
+- 标识符区分大小写：表名、列名必须使用双引号，并原样使用工具返回的带引号名称，例如 public."YourTable"、"YourColumn"。
+- 行数限制用 LIMIT，不要使用 TOP；字符串不需要 N 前缀。
+- 日期/时间用 now()、current_date、date_trunc()、to_char()、interval，不要使用 GETDATE/DATEADD/ISNULL。
+- 业务表通常有软删除字段 "IsDeleted"，统计时加 "IsDeleted" = false；字段以 get_table_schema 返回为准。
+- 表/列注释含业务含义；不确定字段时先调用 get_table_schema，不要臆造。`;
 
-${TEMPLATE_PROMPT}
+/** 金仓 WMS 业务提示（profile=wms 时追加）。 */
+const KINGBASE_WMS_PROMPT = `【金仓 WMS 业务提示】
+- 库存流水查 "WMS_StockHistorys" 父表，不要查 _2026xx、_Default、_backup 之类的分区/备份表。
+- 大表（如 "WMS_Stocks"）优先 GROUP BY 聚合，避免 SELECT * 拉全量明细。`;
 
-${CHART_RECIPE_PROMPT}`;
+export function buildSystemPrompt(cfg: ResolvedConfig): string {
+  const isKingbase = cfg.db.type === 'kingbase';
+  const profile = cfg.db.profile;
+  const businessPrompt = cfg.db.businessPrompt;
+
+  const parts = [BASE_SYSTEM_PROMPT];
+  if (isKingbase) parts.push(KINGBASE_PROMPT);
+  if (profile !== 'generic') {
+    parts.push(WMS_METRIC_PROMPT);
+    if (isKingbase) parts.push(KINGBASE_WMS_PROMPT);
+  }
+  parts.push(TEMPLATE_PROMPT, CHART_RECIPE_PROMPT);
+  if (businessPrompt) {
+    parts.push(`【宿主下发的业务口径】\n${businessPrompt}`);
+  }
+  return parts.join('\n\n');
+}
 
 type Agent = ReturnType<typeof createAgent>;
 
@@ -80,19 +115,40 @@ function buildRuntime(cfg: ResolvedConfig): RuntimeEntry {
 
   const tools = createTools(cfg.db);
 
+  // 上下文优化（LangChain 内置）：历史变长时自动把旧对话压成摘要，保留最近消息
+  const middleware: any[] = [
+    summarizationMiddleware({
+      model,
+      trigger: { tokens: cfg.summaryTriggerTokens },
+      keep: { messages: cfg.summaryKeepMessages },
+      summaryPrefix: '【较早对话的摘要】',
+    }),
+  ];
+
+  // 可选：每次执行 SQL 前通过 LangChain 的 Human-in-the-Loop 中间件等待前端确认。
+  // 只在宿主显式开启时启用，默认不影响普通对话。
+  if (cfg.requireSqlApproval) {
+    middleware.push(
+      humanInTheLoopMiddleware({
+        interruptOn: {
+          run_sql: {
+            allowedDecisions: ['approve', 'reject'],
+            description: '执行 SQL 查询前需要确认',
+          },
+        },
+        interruptMode: 'batched',
+        descriptionPrefix: '查询确认',
+      }),
+    );
+  }
+
   const agent = createAgent({
     model,
     tools,
-    systemPrompt: SYSTEM_PROMPT,
-    // 上下文优化（LangChain 内置）：历史变长时自动把旧对话压成摘要，保留最近消息
-    middleware: [
-      summarizationMiddleware({
-        model,
-        trigger: { tokens: cfg.summaryTriggerTokens },
-        keep: { messages: cfg.summaryKeepMessages },
-        summaryPrefix: '【较早对话的摘要】',
-      }),
-    ],
+    systemPrompt: buildSystemPrompt(cfg),
+    middleware,
+    // HITL 需要 checkpointer 才能在中断后恢复执行
+    ...(cfg.requireSqlApproval ? { checkpointer: new MemorySaver() } : {}),
   });
 
   return { agent, lastUsed: Date.now() };

@@ -41,6 +41,7 @@ const DEFAULTS = {
     dbMaxRows: 200,
     dbCommandTimeoutSec: 15,
     dbCostLimit: 30,
+    dbKingbasePort: 54321,
     llmBaseUrl: 'https://api.deepseek.com/v1',
     llmModel: 'deepseek-chat',
     llmTimeoutSec: 60,
@@ -57,6 +58,7 @@ const DEFAULTS = {
     maxResultChars: 8000,
     maxTotalToolChars: 40000,
     maxOutputTokens: 12000,
+    requireSqlApproval: false,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
 export class ConfigError extends Error {
@@ -94,21 +96,25 @@ function buildOdbcString(db) {
     return parts.join(';') + ';';
 }
 function hasAnyDbField(db) {
-    return Boolean(db.connectionString || db.server || db.database || db.user || db.password || db.trusted);
+    return Boolean(db.connectionString ||
+        db.server ||
+        db.host ||
+        db.port ||
+        db.database ||
+        db.user ||
+        db.password ||
+        db.trusted);
+}
+function normalizeStringList(value, fallback) {
+    if (!Array.isArray(value))
+        return fallback;
+    const list = value.map((item) => String(item).trim()).filter(Boolean);
+    return list.length ? Array.from(new Set(list)) : fallback;
 }
 function hashKey(input) {
     return createHash('sha1').update(input).digest('hex');
 }
-/**
- * 校验并归一化前端下发的配置（数据库和大模型都必须由前端提供）。
- * agent 端不再有任何数据库/大模型默认值。
- */
-export function resolveRequestConfig(raw) {
-    const input = raw ?? {};
-    const dbInput = input.db ?? {};
-    const llmInput = input.llm ?? {};
-    const lim = input.limits ?? {};
-    // ---- 数据库（必填，前端下发）----
+function resolveSqlServerDb(dbInput, common) {
     let connectionString;
     if (dbInput.connectionString && dbInput.connectionString.trim()) {
         connectionString = dbInput.connectionString.trim();
@@ -128,6 +134,84 @@ export function resolveRequestConfig(raw) {
     else {
         throw new ConfigError('缺少数据库配置：请在注册组件时传入 db（server/database/user/password 或 connectionString）');
     }
+    return {
+        type: 'sqlserver',
+        connectionString,
+        ...common,
+    };
+}
+function resolveKingbaseDb(dbInput, common) {
+    const rawHost = (dbInput.host ?? dbInput.server ?? '').trim();
+    if (!rawHost) {
+        throw new ConfigError('金仓数据库配置不完整：需要 host（地址）');
+    }
+    let host = rawHost;
+    const portInput = typeof dbInput.port === 'number' ? dbInput.port : Number(dbInput.port);
+    let port = Number.isFinite(portInput) ? portInput : NaN;
+    // 兼容 server: "host,port" 的写法；显式 port 优先
+    const hostPort = /^(.+?),(\d+)$/.exec(rawHost);
+    if (hostPort) {
+        host = hostPort[1].trim();
+        if (!Number.isFinite(port))
+            port = Number(hostPort[2]);
+    }
+    if (!Number.isFinite(port) || port <= 0)
+        port = DEFAULTS.dbKingbasePort;
+    port = Math.min(65535, Math.max(1, Math.floor(port)));
+    if (!/^[\x21-\x7E]+$/.test(host)) {
+        throw new ConfigError('数据库地址格式不正确（host 不能含中文/全角字符/空格）');
+    }
+    const database = (dbInput.database ?? '').trim();
+    const user = (dbInput.user ?? '').trim();
+    const password = dbInput.password ?? '';
+    if (!database)
+        throw new ConfigError('金仓数据库配置不完整：需要 database（库名）');
+    if (!user)
+        throw new ConfigError('金仓数据库配置不完整：需要 user（用户名）');
+    if (!password)
+        throw new ConfigError('金仓数据库配置不完整：需要 password（密码）');
+    return {
+        type: 'kingbase',
+        host,
+        port,
+        database,
+        user,
+        password,
+        ssl: dbInput.ssl === true,
+        ...common,
+    };
+}
+/**
+ * 校验并归一化前端下发的配置（数据库和大模型都必须由前端提供）。
+ * agent 端不再有任何数据库/大模型默认值。
+ */
+export function resolveRequestConfig(raw) {
+    const input = raw ?? {};
+    const dbInput = input.db ?? {};
+    const llmInput = input.llm ?? {};
+    const lim = input.limits ?? {};
+    const dbType = dbInput.type === 'kingbase' ? 'kingbase' : 'sqlserver';
+    if (dbInput.type && dbInput.type !== 'sqlserver' && dbInput.type !== 'kingbase') {
+        throw new ConfigError(`不支持的数据库类型：${String(dbInput.type)}（仅支持 sqlserver / kingbase）`);
+    }
+    const requestTimeoutMs = Math.max(1, num(lim.commandTimeoutSec, DEFAULTS.dbCommandTimeoutSec)) * 1000;
+    const costLimit = Math.max(0, num(lim.costLimit, DEFAULTS.dbCostLimit));
+    const maxRows = Math.max(1, num(lim.maxRows, DEFAULTS.dbMaxRows));
+    // ---- 数据库（必填，前端下发）----
+    // 这些字段 SQL Server / Kingbase 通用：展示范围、隐藏表、拦截表、业务提示词
+    const common = {
+        requestTimeoutMs,
+        costLimit,
+        maxRows,
+        schemas: normalizeStringList(dbInput.schemas, dbType === 'kingbase' ? ['public'] : []),
+        hiddenTables: normalizeStringList(dbInput.hiddenTables, []),
+        blockedTables: normalizeStringList(dbInput.blockedTables, []),
+        profile: dbInput.profile === 'generic' ? 'generic' : 'wms',
+        businessPrompt: typeof dbInput.businessPrompt === 'string' ? dbInput.businessPrompt.trim().slice(0, 8000) : '',
+    };
+    const db = dbType === 'kingbase'
+        ? resolveKingbaseDb(dbInput, common)
+        : resolveSqlServerDb(dbInput, common);
     // ---- 大模型（必填 apiKey，前端下发）----
     const apiKey = (llmInput.apiKey && llmInput.apiKey.trim()) || '';
     if (!apiKey) {
@@ -138,13 +222,6 @@ export function resolveRequestConfig(raw) {
     }
     const baseUrl = (llmInput.baseUrl && llmInput.baseUrl.trim()) || DEFAULTS.llmBaseUrl;
     const model = (llmInput.model && llmInput.model.trim()) || DEFAULTS.llmModel;
-    const requestTimeoutMs = Math.max(1, num(lim.commandTimeoutSec, DEFAULTS.dbCommandTimeoutSec)) * 1000;
-    const db = {
-        connectionString,
-        requestTimeoutMs,
-        costLimit: Math.max(0, num(lim.costLimit, DEFAULTS.dbCostLimit)),
-        maxRows: Math.max(1, num(lim.maxRows, DEFAULTS.dbMaxRows)),
-    };
     const llm = {
         apiKey,
         baseUrl,
@@ -163,6 +240,7 @@ export function resolveRequestConfig(raw) {
     const maxResultChars = Math.max(1000, num(lim.maxResultChars, DEFAULTS.maxResultChars));
     const maxTotalToolChars = Math.max(2000, num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars));
     const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+    const requireSqlApproval = lim.requireSqlApproval === true;
     const key = hashKey(JSON.stringify({
         db,
         llm,
@@ -174,6 +252,7 @@ export function resolveRequestConfig(raw) {
         maxResultChars,
         maxTotalToolChars,
         maxOutputTokens,
+        requireSqlApproval,
     }));
     return {
         db,
@@ -188,11 +267,15 @@ export function resolveRequestConfig(raw) {
         maxResultChars,
         maxTotalToolChars,
         maxOutputTokens,
+        requireSqlApproval,
         key,
     };
 }
 /** 描述某个库连接（脱敏）：只给地址/库名/用户，绝不输出密码 */
 export function describeDb(db) {
+    if (db.type === 'kingbase') {
+        return `${db.host}:${db.port} / ${db.database} / ${db.user} (KingbaseES)`;
+    }
     const m = /Server=([^;]+)/i.exec(db.connectionString);
     const d = /Database=([^;]+)/i.exec(db.connectionString);
     const u = /(?:Uid|User Id)=([^;]+)/i.exec(db.connectionString);

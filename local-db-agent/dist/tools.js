@@ -390,11 +390,11 @@ function fitJson(build, total, maxChars) {
     }
     return best;
 }
-function trimQueryResult(result, maxChars) {
+function trimQueryResult(result, maxChars, limitWord = 'TOP') {
     const json = JSON.stringify(result);
     if (json.length <= maxChars)
         return { json, trimmed: false };
-    const hint = '结果过大已截断，请改用聚合 SQL（GROUP BY / SUM / COUNT）或加 TOP 后再查询';
+    const hint = `结果过大已截断，请改用聚合 SQL（GROUP BY / SUM / COUNT）或加 ${limitWord} 后再查询`;
     const text = fitJson(keep => ({
         ...result,
         rows: result.rows.slice(0, keep),
@@ -409,23 +409,39 @@ function trimQueryResult(result, maxChars) {
 // ============================================================
 /** 为某次请求的数据库配置构造一组工具（工具需要闭包持有该库的连接信息）。 */
 export function createTools(db) {
-    const getSchemaTool = tool(async () => {
+    const isKingbase = db.type === 'kingbase';
+    const limitWord = isKingbase ? 'LIMIT' : 'TOP';
+    const dialectTip = isKingbase
+        ? '金仓是 PostgreSQL 方言：表名/列名请使用双引号（如 public."WMS_Stocks"），行数限制用 LIMIT。'
+        : '';
+    const getSchemaTool = tool(async ({ keyword }) => {
         const budget = currentBudget();
         const blocked = budget ? budget.takeSchemaCall() : null;
         if (blocked) {
             logLine(`tool list_tables blocked: ${blocked}`);
             return budgetMessage('schema', blocked);
         }
-        const schema = await getSchema(db);
+        const schema = await getSchema(db, { keyword });
         const maxChars = budget ? budget.limits.maxResultChars : 8000;
-        const hint = '表数量较多已截断，建议先按名称筛选；可继续用 get_table_schema 查看具体表';
-        const json = fitJson(keep => ({
-            ...schema,
-            tables: schema.tables.slice(0, keep),
-            tableCount: schema.tables.length,
-            truncated: keep < schema.tables.length,
-            ...(keep < schema.tables.length ? { hint } : {}),
-        }), schema.tables.length, maxChars);
+        // 表很多时，完整 JSON（含注释/列数）会超预算。优先退化成“只给表名”，
+        // 保证模型仍能看到全部业务表，而不是只看到前几十张。
+        let json = JSON.stringify(schema);
+        if (json.length > maxChars) {
+            const compact = {
+                database: schema.database,
+                tableCount: schema.tableCount,
+                tables: schema.tables.map((table) => table.schema && !table.name.includes('.') ? `${table.schema}.${table.name}` : table.name),
+                hint: '表较多，已只返回表名；可用 list_tables(keyword) 按表名/注释筛选，再用 get_table_schema 查看字段',
+            };
+            json = JSON.stringify(compact);
+            if (json.length > maxChars) {
+                json = fitJson((keep) => ({
+                    ...compact,
+                    tables: compact.tables.slice(0, keep),
+                    truncated: keep < compact.tables.length,
+                }), compact.tables.length, maxChars);
+            }
+        }
         const deny = budget ? budget.takeChars(json.length) : null;
         if (deny) {
             logLine(`tool list_tables budget blocked: ${deny}`);
@@ -435,9 +451,15 @@ export function createTools(db) {
         return json;
     }, {
         name: 'list_tables',
-        description: '列出数据库中所有可用的表（表名 + 字段数量）。生成 SQL 之前先调用本工具了解有哪些表，' +
-            '再用 get_table_schema 查看具体表的字段。',
-        schema: z.object({}),
+        description: '列出数据库中可用的表（表名 + 字段数量 + 表注释）。生成 SQL 之前先调用本工具了解有哪些表，' +
+            '再用 get_table_schema 查看具体表的字段。表很多时用 keyword 按表名/注释筛选。' +
+            (dialectTip ? ` ${dialectTip}` : ''),
+        schema: z.object({
+            keyword: z
+                .string()
+                .optional()
+                .describe('可选：按表名或表注释模糊筛选，例如“库存”“MES”。'),
+        }),
     });
     const getTableSchemaTool = tool(async ({ table }) => {
         const budget = currentBudget();
@@ -464,9 +486,10 @@ export function createTools(db) {
         return json;
     }, {
         name: 'get_table_schema',
-        description: '查看指定表的字段（列名/类型/是否可空）。确定要查询某张表后调用。',
+        description: '查看指定表的字段（列名/类型/是否可空/注释）。确定要查询某张表后调用。' +
+            (isKingbase ? ' 可传 schema.table，例如 public."WMS_Stocks"；返回的列名已带双引号。' : ''),
         schema: z.object({
-            table: z.string().describe('表名'),
+            table: z.string().describe('表名；金仓可传 schema.table，例如 public."WMS_Stocks"'),
         }),
     });
     const runQueryTool = tool(async ({ sql: sqlText }) => {
@@ -479,7 +502,7 @@ export function createTools(db) {
         const started = Date.now();
         const result = await runQuery(db, sqlText);
         const maxChars = budget ? budget.limits.maxResultChars : 8000;
-        const { json, trimmed } = trimQueryResult(result, maxChars);
+        const { json, trimmed } = trimQueryResult(result, maxChars, limitWord);
         const deny = budget ? budget.takeChars(json.length) : null;
         if (deny) {
             logLine(`tool run_sql budget blocked: ${deny}`);
@@ -491,7 +514,8 @@ export function createTools(db) {
     }, {
         name: 'run_sql',
         description: '执行一条只读查询并返回 JSON 结果（columns/rows/rowCount/truncated）。' +
-            '返回行数和结果大小都有上限；数据量大时请用 GROUP BY / TOP 聚合，不要拉全量明细。',
+            `返回行数和结果大小都有上限；数据量大时请用 GROUP BY / ${limitWord} 聚合，不要拉全量明细。` +
+            (dialectTip ? ` ${dialectTip}` : ''),
         schema: z.object({
             sql: z.string().describe('要执行的 SQL 查询语句'),
         }),
