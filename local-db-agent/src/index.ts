@@ -9,6 +9,7 @@ import { decryptConfigPayload, handshake } from './crypto.js';
 import type { ConfigEncPayload } from './crypto.js';
 import { TurnBudget, runWithBudget } from './budget.js';
 import { logLine } from './log.js';
+import { buildVariantHint, guessTemplateFromText, pickReportVariant } from './report-variant.js';
 
 const app = Fastify({ logger: true });
 
@@ -44,6 +45,10 @@ interface ChatRequestBody {
   conversationId?: string;
   config?: RequestConfigInput;
   configEnc?: ConfigEncPayload;
+  /** 上一份报告的版式，由前端从 visuals 里带回，用于避免连续重复 */
+  lastLayout?: string;
+  lastVisualStyle?: string;
+  lastElements?: string[];
 }
 
 function toMessage(message: ChatMessageInput): BaseMessage {
@@ -139,6 +144,47 @@ app.post('/chat/stream', async (request, reply) => {
   // 历史直接交给 agent；上下文优化由 LangChain 的 summarizationMiddleware 负责
   const messages: BaseMessage[] = body.messages.map(toMessage);
 
+  // 报告版式轮换：在模型选模板前先按用户措辞推断类型，再结合上一份版式避开重复。
+  const lastUserText =
+    [...body.messages].reverse().find(message => message.role === 'user')?.content || '';
+  const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|出一份|来一份/.test(lastUserText);
+  if (wantsReport) {
+    const userTurns = body.messages.filter(message => message.role === 'user').length;
+    const variant = pickReportVariant({
+      template: guessTemplateFromText(lastUserText),
+      userText: lastUserText,
+      lastLayout: body.lastLayout,
+      lastVisualStyle: body.lastVisualStyle,
+      lastElements: Array.isArray(body.lastElements) ? body.lastElements : [],
+      seed: `${body.conversationId || 'anonymous'}|${userTurns}`,
+    });
+    const hint = buildVariantHint(variant, {
+      layout: body.lastLayout,
+      visualStyle: body.lastVisualStyle,
+      elements: Array.isArray(body.lastElements) ? body.lastElements : [],
+    });
+    const lastUserIndex = messages.reduce(
+      (index, message, i) => (message._getType() === 'human' ? i : index),
+      -1,
+    );
+    if (lastUserIndex >= 0) {
+      messages.splice(lastUserIndex, 0, new SystemMessage(hint));
+    }
+    request.log.info(
+      {
+        layout: variant.layout,
+        visualStyle: variant.visualStyle,
+        elements: variant.featureElements,
+        reason: variant.reason,
+      },
+      'report variant',
+    );
+    logLine(
+      `report variant ${variant.reason} style=${variant.visualStyle} ` +
+        `elements=${variant.featureElements.join(',')}`,
+    );
+  }
+
   // 单轮总时长上限 + 客户端断开即中止（避免挂起、持续烧 token / 占着数据库）
   const controller = new AbortController();
   let timedOut = false;
@@ -156,8 +202,9 @@ app.post('/chat/stream', async (request, reply) => {
   activeStreams += 1;
 
   const budget = new TurnBudget({
-    maxSqlQueries: resolved.maxSqlQueries,
-    maxSchemaCalls: resolved.maxSchemaCalls,
+    // 报告轮次需要多取几个口径，普通问答仍使用配置值
+    maxSqlQueries: wantsReport ? Math.max(resolved.maxSqlQueries, 10) : resolved.maxSqlQueries,
+    maxSchemaCalls: wantsReport ? Math.max(resolved.maxSchemaCalls, 8) : resolved.maxSchemaCalls,
     maxResultChars: resolved.maxResultChars,
     maxTotalToolChars: resolved.maxTotalToolChars,
   });

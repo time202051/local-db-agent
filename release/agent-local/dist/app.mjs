@@ -120333,8 +120333,10 @@ var DEFAULTS = {
   llmBaseUrl: "https://api.deepseek.com/v1",
   llmModel: "deepseek-chat",
   llmTimeoutSec: 60,
+  llmTemperature: 0.3,
+  llmTopP: 0.9,
   recursionLimit: 80,
-  turnTimeoutSec: 120,
+  turnTimeoutSec: 180,
   maxConcurrent: 3,
   summaryTriggerTokens: 6e3,
   summaryKeepMessages: 12,
@@ -120343,12 +120345,15 @@ var DEFAULTS = {
   maxSchemaCalls: 6,
   maxResultChars: 8e3,
   maxTotalToolChars: 4e4,
-  maxOutputTokens: 8e3
+  maxOutputTokens: 12e3
 };
 var ConfigError = class extends Error {
 };
 function num(value, fallback) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 function odbcValue(value) {
   return "{" + value.replace(/\}/g, "}}") + "}";
@@ -120421,7 +120426,9 @@ function resolveRequestConfig(raw) {
     apiKey,
     baseUrl,
     model,
-    timeoutMs: Math.max(1, num(lim.llmTimeoutSec, DEFAULTS.llmTimeoutSec)) * 1e3
+    timeoutMs: Math.max(1, num(lim.llmTimeoutSec, DEFAULTS.llmTimeoutSec)) * 1e3,
+    temperature: clamp(num(lim.temperature, DEFAULTS.llmTemperature), 0, 2),
+    topP: clamp(num(lim.topP, DEFAULTS.llmTopP), 0.1, 1)
   };
   const recursionLimit = Math.max(1, num(lim.recursionLimit, DEFAULTS.recursionLimit));
   const turnTimeoutMs = Math.max(1, num(lim.turnTimeoutSec, DEFAULTS.turnTimeoutSec)) * 1e3;
@@ -154829,9 +154836,29 @@ ${metricLines}
 
 // dist/templates.js
 var REPORT_TEMPLATES = {
+  annual: {
+    label: "\u5E74\u5EA6\u62A5\u544A",
+    when: "\u7528\u6237\u8BF4\u201C\u5E74\u5EA6 / \u5E74\u62A5 / \u5E74\u5EA6\u62A5\u544A / \u5E74\u5EA6\u603B\u7ED3 / \u5E74\u5EA6\u7ECF\u8425\u5206\u6790 / \u5E74\u5EA6\u590D\u76D8\u201D",
+    layouts: ["timeline", "executive", "narrative"],
+    styles: ["\u8463\u4E8B\u4F1A\u7B80\u62A5", "\u6742\u5FD7\u7F16\u8F91\u98CE", "\u6570\u636E\u6545\u4E8B"],
+    sections: [
+      "0 \u5C01\u9762\uFF1A\u5E74\u5EA6\u5173\u952E\u8BCD + \u6838\u5FC3\u6570\u5B57 + \u6570\u636E\u8303\u56F4\uFF08report-cover\uFF09",
+      "1 \u5E74\u5EA6\u603B\u89C8\uFF1A3~4 \u4E2A\u6838\u5FC3\u6570\u5B57 + \u4E00\u53E5\u8BDD\u7ED3\u8BBA\uFF08hero-kpi / finding-list\uFF09",
+      "2 \u5E74\u5EA6\u8D70\u52BF\uFF1A12 \u4E2A\u6708\u6216 4 \u4E2A\u5B63\u5EA6\u8D8B\u52BF + \u65F6\u95F4\u8F74\uFF08timeline\uFF09\uFF0C\u6807\u6CE8\u5CF0\u503C\u3001\u62D0\u70B9\u4E0E\u5F02\u5E38",
+      "3 \u7ED3\u6784\u53D8\u5316\uFF1A\u4E1A\u52A1/\u54C1\u7C7B/\u4ED3\u5E93/\u5BA2\u6237\u7ED3\u6784\uFF08treemap / \u5806\u53E0\u67F1 / \u5206\u5E03\uFF09",
+      "4 \u5173\u952E\u6392\u540D\uFF1ATop/Bottom \u4E0E\u540C\u6BD4\u53D8\u5316\uFF08top-bottom / slope / \u8868\u683C\uFF09",
+      "5 \u5E74\u5EA6\u590D\u76D8\uFF1A\u505A\u5BF9\u4E86\u4EC0\u4E48 / \u6CA1\u505A\u5230\u4EC0\u4E48 / \u539F\u56E0\uFF08finding-list + so-what + pull-quote\uFF09",
+      "6 \u98CE\u9669\u4E0E\u884C\u52A8\uFF1A\u98CE\u9669\u77E9\u9635 + \u4E0B\u4E00\u5E74 2~4 \u6761\u52A8\u4F5C\uFF08risk-matrix + action-list\uFF09",
+      "7 \u9644\u5F55\uFF1A\u53E3\u5F84\u3001\u6570\u636E\u6765\u6E90\u3001\u672F\u8BED\u8868\uFF08report-appendix\uFF09"
+    ],
+    metrics: ["\u5165\u5E93\u5355\u91CF", "\u51FA\u5E93\u5355\u91CF", "\u51FA\u5E93\u53CA\u65F6\u7387", "\u62E3\u8D27\u51C6\u786E\u7387", "\u5E93\u5B58\u5468\u8F6C\u7387", "\u5F02\u5E38\u5355\u91CF", "\u5E93\u5B58\u91D1\u989D"],
+    charts: ["line\uFF0812 \u4E2A\u6708\uFF09", "stacked-bar\uFF08\u7ED3\u6784\u53D8\u5316\uFF09", "bar\uFF08\u6392\u540D\uFF09", "funnel/radar\uFF08\u80FD\u529B\uFF09"]
+  },
   daily: {
     label: "\u4F5C\u4E1A\u65E5\u62A5",
     when: "\u7528\u6237\u8BF4\u201C\u65E5\u62A5 / \u4ECA\u5929 / \u6628\u65E5\u4F5C\u4E1A\u60C5\u51B5 / \u4ECA\u65E5\u51FA\u5165\u5E93\u201D",
+    layouts: ["dashboard", "executive"],
+    styles: ["\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6781\u7B80\u9ED1\u767D"],
     sections: [
       "1 \u6570\u636E\u6982\u89C8\uFF1A4 \u4E2A\u6838\u5FC3\u6570\u5B57\uFF08.stat\uFF09+ \u4E00\u53E5\u6838\u5FC3\u7ED3\u8BBA\uFF08.callout\uFF09",
       "2 \u51FA\u5165\u5E93\u8D8B\u52BF\uFF1A\u8FD1 7~14 \u5929\u6298\u7EBF\uFF0C\u6807\u6CE8\u5F02\u5E38\u5CF0\u503C",
@@ -154844,6 +154871,8 @@ var REPORT_TEMPLATES = {
   weekly: {
     label: "\u8FD0\u8425\u5468\u62A5",
     when: "\u7528\u6237\u8BF4\u201C\u5468\u62A5 / \u672C\u5468 / \u4E0A\u5468 / \u5468\u5EA6\u8FD0\u8425\u201D",
+    layouts: ["dashboard", "comparison", "narrative"],
+    styles: ["\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6570\u636E\u6545\u4E8B", "\u6742\u5FD7\u7F16\u8F91\u98CE"],
     sections: [
       "1 \u6838\u5FC3\u7ED3\u8BBA\uFF1A\u4E00\u6BB5\u8BDD + 3~4 \u4E2A\u5173\u952E\u6570\u5B57",
       "2 \u5173\u952E\u6307\u6807\u4E0E\u76EE\u6807\u8FBE\u6210\uFF1A.stat \u6570\u5B57\u5361 + .ring \u8FBE\u6210\u7387\uFF08\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u5199\u76EE\u6807\uFF09",
@@ -154858,6 +154887,8 @@ var REPORT_TEMPLATES = {
   monthly: {
     label: "\u8FD0\u8425\u6708\u62A5",
     when: "\u7528\u6237\u8BF4\u201C\u6708\u62A5 / \u672C\u6708 / \u4E0A\u6708 / \u6708\u5EA6\u8FD0\u8425 / \u6708\u5EA6\u603B\u7ED3\u201D",
+    layouts: ["dashboard", "executive", "timeline"],
+    styles: ["\u8463\u4E8B\u4F1A\u7B80\u62A5", "\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6570\u636E\u6545\u4E8B"],
     sections: [
       "1 \u6838\u5FC3\u7ED3\u8BBA\uFF1A\u4E00\u6BB5\u8BDD + 3~4 \u4E2A\u5173\u952E\u6570\u5B57",
       "2 \u5173\u952E\u6307\u6807\u4E0E\u76EE\u6807\u8FBE\u6210\uFF1A.stat \u6570\u5B57\u5361 + .ring \u8FBE\u6210\u7387\uFF08\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u5199\u76EE\u6807\uFF09",
@@ -154872,6 +154903,8 @@ var REPORT_TEMPLATES = {
   inventory: {
     label: "\u5E93\u5B58\u5FEB\u7167",
     when: "\u7528\u6237\u8BF4\u201C\u5E93\u5B58 / \u5FEB\u7167 / \u5E93\u5B58\u7ED3\u6784 / \u5E93\u9F84 / \u5468\u8F6C / \u5446\u6EDE / \u4E34\u671F\u201D",
+    layouts: ["dashboard", "comparison"],
+    styles: ["\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6781\u7B80\u9ED1\u767D"],
     sections: [
       "1 \u5E93\u5B58\u603B\u89C8\uFF1A\u603B\u91CF/\u91D1\u989D/\u5468\u8F6C + \u6838\u5FC3\u7ED3\u8BBA",
       "2 \u5468\u8F6C\u4E0E\u7ED3\u6784\uFF1A\u5468\u8F6C\u8D8B\u52BF + \u8D27\u4E3B/\u54C1\u7C7B\u5360\u6BD4",
@@ -154885,6 +154918,8 @@ var REPORT_TEMPLATES = {
   exception: {
     label: "\u5F02\u5E38\u4E13\u62A5",
     when: "\u7528\u6237\u8BF4\u201C\u5F02\u5E38 / \u9884\u8B66 / \u8D85\u65F6 / \u5DEE\u5F02 / \u7F3A\u8D27 / \u5446\u6EDE / \u5F02\u5E38\u4E13\u62A5\u201D",
+    layouts: ["narrative", "comparison"],
+    styles: ["\u6742\u5FD7\u7F16\u8F91\u98CE", "\u6781\u7B80\u9ED1\u767D"],
     sections: [
       "1 \u5F02\u5E38\u603B\u89C8\uFF1A\u5F02\u5E38\u603B\u91CF\u3001\u5F71\u54CD\u5355\u91CF/\u91D1\u989D\u3001\u6309\u4E25\u91CD\u5EA6\u5206\u7EA7",
       "2 \u5206\u7C7B\u5206\u5E03\uFF1A\u6309\u4ED3\u5E93/\u7C7B\u578B/\u4E25\u91CD\u5EA6\u5206\u5E03",
@@ -154897,6 +154932,8 @@ var REPORT_TEMPLATES = {
   compare: {
     label: "\u591A\u4ED3\u5BF9\u6BD4",
     when: "\u7528\u6237\u63D0\u5230\u4E24\u4E2A\u53CA\u4EE5\u4E0A\u4ED3\u5E93/\u8D27\u4E3B\u7684\u6A2A\u5411\u5BF9\u6BD4\uFF0C\u6216\u201C\u5404\u4ED3\u6392\u540D\u201D",
+    layouts: ["comparison", "dashboard"],
+    styles: ["\u8463\u4E8B\u4F1A\u7B80\u62A5", "\u6781\u7B80\u9ED1\u767D"],
     sections: [
       "1 \u80FD\u529B\u5BF9\u6BD4\uFF1A\u96F7\u8FBE\uFF08\u5355\u91CF/\u65F6\u6548/\u51C6\u786E\u7387/\u5468\u8F6C/\u6210\u672C\uFF09",
       "2 \u6307\u6807\u6392\u540D\uFF1A.rank-list\uFF08\u5404\u4ED3\u5355\u91CF\u3001\u53CA\u65F6\u7387\u3001\u51C6\u786E\u7387\uFF09",
@@ -154910,28 +154947,506 @@ var REPORT_TEMPLATES = {
 var templateLines = Object.keys(REPORT_TEMPLATES).map((k) => {
   const t = REPORT_TEMPLATES[k];
   return `- ${k}\uFF08${t.label}\uFF09\u89E6\u53D1\uFF1A${t.when}
-  section\uFF1A${t.sections.join(" \u2192 ")}
+  \u63A8\u8350 layout\uFF1A${t.layouts.join(" / ")}\uFF1B\u63A8\u8350 visualStyle\uFF1A${t.styles.join(" / ")}
+  section \u53C2\u8003\uFF08\u53EF\u5220\u51CF/\u91CD\u6392\uFF09\uFF1A${t.sections.join(" \u2192 ")}
   \u6307\u6807\uFF1A${t.metrics.join("\u3001")}
   \u56FE\u8868\uFF1A${t.charts.join(" / ")}`;
 }).join("\n");
 var TEMPLATE_PROMPT = `\u3010WMS \u62A5\u544A\u6A21\u677F\u3011
 \u8C03\u7528 render_html_report \u65F6\uFF0C\u6309\u7528\u6237\u610F\u56FE\u9009\u62E9 template \u5B57\u6BB5\uFF1B\u5224\u65AD\u4E0D\u4E86\u5C31\u7528 auto\u3002
+\u6A21\u677F\u53EA\u662F\u5185\u5BB9\u6E05\u5355\u548C\u63A8\u8350\u7248\u5F0F\uFF0C\u4E0D\u662F\u56FA\u5B9A\u9AA8\u67B6\uFF1A\u6309\u6570\u636E\u53D6\u820D\u3001\u6309 layout \u91CD\u65B0\u7EC4\u7EC7\u3002
 
 ${templateLines}
 
 \u6A21\u677F\u4F7F\u7528\u89C4\u5219\uFF1A
-1. \u7528\u6237\u660E\u786E\u8BF4\u65E5\u62A5/\u5468\u62A5/\u6708\u62A5/\u5E93\u5B58/\u5F02\u5E38/\u591A\u4ED3\u5BF9\u6BD4\u65F6\uFF0C\u5FC5\u987B\u9009\u5BF9\u5E94 template\uFF0C\u5E76\u6309\u5B83\u7684 section \u987A\u5E8F\u51FA\u62A5\u544A\u3002
-2. \u6570\u636E\u4E0D\u652F\u6301\u67D0\u4E00\u8282\u65F6\uFF0C\u5220\u6389\u8BE5\u8282\u800C\u4E0D\u662F\u7F16\u6570\u636E\uFF1B\u591A\u4ED3\u5BF9\u6BD4\u53EA\u6709\u5728\u6570\u636E\u5E93\u91CC\u786E\u5B9E\u6709\u591A\u4E2A\u4ED3\u5E93/\u8D27\u4E3B\u65F6\u624D\u7528\u3002
-3. \u7B2C\u4E00\u5C4F\uFF08\u7B2C\u4E00\u4E2A section\uFF09\u5FC5\u987B\u8BA9\u9886\u5BFC\u4E00\u773C\u770B\u5230\u7ED3\u8BBA\uFF1A\u6838\u5FC3\u6570\u5B57 + \u4E00\u53E5\u8BDD\u7ED3\u8BBA\u3002
-4. \u6B63\u6587\u8868\u683C\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u7528 Top 10 + \u201C\u5176\u4F59 N \u9879\u5408\u8BA1\u201D\u3002
-5. \u201C\u76EE\u6807 / \u8FBE\u6210\u7387\u201D\u53EA\u6709\u5E93\u91CC\u786E\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u8F93\u51FA\uFF0C\u5426\u5219\u53EA\u505A\u540C\u73AF\u6BD4\uFF0C\u4E0D\u8981\u7F16\u76EE\u6807\u3002`;
-
-// dist/tools.js
-init_tools2();
+1. \u7528\u6237\u660E\u786E\u8BF4\u65E5\u62A5/\u5468\u62A5/\u6708\u62A5/\u5E74\u62A5/\u5E93\u5B58/\u5F02\u5E38/\u591A\u4ED3\u5BF9\u6BD4\u65F6\uFF0C\u9009\u5BF9\u5E94 template\uFF1B\u4E0D\u8981\u628A\u6240\u6709\u62A5\u544A\u90FD\u5199\u6210\u6708\u62A5\u3002
+2. section \u662F\u53C2\u8003\uFF0C\u4E0D\u662F\u5FC5\u987B\u9010\u6761\u7167\u6284\uFF1B\u6570\u636E\u4E0D\u652F\u6301\u67D0\u4E00\u8282\u65F6\u5220\u6389\uFF0C\u4E0D\u8981\u7F16\u6570\u636E\u3002
+3. \u5E74\u5EA6\u62A5\u544A\u5FC5\u987B\u4F53\u73B0\u201C\u5168\u5E74\u603B\u89C8 \u2192 \u9636\u6BB5\u8D70\u52BF \u2192 \u7ED3\u6784\u53D8\u5316 \u2192 \u5E74\u5EA6\u590D\u76D8 \u2192 \u4E0B\u4E00\u5E74\u91CD\u70B9\u201D\u7684\u65F6\u95F4\u63A8\u8FDB\uFF0C\u4E0D\u8981\u53EA\u628A\u6708\u62A5\u653E\u5927\u3002
+4. \u7B2C\u4E00\u5C4F\u8981\u8BA9\u9886\u5BFC\u4E00\u773C\u770B\u5230\u7ED3\u8BBA\uFF1A\u6838\u5FC3\u6570\u5B57 + \u4E00\u53E5\u8BDD\u7ED3\u8BBA\uFF1B\u4F46\u4E0D\u5F3A\u5236\u56FA\u5B9A\u6A21\u5757\u987A\u5E8F\u3002
+5. \u6B63\u6587\u8868\u683C\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u7528 Top 10 + \u201C\u5176\u4F59 N \u9879\u5408\u8BA1\u201D\u3002
+6. \u201C\u76EE\u6807 / \u8FBE\u6210\u7387\u201D\u53EA\u6709\u5E93\u91CC\u786E\u6709\u76EE\u6807\u6570\u636E\u65F6\u624D\u8F93\u51FA\uFF0C\u5426\u5219\u53EA\u505A\u540C\u73AF\u6BD4\uFF0C\u4E0D\u8981\u7F16\u76EE\u6807\u3002
+7. \u540C\u4E00\u4F1A\u8BDD\u91CC\u8FDE\u7EED\u751F\u6210\u62A5\u544A\u65F6\uFF0C\u4E3B\u52A8\u66F4\u6362 layout \u548C visualStyle\uFF0C\u907F\u514D\u6BCF\u4EFD\u770B\u8D77\u6765\u4E00\u6837\u3002
+8. \u6570\u636E\u5BC6\u5EA6\u4F18\u5148\uFF1A\u81F3\u5C11 2 \u4E2A\u6570\u636E\u578B\u5143\u7D20\uFF08hero-kpi / bullet-row / small-multiples / heat-table /
+   top-bottom / comparison-matrix / risk-matrix\uFF09+ \u81F3\u5C11 2 \u4E2A\u53D9\u4E8B\u578B\u5143\u7D20\uFF08\u5C01\u9762 / \u53D1\u73B0 / so-what /
+   \u65F6\u95F4\u8F74 / \u884C\u52A8\u6E05\u5355 / \u9644\u5F55\uFF09\uFF1B
+9. \u7B2C\u4E00\u4E2A section \u5FC5\u987B\u662F\u6570\u636E\u5C4F\uFF082~4 \u4E2A Hero KPI + 1 \u5F20\u4E3B\u56FE/\u70ED\u529B\u8868\uFF09\uFF1B\u6BCF\u4E2A\u5206\u6790 section \u81F3\u5C11 1 \u4E2A\u6570\u636E\u5757\uFF1B
+   \u7EAF\u6587\u5B57 section \u6700\u591A 1 \u4E2A\u3002\u4F18\u5148\u4F7F\u7528\u7CFB\u7EDF\u63D0\u793A\u91CC\u3010\u672C\u8F6E\u62A5\u544A\u5143\u7D20\u3011\u6307\u5B9A\u7684\u5143\u7D20\uFF0C\u5E76\u6362\u6389\u4E0A\u4E00\u4EFD\u7528\u8FC7\u7684\u5143\u7D20\u3002`;
 
 // node_modules/zod/index.js
 init_external2();
 init_external2();
+
+// dist/visual-spec.js
+var REPORT_COMPONENT = "ol-report";
+var LEGACY_CHART_COMPONENT = "ol-echarts";
+var REPORT_TOOL_NAME = "render_report";
+var LEGACY_CHART_TOOL_NAME = "render_chart";
+var HTML_REPORT_COMPONENT = "ol-html-report";
+var HTML_REPORT_TOOL_NAME = "render_html_report";
+var VISUAL_TOOL_NAMES = /* @__PURE__ */ new Set([
+  REPORT_TOOL_NAME,
+  LEGACY_CHART_TOOL_NAME,
+  HTML_REPORT_TOOL_NAME
+]);
+var tone = external_exports2.enum(["primary", "success", "danger", "warning", "neutral"]).describe("\u914D\u8272\uFF1Aprimary \u4E3B\u8272 / success \u7EFF / danger \u7EA2 / warning \u6A59 / neutral \u7070");
+var valueSchema = external_exports2.union([external_exports2.number(), external_exports2.string()]);
+var sectionBlock = external_exports2.object({
+  type: external_exports2.literal("section"),
+  no: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe("\u5206\u8282\u5E8F\u53F7\uFF0C\u5982 1\u30012\u30013"),
+  title: external_exports2.string().describe("\u5206\u8282\u6807\u9898\uFF0C\u4E2D\u6587"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF08\u82F1\u6587\u540D\u6216\u8BF4\u660E\uFF09\uFF0C\u5982 Executive Summary")
+});
+var summaryBlock = external_exports2.object({
+  type: external_exports2.literal("summary"),
+  title: external_exports2.string().optional().describe("\u5C0F\u6807\u9898\uFF0C\u9ED8\u8BA4\u300C\u6838\u5FC3\u7ED3\u8BBA\u300D"),
+  text: external_exports2.string().describe("\u7ED3\u8BBA\u6B63\u6587\uFF0C\u4E00\u6BB5\u8BDD\u6982\u62EC"),
+  items: external_exports2.array(external_exports2.string()).max(6).optional().describe("\u53EF\u9009\uFF1A\u8981\u70B9\u6761\u76EE")
+});
+var noticeBlock = external_exports2.object({
+  type: external_exports2.literal("notice"),
+  tone: tone.optional().describe("\u63D0\u793A\u7C7B\u578B\uFF0C\u7531\u5185\u5BB9\u4E25\u91CD\u7A0B\u5EA6\u51B3\u5B9A\uFF0C\u9ED8\u8BA4 warning"),
+  text: external_exports2.string().describe("\u63D0\u793A\u5185\u5BB9\uFF0C\u4E00\u53E5\u8BDD")
+});
+var kpiItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6307\u6807\u540D\u79F0\uFF0C\u4E2D\u6587\uFF0C\u7B80\u77ED"),
+  value: valueSchema.describe("\u6307\u6807\u503C\uFF0C\u6570\u5B57\u4F18\u5148"),
+  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF08\u4E07/\u5143/%/\u53F0/\u5355\uFF09\uFF0C\u53EF\u4E3A\u7A7A"),
+  delta: external_exports2.number().optional().describe("\u540C\u6BD4/\u73AF\u6BD4\u53D8\u5316\u767E\u5206\u6BD4\uFF0C\u6B63\u6570\u4E3A\u589E\u957F\u3001\u8D1F\u6570\u4E3A\u4E0B\u964D"),
+  trend: external_exports2.enum(["up", "down", "flat"]).optional().describe("\u8D8B\u52BF\u65B9\u5411\uFF0C\u7528\u4E8E\u6DA8\u8DCC\u914D\u8272"),
+  note: external_exports2.string().optional().describe('\u5361\u7247\u5E95\u90E8\u8865\u5145\u8BF4\u660E\uFF0C\u5982 "vs plan 88.28% \xB7 \u65F6\u95F4\u8FDB\u5EA6 27.36%"'),
+  spark: external_exports2.array(external_exports2.number()).optional().describe("\u53EF\u9009\uFF1A\u8FF7\u4F60\u8D8B\u52BF\u7EBF\u6570\u503C\u5E8F\u5217\uFF086~24 \u4E2A\u70B9\uFF09")
+});
+var kpiBlock = external_exports2.object({
+  type: external_exports2.literal("kpi"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(kpiItem).min(1).max(8).describe("\u5173\u952E\u6307\u6807\u5361\u7247\uFF0C\u4E00\u6392 2~4 \u4E2A\u6700\u4F73\uFF0C\u6700\u591A 8 \u4E2A")
+});
+var hbarItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6761\u76EE\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: external_exports2.number().describe("\u6570\u503C"),
+  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF0C\u5982 %"),
+  max: external_exports2.number().optional().describe("\u53EF\u9009\u7684\u6807\u5C3A\u4E0A\u9650\uFF08\u9ED8\u8BA4\u6309\u6240\u6709\u6761\u76EE\u6700\u5927\u503C\uFF09"),
+  tone: tone.optional().describe("\u6761\u5F62\u989C\u8272")
+});
+var hbarBlock = external_exports2.object({
+  type: external_exports2.literal("hbar"),
+  title: external_exports2.string().optional(),
+  subtitle: external_exports2.string().optional(),
+  items: external_exports2.array(hbarItem).min(1).max(12).describe("\u6A2A\u6761\u5217\u8868\uFF0C\u9002\u5408\u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4")
+});
+var progressItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6761\u76EE\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: external_exports2.number().describe("\u5B8C\u6210\u767E\u5206\u6BD4\uFF080~100+\uFF09\uFF0C\u53EF\u4E3A\u8FBE\u6210\u7387"),
+  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF0C\u9ED8\u8BA4 %\uFF0C\u53EF\u7559\u7A7A"),
+  status: external_exports2.string().optional().describe("\u72B6\u6001\u8BF4\u660E\uFF0C\u5982\u300C\u8FBE\u6807\u300D\u300C\u9884\u8BA1\u8FBE\u6807\u300D\u300C\u843D\u540E\u300D"),
+  tone: tone.optional()
+});
+var progressBlock = external_exports2.object({
+  type: external_exports2.literal("progress"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(progressItem).min(1).max(8)
+});
+var chipItem = external_exports2.object({
+  label: external_exports2.string().describe("\u6307\u6807\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: valueSchema.describe("\u6307\u6807\u503C"),
+  unit: external_exports2.string().optional(),
+  delta: external_exports2.number().optional(),
+  trend: external_exports2.enum(["up", "down", "flat"]).optional()
+});
+var chipsBlock = external_exports2.object({
+  type: external_exports2.literal("chips"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(chipItem).min(1).max(8).describe("\u4E00\u6392 3~5 \u4E2A\u5C0F\u6307\u6807")
+});
+var distItem = external_exports2.object({
+  label: external_exports2.string().describe("\u5206\u7C7B\u540D\u79F0\uFF0C\u4E2D\u6587"),
+  value: external_exports2.number().describe("\u6570\u91CF"),
+  tone: tone.optional()
+});
+var distBlock = external_exports2.object({
+  type: external_exports2.literal("dist"),
+  title: external_exports2.string().optional(),
+  subtitle: external_exports2.string().optional().describe("\u5982\u300C10\u670811\u65E5 \xB7 7/15 \u5DE5\u5382\u6B20\u4EA7\u300D"),
+  items: external_exports2.array(distItem).min(1).max(8).describe("\u6309\u4E25\u91CD\u7A0B\u5EA6\u4ECE\u9AD8\u5230\u4F4E\u6392\u5217")
+});
+var chartBlock = external_exports2.object({
+  type: external_exports2.literal("chart"),
+  title: external_exports2.string().describe("\u56FE\u8868\u6807\u9898\uFF0C\u4E2D\u6587"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF0C\u8BF4\u660E\u53E3\u5F84"),
+  span: external_exports2.number().min(1).max(12).optional().describe("12 \u6805\u683C\u5360\u4F4D\u5BBD\u5EA6\uFF0C\u4E3B\u56FE 8\u3001\u8F85\u56FE 4\u3001\u6574\u884C 12\uFF1B\u9ED8\u8BA4 6"),
+  option: external_exports2.record(external_exports2.string(), external_exports2.any()).describe("\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5FC5\u987B\u5185\u5D4C\u5176\u4E2D\uFF0C\u5982 {xAxis, yAxis, series}")
+});
+var tableBlock = external_exports2.object({
+  type: external_exports2.literal("table"),
+  title: external_exports2.string().optional(),
+  subtitle: external_exports2.string().optional(),
+  columns: external_exports2.array(external_exports2.string()).min(1).describe("\u5217\u540D\uFF08\u4E2D\u6587\uFF09\uFF0C\u4E0E rows \u7684 key \u5BF9\u5E94"),
+  rows: external_exports2.array(external_exports2.record(external_exports2.string(), external_exports2.union([external_exports2.string(), external_exports2.number(), external_exports2.boolean(), external_exports2.null()]))).max(30).describe("\u6570\u636E\u884C\uFF0C\u6700\u591A 30 \u884C")
+});
+var riskItem = external_exports2.object({
+  tone: tone.optional().describe("\u98CE\u9669\u7B49\u7EA7\u914D\u8272\uFF1Adanger \u9AD8 / warning \u4E2D / success \u4F4E / primary \u63D0\u793A"),
+  title: external_exports2.string().describe("\u8BE5\u9879\u6807\u9898\uFF0C\u4E2D\u6587"),
+  text: external_exports2.string().describe("\u8BF4\u660E\u6587\u5B57")
+});
+var riskBlock = external_exports2.object({
+  type: external_exports2.literal("risk"),
+  title: external_exports2.string().optional().describe("\u533A\u5757\u6807\u9898\uFF0C\u5982\u300C\u98CE\u9669\u603B\u7ED3\u300D"),
+  items: external_exports2.array(riskItem).min(1).max(8)
+});
+var insightBlock = external_exports2.object({
+  type: external_exports2.literal("insights"),
+  title: external_exports2.string().optional(),
+  items: external_exports2.array(external_exports2.string()).min(1).max(4).describe("\u7ED3\u8BBA\u8981\u70B9\uFF0C\u6BCF\u6761\u4E00\u53E5\u8BDD")
+});
+var reportBlock = external_exports2.discriminatedUnion("type", [
+  sectionBlock,
+  summaryBlock,
+  noticeBlock,
+  kpiBlock,
+  hbarBlock,
+  progressBlock,
+  chipsBlock,
+  distBlock,
+  chartBlock,
+  tableBlock,
+  riskBlock,
+  insightBlock
+]);
+var reportSchema = external_exports2.object({
+  component: external_exports2.string().default(REPORT_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${REPORT_COMPONENT}`),
+  title: external_exports2.string().describe("\u62A5\u8868\u6807\u9898\uFF0C\u4E2D\u6587\uFF0C\u6982\u62EC\u672C\u6B21\u5206\u6790\u4E3B\u9898"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF0C\u5982\u6570\u636E\u8303\u56F4/\u65F6\u95F4/\u53E3\u5F84"),
+  meta: external_exports2.array(external_exports2.string()).max(5).optional().describe('\u53EF\u9009\uFF1A\u9876\u90E8\u4FE1\u606F\u80F6\u56CA\uFF0C\u5982 ["\u6570\u636E\u622A\u81F3 10-11","\u7B2C11\u5929/30\u5929","\u6709\u6548\u671F 5~11"]'),
+  theme: external_exports2.enum(["light", "dark"]).optional().describe("\u53EF\u9009\u4E3B\u9898\uFF1B\u4E00\u822C\u4E0D\u8981\u586B\uFF0C\u8DDF\u968F\u7528\u6237\u504F\u597D"),
+  blocks: external_exports2.array(reportBlock).min(1).max(40).describe("\u62A5\u8868\u533A\u5757\uFF0C\u6309\u5C55\u793A\u987A\u5E8F\u6392\u5217\uFF1B\u5206\u8282\u7528 section \u5F00\u5934")
+});
+var REPORT_LAYOUT_KEYS = [
+  "executive",
+  "dashboard",
+  "narrative",
+  "comparison",
+  "timeline"
+];
+var REPORT_LAYOUTS = {
+  executive: {
+    label: "\u9AD8\u5C42\u6458\u8981",
+    when: "\u7ED9\u9886\u5BFC/\u8001\u677F\u770B\uFF0C\u5E74\u5EA6\u603B\u7ED3\u3001\u6708\u5EA6\u6C47\u62A5\u3001\u9700\u8981\u5FEB\u901F\u51B3\u7B56",
+    sections: "\u6838\u5FC3\u7ED3\u8BBA \u2192 3~4 \u4E2A\u5173\u952E\u6570\u5B57 \u2192 \u5173\u952E\u8BC1\u636E\uFF081~2 \u56FE/\u8868\uFF09\u2192 \u98CE\u9669\u4E0E\u5EFA\u8BAE",
+    elements: ["report-cover", "finding-list", "hero-kpi", "risk-matrix", "action-list"],
+    density: "low",
+    avoid: "\u4E0D\u8981\u5806\u660E\u7EC6\u8868\uFF0C\u4E0D\u8981\u628A\u6240\u6709\u6307\u6807\u90FD\u653E\u4E0A\u6765"
+  },
+  dashboard: {
+    label: "\u8FD0\u8425\u770B\u677F",
+    when: "\u65E5\u5E38\u8FD0\u8425\u76D1\u63A7\u3001\u65E5\u62A5/\u5468\u62A5\u3001\u6307\u6807\u591A\u4E14\u9700\u8981\u6A2A\u5411\u626B\u8BFB",
+    sections: "\u6307\u6807\u5899 \u2192 \u56FE\u8868\u77E9\u9635 \u2192 \u6392\u884C\u699C \u2192 \u5F02\u5E38/\u660E\u7EC6",
+    elements: ["small-multiples", "heat-table", "top-bottom", "comparison-matrix"],
+    density: "high",
+    avoid: "\u4E0D\u8981\u5199\u5927\u6BB5\u53D9\u4E8B\uFF0C\u4E0D\u8981\u6BCF\u4E2A\u6A21\u5757\u90FD\u505A\u6210\u5927\u5361\u7247"
+  },
+  narrative: {
+    label: "\u53D9\u4E8B\u5206\u6790",
+    when: "\u5F02\u5E38\u4E13\u62A5\u3001\u4E13\u9898\u5206\u6790\u3001\u9700\u8981\u89E3\u91CA\u539F\u56E0\u548C\u63A8\u6F14",
+    sections: "\u80CC\u666F/\u95EE\u9898 \u2192 \u53D1\u73B0 1 \u2192 \u53D1\u73B0 2 \u2192 \u53D1\u73B0 3 \u2192 \u7ED3\u8BBA\u4E0E\u52A8\u4F5C\uFF08\u56FE\u6587\u4EA4\u66FF\uFF09",
+    elements: ["finding-list", "so-what", "small-multiples", "heat-table", "action-list"],
+    density: "medium",
+    avoid: "\u4E0D\u8981\u505A\u6210\u7EAF\u6307\u6807\u5899\uFF0C\u4E0D\u8981\u8BA9\u8868\u683C\u5360\u6EE1\u6B63\u6587"
+  },
+  comparison: {
+    label: "\u6A2A\u5411\u5BF9\u6BD4",
+    when: "\u591A\u4ED3/\u591A\u8D27\u4E3B/\u540C\u6BD4\u73AF\u6BD4/\u65B9\u6848\u5BF9\u6BD4\uFF0C\u91CD\u70B9\u662F\u5DEE\u8DDD",
+    sections: "\u5BF9\u6BD4\u77E9\u9635 \u2192 \u96F7\u8FBE\u6216\u5206\u7EC4\u56FE \u2192 Top/Bottom \u2192 \u5DEE\u8DDD\u5F52\u56E0 \u2192 \u5EFA\u8BAE",
+    elements: ["comparison-matrix", "top-bottom", "risk-matrix", "action-list"],
+    density: "medium",
+    avoid: "\u4E0D\u8981\u53EA\u5217\u5355\u8FB9\u6570\u636E\uFF0C\u5FC5\u987B\u4F53\u73B0\u5DEE\u8DDD\u548C\u7ED3\u8BBA"
+  },
+  timeline: {
+    label: "\u65F6\u95F4\u8F74\u590D\u76D8",
+    when: "\u5E74\u5EA6/\u5B63\u5EA6/\u6708\u5EA6\u590D\u76D8\u3001\u9636\u6BB5\u6F14\u8FDB\u3001\u91CC\u7A0B\u7891",
+    sections: "\u5E74\u5EA6\u6982\u89C8 \u2192 \u5B63\u5EA6/\u6708\u5EA6\u65F6\u95F4\u8F74 \u2192 \u9636\u6BB5\u7ED3\u8BBA \u2192 \u4E0B\u4E00\u9636\u6BB5\u91CD\u70B9",
+    elements: [
+      "report-cover",
+      "hero-kpi",
+      "timeline",
+      "heat-table",
+      "finding-list",
+      "action-list",
+      "report-appendix"
+    ],
+    density: "high",
+    avoid: "\u4E0D\u8981\u628A\u6240\u6709\u5185\u5BB9\u538B\u6210\u4E00\u5F20\u5927\u8868\uFF0C\u8981\u4F53\u73B0\u65F6\u95F4\u63A8\u8FDB\u5173\u7CFB"
+  }
+};
+var REPORT_ELEMENT_KEYS = [
+  "report-cover",
+  "section-divider",
+  "finding-list",
+  "so-what",
+  "pull-quote",
+  "timeline",
+  "action-list",
+  "risk-matrix",
+  "report-appendix",
+  "hero-kpi",
+  "bullet-row",
+  "small-multiples",
+  "heat-table",
+  "top-bottom",
+  "comparison-matrix",
+  "annotation",
+  "margin-note",
+  "full-bleed",
+  "drop-cap",
+  "hero-number",
+  "section-progress",
+  "arrow-flow"
+];
+var REPORT_DATA_ELEMENT_KEYS = [
+  "hero-kpi",
+  "bullet-row",
+  "small-multiples",
+  "heat-table",
+  "top-bottom",
+  "comparison-matrix",
+  "risk-matrix"
+];
+var REPORT_NARRATIVE_ELEMENT_KEYS = [
+  "report-cover",
+  "finding-list",
+  "so-what",
+  "pull-quote",
+  "timeline",
+  "action-list",
+  "report-appendix",
+  "margin-note"
+];
+var DATA_ELEMENT_SET = new Set(REPORT_DATA_ELEMENT_KEYS);
+var NARRATIVE_ELEMENT_SET = new Set(REPORT_NARRATIVE_ELEMENT_KEYS);
+function reportElementCategory(key) {
+  if (DATA_ELEMENT_SET.has(key))
+    return "data";
+  if (NARRATIVE_ELEMENT_SET.has(key))
+    return "narrative";
+  return "layout";
+}
+var REPORT_ELEMENT_KIT = [
+  {
+    key: "report-cover",
+    label: "\u5C01\u9762",
+    when: "\u5E74\u5EA6/\u5B63\u5EA6\u62A5\u544A\u7B2C\u4E00\u5C4F\uFF1B\u4E5F\u53EF\u4EE5\u7528\u4E8E\u7AE0\u8282\u6249\u9875",
+    html: '<div class="report-cover"><div class="cover-kicker">2025 \u5E74\u5EA6\u7ECF\u8425\u62A5\u544A</div><h1 class="cover-title">\u5168\u5E74\u7ECF\u8425\u590D\u76D8</h1><div class="cover-sub">\u6570\u636E\u8303\u56F4 / \u53E3\u5F84</div><div class="cover-meta"><span class="meta-chip">\u2026</span></div><div class="cover-metric">\u6838\u5FC3\u6570\u5B57</div></div>'
+  },
+  {
+    key: "section-divider",
+    label: "\u7AE0\u8282\u6249\u9875",
+    when: "\u5927\u7AE0\u8282\u5207\u6362\uFF0C\u5236\u9020\u89C6\u89C9\u8282\u594F",
+    html: '<div class="section-divider"><span class="section-divider__no">02</span><div><div class="section-divider__title">\u7ED3\u6784\u53D8\u5316</div><div class="section-divider__text">\u4E00\u53E5\u8BDD\u5BFC\u8BED</div></div></div>'
+  },
+  {
+    key: "finding-list",
+    label: "\u4E09\u4E2A\u53D1\u73B0",
+    when: "\u6267\u884C\u6458\u8981\u3001\u5E74\u5EA6\u590D\u76D8\u3001\u5F02\u5E38\u5F52\u56E0",
+    html: '<div class="finding-list"><div class="finding"><span class="finding-no">01</span><div class="finding-body"><div class="finding-title">\u53D1\u73B0\u6807\u9898</div><div class="finding-text">\u8BF4\u660E</div><div class="finding-impact">\u5F71\u54CD\uFF1A\u2026</div></div></div>\u2026</div>'
+  },
+  {
+    key: "so-what",
+    label: "\u6240\u4EE5\u5462",
+    when: "\u6BCF\u5F20\u4E3B\u56FE/\u4E3B\u8868\u4E4B\u540E\uFF0C\u7528\u4E00\u53E5\u8BDD\u7ED9\u51FA\u7ED3\u8BBA",
+    html: '<div class="so-what"><span class="so-what__label">\u6240\u4EE5\u5462</span><p>\u8FD9\u5F20\u56FE\u8BF4\u660E\u2026\uFF0C\u4E0B\u4E00\u6B65\u5E94\u8BE5\u2026</p></div>'
+  },
+  {
+    key: "pull-quote",
+    label: "\u5F15\u8A00/\u4E3B\u5F20",
+    when: "\u5E74\u5EA6\u5173\u952E\u8BCD\u3001\u8001\u677F\u539F\u8BDD\u3001\u62A5\u544A\u6838\u5FC3\u4E3B\u5F20",
+    html: '<div class="pull-quote"><p class="pull-quote__text">\u201C\u2026\u2026\u201D</p><div class="pull-quote__by">\u2014 \u7F72\u540D/\u6765\u6E90</div></div>'
+  },
+  {
+    key: "timeline",
+    label: "\u65F6\u95F4\u8F74",
+    when: "\u5E74\u5EA6\u5927\u4E8B\u8BB0\u3001\u5B63\u5EA6/\u6708\u5EA6\u9636\u6BB5\u6F14\u8FDB",
+    html: '<div class="timeline"><div class="timeline-item"><div class="timeline-date">Q1</div><div class="timeline-card"><b>\u9636\u6BB5\u6807\u9898</b><p>\u5173\u952E\u52A8\u4F5C\u4E0E\u7ED3\u679C</p></div></div>\u2026</div>'
+  },
+  {
+    key: "action-list",
+    label: "\u884C\u52A8\u6E05\u5355",
+    when: "\u4E0B\u4E00\u5E74\u91CD\u70B9\u3001\u98CE\u9669\u6574\u6539\u3001\u8D23\u4EFB\u5230\u4EBA",
+    html: '<div class="action-list"><div class="action-item"><span class="action-priority is-high">\u9AD8</span><div class="action-title">\u52A8\u4F5C</div><div class="action-meta"><span class="action-owner">\u8D1F\u8D23\u4EBA\uFF1A\u2026</span><span class="action-due">\u65F6\u95F4\uFF1A\u2026</span><span class="action-status">\u8FDB\u884C\u4E2D</span></div></div>\u2026</div>'
+  },
+  {
+    key: "risk-matrix",
+    label: "\u98CE\u9669\u77E9\u9635",
+    when: "\u591A\u98CE\u9669\u5206\u7EA7\uFF0C\u6309\u6982\u7387/\u5F71\u54CD\u5B9A\u4F4D",
+    html: '<div class="risk-matrix"><div class="risk-matrix__axis risk-matrix__axis--y">\u5F71\u54CD</div><div class="risk-cell"><span class="risk-dot is-danger">\u98CE\u9669 A</span></div>\u2026\uFF089 \u4E2A cell\uFF09<div class="risk-matrix__axis risk-matrix__axis--x">\u6982\u7387</div></div>'
+  },
+  {
+    key: "report-appendix",
+    label: "\u9644\u5F55",
+    when: "\u53E3\u5F84\u3001\u6570\u636E\u6765\u6E90\u3001\u672F\u8BED\u8868\u3001\u811A\u6CE8",
+    html: '<div class="report-appendix"><div class="appendix-title">\u9644\u5F55</div><div class="method-list"><div><b>\u53E3\u5F84</b> \u2026</div><div><b>\u6570\u636E\u6765\u6E90</b> \u2026</div></div><div class="glossary"><div class="glossary-row"><b>\u672F\u8BED</b><span>\u89E3\u91CA</span></div>\u2026</div></div>'
+  },
+  {
+    key: "hero-kpi",
+    label: "Hero \u6570\u5B57",
+    when: "\u5E74\u5EA6/\u6708\u5EA6\u6700\u91CD\u8981\u7684\u4E00\u4E2A\u6570\u5B57",
+    html: '<div class="hero-kpi"><div class="hero-kpi__label">\u5168\u5E74\u9500\u552E\u989D</div><div class="hero-kpi__value" data-count="1284.5">1,284.5<span class="unit">\u4E07\u5143</span></div><div class="hero-kpi__target">\u76EE\u6807 1,500 \u4E07 \xB7 \u8FBE\u6210 85.6%</div><div class="hero-kpi__spark"><i style="height:40%"></i><i style="height:68%"></i><i style="height:82%"></i></div></div>'
+  },
+  {
+    key: "bullet-row",
+    label: "Bullet \u56FE",
+    when: "\u76EE\u6807 vs \u5B9E\u9645 vs \u533A\u95F4",
+    html: '<div class="bullet-row"><div class="bullet-label">\u51FA\u5E93\u53CA\u65F6\u7387</div><div class="bullet-track"><div class="bullet-range"></div><div class="bullet-fill" style="width:72%"></div><div class="bullet-target" style="left:85%"></div></div><div class="bullet-value">72%</div></div>'
+  },
+  {
+    key: "small-multiples",
+    label: "\u5C0F\u500D\u6570\u56FE",
+    when: "\u591A\u4ED3/\u591A\u54C1\u7C7B\u540C\u6307\u6807\u6A2A\u5411\u5BF9\u6BD4",
+    html: '<div class="small-multiples"><div class="mini-chart"><div class="mini-chart__title">\u4ED3\u5E93 A</div><div class="ol-chart" data-id="m1" style="height:160px"></div></div>\u2026</div>'
+  },
+  {
+    key: "heat-table",
+    label: "\u70ED\u529B\u8868",
+    when: "\u591A\u7EF4\u8868\u683C\u5FEB\u901F\u626B\u8BFB\uFF0C\u6570\u503C\u6761\u4EF6\u7740\u8272",
+    html: '<table class="heat-table"><thead><tr><th>\u6708\u4EFD</th><th>\u5355\u91CF</th><th>\u53CA\u65F6\u7387</th></tr></thead><tbody><tr><td>1 \u6708</td><td class="heat-2">\u2026</td><td class="heat-4">\u2026</td></tr></tbody></table>'
+  },
+  {
+    key: "top-bottom",
+    label: "Top / Bottom",
+    when: "\u589E\u957F\u6700\u5FEB vs \u4E0B\u6ED1\u6700\u5FEB\u3001\u4F18\u52A3\u52BF\u5BF9\u6BD4",
+    html: '<div class="top-bottom"><div class="top-bottom__col"><div class="top-bottom__title">\u589E\u957F Top</div>\u2026</div><div class="top-bottom__col"><div class="top-bottom__title">\u4E0B\u6ED1 Top</div>\u2026</div></div>'
+  },
+  {
+    key: "comparison-matrix",
+    label: "\u5BF9\u6BD4\u77E9\u9635",
+    when: "\u591A\u5BF9\u8C61\u591A\u6307\u6807\u5BF9\u6BD4\uFF0C\u91CD\u70B9\u662F\u5DEE\u8DDD",
+    html: '<div class="comparison-matrix"><div class="matrix-head">\u6307\u6807 / \u5BF9\u8C61</div><div class="matrix-row"><span>\u53CA\u65F6\u7387</span><span class="matrix-cell is-good">98%</span><span class="matrix-cell is-bad">91%</span></div>\u2026</div>'
+  },
+  {
+    key: "visual-rhythm",
+    label: "\u7248\u5F0F\u8282\u594F",
+    when: "\u7AE0\u8282\u5207\u6362\u3001\u91CD\u70B9\u5F3A\u8C03\u3001\u8865\u5145\u8BF4\u660E",
+    html: '<div class="full-bleed">\u5168\u5BBD\u8272\u5E26</div><p class="drop-cap">\u9996\u5B57\u4E0B\u6C89\u6BB5\u843D\u2026</p><aside class="margin-note">\u4FA7\u8FB9\u6CE8\uFF1A\u53E3\u5F84/\u89E3\u91CA</aside><div class="annotation"><span class="annotation__dot"></span>\u56FE\u4E0A\u7684\u5173\u952E\u6807\u6CE8</div>'
+  }
+];
+var REPORT_VISUAL_STYLES = [
+  {
+    key: "editorial",
+    label: "\u6742\u5FD7\u7F16\u8F91\u98CE",
+    brief: "\u886C\u7EBF\u6807\u9898\u3001\u5927\u7559\u767D\u3001\u5F15\u8A00\u5757\u3001\u65F6\u95F4\u8F74/\u5206\u680F\u53D9\u4E8B\uFF0C\u50CF\u4E00\u672C\u5E74\u5EA6\u7279\u520A"
+  },
+  {
+    key: "cockpit",
+    label: "\u6DF1\u8272\u9A7E\u9A76\u8231",
+    brief: "\u6DF1\u8272\u5E95\u3001\u51B7\u8272/\u9713\u8679\u5F3A\u8C03\u3001\u5BC6\u96C6\u7F51\u683C\u3001\u53D1\u5149\u6570\u5B57\uFF0C\u9002\u5408\u8FD0\u8425\u76D1\u63A7"
+  },
+  {
+    key: "minimal",
+    label: "\u6781\u7B80\u9ED1\u767D",
+    brief: "\u5355\u8272\u3001\u7EC6\u7EBF\u5206\u9694\u3001\u65E0\u9634\u5F71\u3001\u5F3A\u6392\u7248\u4E0E\u6570\u5B57\u5BF9\u6BD4\uFF0C\u514B\u5236\u9AD8\u7EA7"
+  },
+  {
+    key: "boardroom",
+    label: "\u8463\u4E8B\u4F1A\u7B80\u62A5",
+    brief: "\u8D85\u5927\u6570\u5B57\u3001\u514B\u5236\u914D\u8272\u3001\u4E00\u5C4F\u7ED3\u8BBA\u3001\u5C11\u800C\u7CBE\u7684\u56FE\u8868"
+  },
+  {
+    key: "dataStory",
+    label: "\u6570\u636E\u6545\u4E8B",
+    brief: "\u6E10\u53D8\u5F3A\u8C03\u3001\u975E\u5BF9\u79F0\u5361\u7247\u3001\u5206\u8282\u8272\u5E26\u3001\u56FE\u6587\u8282\u594F\u611F\u5F3A"
+  }
+];
+var layoutCatalog = REPORT_LAYOUT_KEYS.map((key) => {
+  const item = REPORT_LAYOUTS[key];
+  return `- ${key}\uFF08${item.label}\uFF09\uFF1A\u9002\u5408 ${item.when}\uFF1B\u53C2\u8003\u7ED3\u6784\uFF1A${item.sections}\uFF1B\u63A8\u8350\u5143\u7D20\uFF1A${item.elements.join(" / ")}\uFF1B\u5BC6\u5EA6\uFF1A${item.density}\uFF1B\u6CE8\u610F\uFF1A${item.avoid}`;
+}).join("\n");
+var styleCatalog = REPORT_VISUAL_STYLES.map((item) => `- ${item.label}\uFF1A${item.brief}`).join("\n");
+var elementCatalog = REPORT_ELEMENT_KIT.map((item) => `- ${item.label}\uFF08${item.key}\uFF09\uFF1A${item.when}
+  ${item.html}`).join("\n");
+var CHART_RECIPE_PROMPT = `\u3010\u56FE\u8868\u914D\u65B9\uFF08\u6309\u6570\u636E\u5F62\u6001\u9009\uFF0C\u4E0D\u8981\u9ED8\u8BA4\u53EA\u7528\u6298\u7EBF/\u67F1\u72B6/\u997C\u56FE\uFF09\u3011
+- \u65F6\u95F4\u8D8B\u52BF\uFF1Aline/area\uFF0Csmooth + \u6E10\u53D8 areaStyle + symbol:'none'\uFF1B\u5173\u952E\u70B9\u7528 markPoint\u3002
+- \u7ED3\u6784\u5360\u6BD4\uFF1Atreemap / sunburst / \u5806\u53E0\u67F1\uFF0C\u6BD4\u997C\u56FE\u66F4\u9002\u5408\u591A\u5C42\u7ED3\u6784\uFF1B\u73AF\u5F62\u56FE\u4E2D\u5FC3\u653E\u603B\u6570\u3002
+- \u4E24\u671F\u5BF9\u6BD4\uFF1Adumbbell\uFF08\u4E24\u4E2A scatter + \u8FDE\u63A5\u7EBF\uFF09\u6216 slope\uFF08xAxis:['\u671F\u521D','\u671F\u672B']\uFF0C\u6BCF\u4E2A\u5BF9\u8C61\u4E00\u6761 line\uFF09\u3002
+- \u76EE\u6807\u8FBE\u6210\uFF1Abullet\uFF08bar + markLine \u76EE\u6807\u7EBF\uFF09\u6216 gauge\uFF1B\u8FBE\u6210\u7387\u73AF\u53EA\u7528\u4E8E\u5355\u4E00\u6307\u6807\u3002
+- \u53D8\u5316\u5F52\u56E0\uFF1Awaterfall\uFF08\u4E24\u4E2A stacked bar series\uFF0C\u5E95\u5C42\u900F\u660E\uFF0C\u9876\u5C42\u663E\u793A\u589E\u51CF\uFF09\u3002
+- \u6392\u540D\u53D8\u5316\uFF1Aslope \u6216 rank-list + delta\uFF0C\u5FC5\u987B\u4F53\u73B0\u540D\u6B21\u53D8\u5316\u3002
+- \u5206\u5E03\uFF1Aboxplot / \u76F4\u65B9\u56FE\uFF0C\u6807\u4E2D\u4F4D\u6570\u548C\u79BB\u7FA4\u503C\u3002
+- \u6D41\u8F6C\uFF1Asankey\uFF08nodes + links\uFF09\u6216 funnel\uFF0C\u9002\u5408\u5C65\u7EA6\u94FE\u8DEF/\u5E93\u5B58\u6D41\u8F6C\u3002
+- \u591A\u7EF4\u80FD\u529B\uFF1Aradar\uFF0C\u6307\u6807 4~7 \u4E2A\uFF0C\u591A\u4E2A\u5BF9\u8C61\u53E0\u52A0\u3002
+- \u65E5\u671F\u5BC6\u5EA6\uFF1Acalendar + heatmap\uFF08coordinateSystem:'calendar'\uFF09\u3002
+- \u591A\u5BF9\u8C61\u540C\u6307\u6807\uFF1Asmall multiples\uFF0C\u591A\u4E2A .ol-chart \u7528\u540C\u4E00\u523B\u5EA6\uFF0C\u7981\u6B62\u62FC\u6210\u4E00\u5F20\u82B1\u56FE\u3002
+- \u76F8\u5173\u6027\uFF1Ascatter / bubble\uFF0C\u6C14\u6CE1\u5927\u5C0F\u8868\u793A\u7B2C\u4E09\u7EF4\u3002
+- \u53CC\u8F74\uFF1AyAxis \u6570\u7EC4 + bar/line \u7EC4\u5408\uFF0C\u53EA\u5728\u91CF\u7EB2\u786E\u5B9E\u4E0D\u540C\u65F6\u4F7F\u7528\u3002
+\u56FE\u8868\u7EDF\u4E00\u8981\u6C42\uFF1A\u6570\u636E\u5185\u5D4C\u3001\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\u3001\u989C\u8272\u4ECE --rp-primary/--rp-success/--rp-danger \u6D3E\u751F\uFF1B\u56FE\u8868\u6570\u91CF\u7531\u6570\u636E\u7EF4\u5EA6\u51B3\u5B9A\uFF0C\u4E0D\u8981\u4E3A\u51D1\u7C7B\u578B\u62C6\u6570\u636E\u3002`;
+var htmlReportSchema = external_exports2.object({
+  component: external_exports2.string().default(HTML_REPORT_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${HTML_REPORT_COMPONENT}`),
+  title: external_exports2.string().describe("\u62A5\u544A\u6807\u9898\uFF0C\u4E2D\u6587"),
+  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898/\u65F6\u95F4\u8303\u56F4"),
+  height: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe('\u9884\u89C8\u9AD8\u5EA6\uFF08px\uFF09\uFF0C\u4F20 320 \u6216 "320px" \u90FD\u53EF\u4EE5'),
+  template: external_exports2.string().optional().describe("\u62A5\u544A\u6A21\u677F\uFF1Adaily=\u4F5C\u4E1A\u65E5\u62A5 / weekly=\u8FD0\u8425\u5468\u62A5 / monthly=\u8FD0\u8425\u6708\u62A5 / annual=\u5E74\u5EA6\u62A5\u544A / inventory=\u5E93\u5B58\u5FEB\u7167 / exception=\u5F02\u5E38\u4E13\u62A5 / compare=\u591A\u4ED3\u5BF9\u6BD4\uFF1B\u5199\u4E2D\u6587\uFF08\u5468\u62A5/\u5E74\u62A5/\u5E74\u5EA6\u62A5\u544A/\u5E93\u5B58\u5FEB\u7167/\u5F02\u5E38\u4E13\u62A5\u2026\uFF09\u4E5F\u53EF\u4EE5\uFF0C\u5224\u65AD\u4E0D\u4E86\u7528 auto"),
+  layout: external_exports2.enum(["auto", ...REPORT_LAYOUT_KEYS]).optional().describe("\u7ED3\u6784\u84DD\u56FE\uFF1Aexecutive=\u9AD8\u5C42\u6458\u8981 / dashboard=\u8FD0\u8425\u770B\u677F / narrative=\u53D9\u4E8B\u5206\u6790 / comparison=\u6A2A\u5411\u5BF9\u6BD4 / timeline=\u65F6\u95F4\u8F74\u590D\u76D8\uFF1B\u4E0D\u786E\u5B9A\u7528 auto"),
+  visualStyle: external_exports2.string().optional().describe("\u89C6\u89C9\u98CE\u683C brief\uFF08\u81EA\u7531\u63CF\u8FF0\uFF0C\u5982\u300C\u6742\u5FD7\u7F16\u8F91\u98CE\u300D\u300C\u6DF1\u8272\u9A7E\u9A76\u8231\u300D\u300C\u6781\u7B80\u9ED1\u767D\u300D\uFF09\u3002\u4E0D\u540C\u62A5\u544A\u8BF7\u4E3B\u52A8\u4F7F\u7528\u4E0D\u540C\u98CE\u683C\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u957F\u4E00\u6837\u3002"),
+  period: external_exports2.string().optional().describe("\u7EDF\u8BA1\u671F\u95F4\uFF0C\u5982 2025-08-01 ~ 2025-08-31"),
+  scope: external_exports2.string().optional().describe("\u7EDF\u8BA1\u53E3\u5F84\uFF0C\u5982 \u5168\u4ED3\u5408\u8BA1 / \u534E\u4E1C\u4ED3 / \u67D0\u8D27\u4E3B / \u542B\u51BB\u7ED3\u5E93\u5B58"),
+  sources: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u6765\u6E90\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF0C\u6570\u7EC4\u6216\u201C\u987F\u53F7/\u9017\u53F7\u5206\u9694\u7684\u5B57\u7B26\u4E32\u201D\u90FD\u53EF\u4EE5"),
+  warnings: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF08\u7A7A\u503C/\u622A\u65AD/\u8D1F\u5E93\u5B58\u7B49\uFF09\uFF0C\u6570\u7EC4\u6216\u5206\u9694\u5B57\u7B26\u4E32\u90FD\u53EF\u4EE5"),
+  html: external_exports2.string().describe('\u62A5\u544A\u6B63\u6587 HTML \u7247\u6BB5\uFF08\u4E0D\u8981 <html>/<head>/<body>\uFF09\u3002\u56FE\u8868\u5BB9\u5668\u7528 <div class="ol-chart" data-id="xxx" style="height:320px"></div>\uFF0C\u5BF9\u5E94\u7684 ECharts option \u653E\u5230 charts.xxx \u5B57\u6BB5\u3002\u7981\u6B62\u5F15\u7528\u4EFB\u4F55\u5916\u90E8 CDN/\u811A\u672C/\u56FE\u7247\u94FE\u63A5\u3002'),
+  css: external_exports2.string().optional().describe("\u53EF\u9009\uFF1A\u62A5\u544A CSS \u7247\u6BB5\uFF08\u4F1A\u6CE8\u5165\u5230\u57FA\u7840\u6837\u5F0F\u4E4B\u540E\uFF09\u3002\u53EF\u4EE5\u81EA\u7531\u5B9A\u4E49 class\u3001\u8986\u76D6 CSS \u53D8\u91CF\u3001\u8C03\u6574\u5B57\u4F53/\u7559\u767D/\u8272\u5F69/\u7F51\u683C\uFF1B\u7981\u6B62 @import\u3001\u5916\u94FE\u5B57\u4F53/\u56FE\u7247\u3001expression/behavior\u3002\u5EFA\u8BAE 8~30KB\u3002"),
+  elements: external_exports2.array(external_exports2.string()).max(20).optional().describe("\u53EF\u9009\uFF1A\u672C\u8F6E\u5B9E\u9645\u4F7F\u7528\u7684\u5143\u7D20 class\uFF08\u5982 timeline / risk-matrix / action-list / report-appendix\uFF09\u3002\u524D\u7AEF\u4F1A\u81EA\u52A8\u4ECE HTML \u4E2D\u63D0\u53D6\uFF0C\u8FD9\u91CC\u53EA\u7528\u4E8E\u8865\u5168\u3002"),
+  charts: external_exports2.union([external_exports2.record(external_exports2.string(), external_exports2.record(external_exports2.string(), external_exports2.any())), external_exports2.string()]).optional().describe("\u56FE\u8868\uFF1Akey \u5BF9\u5E94 .ol-chart \u7684 data-id\uFF0Cvalue \u4E3A\u6807\u51C6 ECharts option\uFF08\u6570\u636E\u5185\u5D4C\uFF09\uFF1B\u4E5F\u63A5\u53D7 JSON \u5B57\u7B26\u4E32")
+});
+var HTML_REPORT_TOOL_DESCRIPTION = `\u5F53\u7528\u6237\u8981"\u4E00\u4EFD\u5B8C\u6574\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u5E74\u62A5 / \u5E74\u5EA6\u62A5\u544A / \u6C47\u62A5\u5927\u5C4F"\uFF0C\u9700\u8981\u5206\u8282\u3001\u5361\u7247\u4E0E\u660E\u7EC6\u65F6\uFF0C\u8C03\u7528\u672C\u5DE5\u5177\u76F4\u63A5\u4EA7\u51FA HTML \u62A5\u544A\u3002
+\u3010\u7B2C\u4E00\u539F\u5219\u3011\u7ED3\u6784\u670D\u52A1\u4E8E\u5185\u5BB9\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u5957\u540C\u4E00\u5957\u6A21\u677F\u3002
+1) \u5148\u9009 layout\uFF08\u672C\u8F6E\u4F18\u5148\u53C2\u8003\u7CFB\u7EDF\u63D0\u793A\u91CC\u7684\u7248\u5F0F\u8981\u6C42\uFF1B\u6CA1\u6709\u5C31\u7528 auto\uFF09\uFF1A
+${layoutCatalog}
+2) \u518D\u9009 visualStyle\uFF08\u5C3D\u91CF\u548C\u4E0A\u4E00\u4EFD\u4E0D\u540C\uFF09\uFF1A
+${styleCatalog}
+3) \u5199\u6837\u5F0F\uFF1Acss \u5B57\u6BB5\u662F\u5B8C\u6574 CSS \u7247\u6BB5\uFF0C\u4F1A\u6CE8\u5165\u5230\u57FA\u7840\u6837\u5F0F\u4E4B\u540E\uFF1B\u4E5F\u53EF\u4EE5\u5728 html \u91CC\u5199 <style> \u6216\u7528\u5185\u8054 style\u3002\u57FA\u7840 CSS \u5DF2\u7ECF\u63D0\u4F9B\u6392\u7248\u3001\u8868\u683C\u3001\u5361\u7247\u3001\u56FE\u8868\u5BB9\u5668\u548C\u6697\u8272\u4E3B\u9898\uFF0C\u4F60\u53EA\u9700\u8981\u5199\u201C\u5DEE\u5F02\u5316\u201D\u7684\u90E8\u5206\u3002
+\u3010\u81EA\u7531 CSS \u89C4\u8303\u3011
+- \u4F18\u5148\u8986\u76D6 CSS \u53D8\u91CF\uFF1A--rp-primary / --rp-primary-2 / --rp-bg / --rp-surface / --rp-surface-2 / --rp-border / --rp-t1 / --rp-t2 / --rp-t3 / --rp-radius / --rp-gap\uFF1B
+- \u4E0D\u8981\u7ED9 body/.report \u5199\u6B7B\u6D45\u8272\u80CC\u666F\uFF0C\u7528 var(--rp-bg)/var(--rp-surface)\uFF0C\u5426\u5219\u6697\u8272\u4E3B\u9898\u4F1A\u5931\u6548\uFF1B
+- \u5B57\u4F53\u53EA\u7528\u7CFB\u7EDF\u5B57\u4F53\u6808\uFF08\u5982 Georgia, "Songti SC", "Noto Serif SC", serif \u6216 -apple-system, "PingFang SC", sans-serif\uFF09\uFF0C\u7981\u6B62 @font-face \u5916\u94FE\uFF1B
+- \u7981\u6B62 @import\u3001url(http...)\u3001url(//...)\u3001expression()\u3001behavior\u3001-moz-binding\uFF1B\u56FE\u7247\u53EA\u80FD\u7528\u7EAF CSS \u7ED8\u5236\uFF0C\u6216 data:image/png|jpeg|gif|webp\uFF1B
+- \u81F3\u5C11\u5904\u7406 @media(max-width:820px)\uFF0C\u4FDD\u8BC1\u7A84\u5C4F\u4E0D\u6A2A\u5411\u6EA2\u51FA\uFF1B
+- \u6253\u5370/\u5BFC\u51FA\uFF1A\u4E0D\u8981\u7528 @media print \u9690\u85CF\u6838\u5FC3\u5185\u5BB9\uFF0C\u4E0D\u8981\u4F9D\u8D56 position:fixed\uFF1B
+- CSS \u5EFA\u8BAE 8~30KB\uFF0C\u8D85\u8FC7 60KB \u4F1A\u88AB\u622A\u65AD\uFF1B!important \u53EA\u5728\u8986\u76D6\u57FA\u7840\u6837\u5F0F\u65F6\u5C11\u91CF\u4F7F\u7528\u3002
+\u3010\u53EF\u9009\u57FA\u7840\u7EC4\u4EF6\uFF08\u53EF\u81EA\u7531\u7EC4\u5408\u3001\u6539\u6837\u5F0F\uFF0C\u4E5F\u53EF\u4EE5\u5B8C\u5168\u4E0D\u7528\uFF09\u3011
+- \u5916\u5C42\uFF1A<div class="report"> \u2192 \u9876\u90E8 <div class="report-header"><h1 class="report-title">\u6807\u9898</h1><div class="report-sub">\u65F6\u95F4/\u53E3\u5F84</div><div class="report-meta"><span class="meta-chip">\u2026</span></div></div>
+- \u5206\u8282\uFF1A<section class="section"><div class="section-head"><span class="section-no">1</span><div><div class="section-title">\u6807\u9898</div><div class="section-sub">\u526F\u6807\u9898</div></div></div> \u2026</section>
+- \u5361\u7247/\u7F51\u683C\uFF1A<div class="card"><div class="card-title">\u6807\u9898</div> \u2026</div>\uFF0C\u5E76\u6392\u7528 <div class="grid grid-2"> \u6216 grid-3
+- \u7ED3\u8BBA/\u63D0\u793A\uFF1A<div class="callout">\u2026</div>\u3001<div class="notice is-warning|is-danger|is-success|is-info">\u2026</div>
+- \u6570\u5B57\uFF1A.stat-grid > .stat\uFF08.stat-label/.stat-value/.stat-foot/.stat-note\uFF09\u3001.compare-grid > .compare\u3001.ring-grid > .ring\uFF08style="--v:83"\uFF09\u3001.rank-list > .rank-row\u3001.chips > .chip\uFF1B\u4E5F\u53EF\u4EE5\u81EA\u5DF1\u5199 .hero-number \u7B49\u81EA\u5B9A\u4E49 class
+- \u6761\u5F62/\u8FDB\u5EA6/\u5206\u5E03\uFF1A.bar-row\uFF08.bar-fill \u7684 width \u63A7\u5236\u6BD4\u4F8B\uFF09\u3001.progress-row\u3001.dist-bar + .dist-legend
+- \u98CE\u9669\uFF1A.risk-list > .risk-item.is-danger|is-warning|is-success\uFF1B\u8868\u683C\uFF1A<table> + thead/tbody
+- \u56FE\u8868\uFF1A<div class="ol-chart" data-id="c1" style="height:320px"></div>\uFF0Coption \u653E\u8FDB charts.c1
+4) \u8868\u683C\u89C4\u5219\uFF1A\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u53EA\u653E Top 10 \u5E76\u7528\u4E00\u884C\u300C\u5176\u4F59 N \u9879\u5408\u8BA1\u300D\u6536\u5C3E\uFF1B\u6BCF\u4E00\u884C\u7684 <td> \u6570\u91CF\u5FC5\u987B\u4E0E\u8868\u5934 <th> \u5B8C\u5168\u4E00\u81F4\uFF0C\u7A7A\u503C\u4E5F\u8981\u8F93\u51FA <td>\u2014</td>\uFF0C\u7F3A\u5355\u5143\u683C\u4F1A\u5BFC\u81F4\u6574\u884C\u9519\u4F4D\uFF1B\u6570\u5B57\u5217\u52A0 class="num"\uFF0C\u6587\u672C\u5217\u52A0 class="txt"\uFF08\u57FA\u7840\u6837\u5F0F\u4F1A\u81EA\u52A8\u5BF9\u9F50\uFF09\u3002
+\u3010\u62A5\u544A\u5143\u7D20\u5E93\u3011
+- \u6570\u636E\u578B\u5143\u7D20\uFF08\u81F3\u5C11 2 \u4E2A\uFF09\uFF1Ahero-kpi / bullet-row / small-multiples / heat-table / top-bottom / comparison-matrix / risk-matrix\uFF1B
+- \u53D9\u4E8B\u578B\u5143\u7D20\uFF08\u81F3\u5C11 2 \u4E2A\uFF09\uFF1Areport-cover / finding-list / so-what / pull-quote / timeline / action-list / report-appendix\uFF1B
+- \u7B2C\u4E00\u4E2A section \u5FC5\u987B\u662F\u6570\u636E\u5C4F\uFF1A2~4 \u4E2A Hero KPI + 1 \u5F20\u4E3B\u56FE/\u70ED\u529B\u8868\uFF1B
+- \u6BCF\u4E2A\u5206\u6790 section \u81F3\u5C11\u5305\u542B 1 \u4E2A\u6570\u636E\u5757\uFF08\u56FE/\u8868/\u77E9\u9635/\u6392\u884C\u699C\uFF09\uFF0C\u7EAF\u6587\u5B57 section \u6700\u591A 1 \u4E2A\uFF1B
+- \u4E0D\u8981\u6574\u4EFD\u62A5\u544A\u53EA\u6709\u65F6\u95F4\u8F74\u3001\u53D1\u73B0\u5217\u8868\u3001\u884C\u52A8\u6E05\u5355\u548C\u9644\u5F55\uFF1B
+${elementCatalog}
+5) \u56FE\u8868\u89C4\u5219\uFF1A\u6570\u91CF\u7531\u6570\u636E\u7EF4\u5EA6\u51B3\u5B9A\uFF0C\u53EA\u6709\u4E00\u4E2A\u7EF4\u5EA6\u65F6 1 \u5F20\u56FE + \u6570\u5B57\u5361\u5373\u53EF\uFF1B\u7C7B\u578B\u6309\u6570\u636E\u9009\uFF08line / bar / \u5806\u53E0\u67F1 / \u6C34\u5E73\u6761 / pie / \u73AF\u5F62 / radar / funnel / gauge / scatter / heatmap / treemap / sunburst / sankey / boxplot / calendar heatmap / waterfall / dumbbell / slope / small multiples\uFF09\uFF0C\u4E0D\u8981\u4E3A\u4E86\u51D1\u7C7B\u578B\u800C\u62C6\u6570\u636E\uFF1B\u56FE\u8868\u5BB9\u5668\u5FC5\u987B\u5199\u6B7B\u9AD8\u5EA6\uFF0Coption \u6570\u636E\u5185\u5D4C\uFF0C\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\u7528\u4E2D\u6587\u3002
+- \u9AD8\u7EA7\u56FE\u7684\u5177\u4F53 option \u8981\u70B9\u89C1\u7CFB\u7EDF\u63D0\u793A\u91CC\u7684\u3010\u56FE\u8868\u914D\u65B9\u3011\u3002
+6) \u6570\u5B57\u683C\u5F0F\uFF1A\u5343\u5206\u4F4D\u5206\u9694\uFF1B\u91D1\u989D/\u6570\u91CF \u22651 \u4EBF\u5199\u300C\u4EBF\u300D\u3001\u22651 \u4E07\u5199\u300C\u4E07\u300D\uFF0C\u4FDD\u7559 1~2 \u4F4D\u5C0F\u6570\uFF1B\u767E\u5206\u6BD4\u4FDD\u7559 1 \u4F4D\u5C0F\u6570\uFF1B\u589E\u957F\u7528 <span class="delta up">\u2191 x.x%</span>\u3001\u4E0B\u964D\u7528 <span class="delta down">\u2193 x.x%</span>\u3001\u6301\u5E73\u7528 <span class="delta flat">\u2192 0.0%</span>\uFF1B\u5173\u952E\u6570\u5B57\u8981\u80FD\u770B\u51FA\u65F6\u95F4\u8303\u56F4\u4E0E\u53E3\u5F84\u3002
+7) \u5DE6\u4FA7\u7AE0\u8282\u5BFC\u822A\u3001\u751F\u6210\u65F6\u95F4\u9875\u811A\u3001\u6C34\u5370\u3001\u6570\u5B57\u5343\u5206\u4F4D\u7531\u9875\u9762\u81EA\u52A8\u5904\u7406\uFF0C\u4F60\u4E0D\u8981\u81EA\u5DF1\u5199\u76EE\u5F55/\u9875\u811A\uFF1B\u62A5\u544A\u4F1A\u81EA\u52A8\u5265\u79BB <script> \u4E0E\u6240\u6709\u5916\u90E8\u8D44\u6E90\uFF08CDN/\u56FE\u7247\u94FE\u63A5\uFF09\uFF0C\u5199\u4E86\u4E5F\u4E0D\u4F1A\u751F\u6548\u3002
+8) \u6240\u6709\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199\u4E00\u53E5"\u62A5\u544A\u5DF2\u751F\u6210"\u3002
+9) \u9664 html/charts/css \u5916\uFF0C\u8FD8\u8981\u586B template\uFF08\u6A21\u677F\uFF09\u3001layout\uFF08\u7ED3\u6784\uFF09\u3001visualStyle\uFF08\u89C6\u89C9\u98CE\u683C\uFF09\u3001period\uFF08\u7EDF\u8BA1\u671F\u95F4\uFF09\u3001scope\uFF08\u7EDF\u8BA1\u53E3\u5F84\uFF09\u3001sources\uFF08\u6570\u636E\u8868\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF09\u3001warnings\uFF08\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF09\uFF1B\u8FD9\u4E9B\u4F1A\u6E32\u67D3\u5230\u62A5\u544A\u9875\u811A\u548C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u91CC\u3002
+10) \u672C\u5DE5\u5177\u4E0D\u4F1A\u56E0\u4E3A\u683C\u5F0F\u95EE\u9898\u5931\u8D25\uFF1A\u8868\u683C\u5217\u6570\u4E0D\u4E00\u81F4\u3001\u56FE\u8868\u7F3A option \u4F1A\u7531\u524D\u7AEF\u515C\u5E95\u5E76\u663E\u793A\u4E3A\u201C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u201D\uFF0C\u4F60\u4E0D\u9700\u8981\u53CD\u590D\u91CD\u8BD5\u6216\u91CD\u65B0\u751F\u6210\u6574\u4EFD\u62A5\u544A\u3002
+11) \u6570\u636E\u5E93\u53EF\u80FD\u5F88\u5927\uFF1A\u4F18\u5148\u7528\u805A\u5408 SQL\uFF08GROUP BY / SUM / COUNT / TOP\uFF09\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\uFF1B\u6574\u4EFD\u62A5\u544A\u7684 SQL \u67E5\u8BE2\u5C3D\u91CF\u63A7\u5236\u5728 3~5 \u6B21\u4EE5\u5185\uFF0C\u4E00\u6B21 SQL \u5C3D\u91CF\u540C\u65F6\u53D6\u56DE\u591A\u4E2A\u6307\u6807\u3002
+component \u56FA\u5B9A\u4E3A \${HTML_REPORT_COMPONENT}\u3002`;
+var REPORT_TOOL_DESCRIPTION = `\u5F53\u7528\u6237\u7684\u95EE\u9898\u5C5E\u4E8E\u6570\u636E\u5206\u6790\uFF08\u8D8B\u52BF\u3001\u5206\u5E03\u3001\u5BF9\u6BD4\u3001\u5360\u6BD4\u3001\u6392\u884C\u3001\u6C47\u603B\u3001\u7ED3\u6784\u53D8\u5316\u7B49\uFF09\u6216\u8981\u6C42\u770B\u62A5\u8868/\u65E5\u62A5/\u56FE\u8868\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u524D\u7AEF\u4F1A\u6E32\u67D3\u6210\u4E00\u4EFD\u53EF\u89C6\u5316\u62A5\u8868\uFF08\u7C7B\u4F3C\u4EEA\u8868\u76D8 / \u6C47\u62A5\u5927\u5C4F\uFF09\u3002
+\u6392\u7248\u5EFA\u8BAE\uFF08blocks \u987A\u5E8F\uFF09\uFF1A
+- \u7528 section \u5206\u8282\uFF1A\u6BCF\u4E2A\u4E3B\u9898\u7528 section \u5F00\u5934\uFF08\u7ED9 no \u7F16\u53F7 + title\uFF0C\u53EF\u5E26\u82F1\u6587 subtitle\uFF09\uFF0C\u524D\u7AEF\u4F1A\u636E\u6B64\u751F\u6210\u76EE\u5F55\u5BFC\u822A\uFF1B
+- section \u540E\u63A5 summary\uFF08\u6838\u5FC3\u7ED3\u8BBA\uFF09\u6216 notice\uFF08\u9884\u8B66/\u63D0\u793A\uFF09\uFF1B
+- \u5173\u952E\u6307\u6807\u7528 kpi\uFF082~4 \u4E2A\u4E00\u6392\uFF0C\u8865 note \u8BF4\u660E\u53E3\u5F84\uFF09\uFF1B
+- \u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4\u7528 hbar\uFF1B\u8FBE\u6210\u60C5\u51B5\u7528 progress\uFF1B\u4E00\u6392\u5C0F\u6307\u6807\u7528 chips\uFF1B\u6784\u6210\u5206\u5E03\u7528 dist\uFF1B
+- \u8D8B\u52BF/\u5BF9\u6BD4\u56FE\u7528 chart\uFF08\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\uFF1B
+- \u660E\u7EC6\u7528 table\uFF1B\u98CE\u9669\u4E0E\u603B\u7ED3\u7528 risk\uFF08danger/warning/success \u914D\u8272\uFF09\uFF1B\u6700\u540E\u53EF\u7528 insights \u6536\u5C3E\u3002
+\u89C4\u5219\uFF1A\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u540C\u4E00\u7EF4\u5EA6\u53EA\u653E\u4E00\u5F20\u6700\u5408\u9002\u7684\u56FE\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\uFF0C\u4E0D\u91CD\u590D\u62A5\u8868\u91CC\u7684\u6570\u5B57\u3002
+component \u56FA\u5B9A\u586B ${REPORT_COMPONENT}\u3002`;
+
+// dist/tools.js
+init_tools2();
 
 // dist/budget.js
 import { AsyncLocalStorage as AsyncLocalStorage2 } from "node:async_hooks";
@@ -155248,175 +155763,6 @@ function logLine(line) {
   });
 }
 
-// dist/visual-spec.js
-var REPORT_COMPONENT = "ol-report";
-var LEGACY_CHART_COMPONENT = "ol-echarts";
-var REPORT_TOOL_NAME = "render_report";
-var LEGACY_CHART_TOOL_NAME = "render_chart";
-var HTML_REPORT_COMPONENT = "ol-html-report";
-var HTML_REPORT_TOOL_NAME = "render_html_report";
-var VISUAL_TOOL_NAMES = /* @__PURE__ */ new Set([
-  REPORT_TOOL_NAME,
-  LEGACY_CHART_TOOL_NAME,
-  HTML_REPORT_TOOL_NAME
-]);
-var tone = external_exports2.enum(["primary", "success", "danger", "warning", "neutral"]).describe("\u914D\u8272\uFF1Aprimary \u4E3B\u8272 / success \u7EFF / danger \u7EA2 / warning \u6A59 / neutral \u7070");
-var valueSchema = external_exports2.union([external_exports2.number(), external_exports2.string()]);
-var sectionBlock = external_exports2.object({
-  type: external_exports2.literal("section"),
-  no: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe("\u5206\u8282\u5E8F\u53F7\uFF0C\u5982 1\u30012\u30013"),
-  title: external_exports2.string().describe("\u5206\u8282\u6807\u9898\uFF0C\u4E2D\u6587"),
-  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF08\u82F1\u6587\u540D\u6216\u8BF4\u660E\uFF09\uFF0C\u5982 Executive Summary")
-});
-var summaryBlock = external_exports2.object({
-  type: external_exports2.literal("summary"),
-  title: external_exports2.string().optional().describe("\u5C0F\u6807\u9898\uFF0C\u9ED8\u8BA4\u300C\u6838\u5FC3\u7ED3\u8BBA\u300D"),
-  text: external_exports2.string().describe("\u7ED3\u8BBA\u6B63\u6587\uFF0C\u4E00\u6BB5\u8BDD\u6982\u62EC"),
-  items: external_exports2.array(external_exports2.string()).max(6).optional().describe("\u53EF\u9009\uFF1A\u8981\u70B9\u6761\u76EE")
-});
-var noticeBlock = external_exports2.object({
-  type: external_exports2.literal("notice"),
-  tone: tone.optional().describe("\u63D0\u793A\u7C7B\u578B\uFF0C\u7531\u5185\u5BB9\u4E25\u91CD\u7A0B\u5EA6\u51B3\u5B9A\uFF0C\u9ED8\u8BA4 warning"),
-  text: external_exports2.string().describe("\u63D0\u793A\u5185\u5BB9\uFF0C\u4E00\u53E5\u8BDD")
-});
-var kpiItem = external_exports2.object({
-  label: external_exports2.string().describe("\u6307\u6807\u540D\u79F0\uFF0C\u4E2D\u6587\uFF0C\u7B80\u77ED"),
-  value: valueSchema.describe("\u6307\u6807\u503C\uFF0C\u6570\u5B57\u4F18\u5148"),
-  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF08\u4E07/\u5143/%/\u53F0/\u5355\uFF09\uFF0C\u53EF\u4E3A\u7A7A"),
-  delta: external_exports2.number().optional().describe("\u540C\u6BD4/\u73AF\u6BD4\u53D8\u5316\u767E\u5206\u6BD4\uFF0C\u6B63\u6570\u4E3A\u589E\u957F\u3001\u8D1F\u6570\u4E3A\u4E0B\u964D"),
-  trend: external_exports2.enum(["up", "down", "flat"]).optional().describe("\u8D8B\u52BF\u65B9\u5411\uFF0C\u7528\u4E8E\u6DA8\u8DCC\u914D\u8272"),
-  note: external_exports2.string().optional().describe('\u5361\u7247\u5E95\u90E8\u8865\u5145\u8BF4\u660E\uFF0C\u5982 "vs plan 88.28% \xB7 \u65F6\u95F4\u8FDB\u5EA6 27.36%"'),
-  spark: external_exports2.array(external_exports2.number()).optional().describe("\u53EF\u9009\uFF1A\u8FF7\u4F60\u8D8B\u52BF\u7EBF\u6570\u503C\u5E8F\u5217\uFF086~24 \u4E2A\u70B9\uFF09")
-});
-var kpiBlock = external_exports2.object({
-  type: external_exports2.literal("kpi"),
-  title: external_exports2.string().optional(),
-  items: external_exports2.array(kpiItem).min(1).max(8).describe("\u5173\u952E\u6307\u6807\u5361\u7247\uFF0C\u4E00\u6392 2~4 \u4E2A\u6700\u4F73\uFF0C\u6700\u591A 8 \u4E2A")
-});
-var hbarItem = external_exports2.object({
-  label: external_exports2.string().describe("\u6761\u76EE\u540D\u79F0\uFF0C\u4E2D\u6587"),
-  value: external_exports2.number().describe("\u6570\u503C"),
-  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF0C\u5982 %"),
-  max: external_exports2.number().optional().describe("\u53EF\u9009\u7684\u6807\u5C3A\u4E0A\u9650\uFF08\u9ED8\u8BA4\u6309\u6240\u6709\u6761\u76EE\u6700\u5927\u503C\uFF09"),
-  tone: tone.optional().describe("\u6761\u5F62\u989C\u8272")
-});
-var hbarBlock = external_exports2.object({
-  type: external_exports2.literal("hbar"),
-  title: external_exports2.string().optional(),
-  subtitle: external_exports2.string().optional(),
-  items: external_exports2.array(hbarItem).min(1).max(12).describe("\u6A2A\u6761\u5217\u8868\uFF0C\u9002\u5408\u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4")
-});
-var progressItem = external_exports2.object({
-  label: external_exports2.string().describe("\u6761\u76EE\u540D\u79F0\uFF0C\u4E2D\u6587"),
-  value: external_exports2.number().describe("\u5B8C\u6210\u767E\u5206\u6BD4\uFF080~100+\uFF09\uFF0C\u53EF\u4E3A\u8FBE\u6210\u7387"),
-  unit: external_exports2.string().optional().describe("\u5355\u4F4D\uFF0C\u9ED8\u8BA4 %\uFF0C\u53EF\u7559\u7A7A"),
-  status: external_exports2.string().optional().describe("\u72B6\u6001\u8BF4\u660E\uFF0C\u5982\u300C\u8FBE\u6807\u300D\u300C\u9884\u8BA1\u8FBE\u6807\u300D\u300C\u843D\u540E\u300D"),
-  tone: tone.optional()
-});
-var progressBlock = external_exports2.object({
-  type: external_exports2.literal("progress"),
-  title: external_exports2.string().optional(),
-  items: external_exports2.array(progressItem).min(1).max(8)
-});
-var chipItem = external_exports2.object({
-  label: external_exports2.string().describe("\u6307\u6807\u540D\u79F0\uFF0C\u4E2D\u6587"),
-  value: valueSchema.describe("\u6307\u6807\u503C"),
-  unit: external_exports2.string().optional(),
-  delta: external_exports2.number().optional(),
-  trend: external_exports2.enum(["up", "down", "flat"]).optional()
-});
-var chipsBlock = external_exports2.object({
-  type: external_exports2.literal("chips"),
-  title: external_exports2.string().optional(),
-  items: external_exports2.array(chipItem).min(1).max(8).describe("\u4E00\u6392 3~5 \u4E2A\u5C0F\u6307\u6807")
-});
-var distItem = external_exports2.object({
-  label: external_exports2.string().describe("\u5206\u7C7B\u540D\u79F0\uFF0C\u4E2D\u6587"),
-  value: external_exports2.number().describe("\u6570\u91CF"),
-  tone: tone.optional()
-});
-var distBlock = external_exports2.object({
-  type: external_exports2.literal("dist"),
-  title: external_exports2.string().optional(),
-  subtitle: external_exports2.string().optional().describe("\u5982\u300C10\u670811\u65E5 \xB7 7/15 \u5DE5\u5382\u6B20\u4EA7\u300D"),
-  items: external_exports2.array(distItem).min(1).max(8).describe("\u6309\u4E25\u91CD\u7A0B\u5EA6\u4ECE\u9AD8\u5230\u4F4E\u6392\u5217")
-});
-var chartBlock = external_exports2.object({
-  type: external_exports2.literal("chart"),
-  title: external_exports2.string().describe("\u56FE\u8868\u6807\u9898\uFF0C\u4E2D\u6587"),
-  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF0C\u8BF4\u660E\u53E3\u5F84"),
-  span: external_exports2.number().min(1).max(12).optional().describe("12 \u6805\u683C\u5360\u4F4D\u5BBD\u5EA6\uFF0C\u4E3B\u56FE 8\u3001\u8F85\u56FE 4\u3001\u6574\u884C 12\uFF1B\u9ED8\u8BA4 6"),
-  option: external_exports2.record(external_exports2.string(), external_exports2.any()).describe("\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5FC5\u987B\u5185\u5D4C\u5176\u4E2D\uFF0C\u5982 {xAxis, yAxis, series}")
-});
-var tableBlock = external_exports2.object({
-  type: external_exports2.literal("table"),
-  title: external_exports2.string().optional(),
-  subtitle: external_exports2.string().optional(),
-  columns: external_exports2.array(external_exports2.string()).min(1).describe("\u5217\u540D\uFF08\u4E2D\u6587\uFF09\uFF0C\u4E0E rows \u7684 key \u5BF9\u5E94"),
-  rows: external_exports2.array(external_exports2.record(external_exports2.string(), external_exports2.union([external_exports2.string(), external_exports2.number(), external_exports2.boolean(), external_exports2.null()]))).max(30).describe("\u6570\u636E\u884C\uFF0C\u6700\u591A 30 \u884C")
-});
-var riskItem = external_exports2.object({
-  tone: tone.optional().describe("\u98CE\u9669\u7B49\u7EA7\u914D\u8272\uFF1Adanger \u9AD8 / warning \u4E2D / success \u4F4E / primary \u63D0\u793A"),
-  title: external_exports2.string().describe("\u8BE5\u9879\u6807\u9898\uFF0C\u4E2D\u6587"),
-  text: external_exports2.string().describe("\u8BF4\u660E\u6587\u5B57")
-});
-var riskBlock = external_exports2.object({
-  type: external_exports2.literal("risk"),
-  title: external_exports2.string().optional().describe("\u533A\u5757\u6807\u9898\uFF0C\u5982\u300C\u98CE\u9669\u603B\u7ED3\u300D"),
-  items: external_exports2.array(riskItem).min(1).max(8)
-});
-var insightBlock = external_exports2.object({
-  type: external_exports2.literal("insights"),
-  title: external_exports2.string().optional(),
-  items: external_exports2.array(external_exports2.string()).min(1).max(4).describe("\u7ED3\u8BBA\u8981\u70B9\uFF0C\u6BCF\u6761\u4E00\u53E5\u8BDD")
-});
-var reportBlock = external_exports2.discriminatedUnion("type", [
-  sectionBlock,
-  summaryBlock,
-  noticeBlock,
-  kpiBlock,
-  hbarBlock,
-  progressBlock,
-  chipsBlock,
-  distBlock,
-  chartBlock,
-  tableBlock,
-  riskBlock,
-  insightBlock
-]);
-var reportSchema = external_exports2.object({
-  component: external_exports2.string().default(REPORT_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${REPORT_COMPONENT}`),
-  title: external_exports2.string().describe("\u62A5\u8868\u6807\u9898\uFF0C\u4E2D\u6587\uFF0C\u6982\u62EC\u672C\u6B21\u5206\u6790\u4E3B\u9898"),
-  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898\uFF0C\u5982\u6570\u636E\u8303\u56F4/\u65F6\u95F4/\u53E3\u5F84"),
-  meta: external_exports2.array(external_exports2.string()).max(5).optional().describe('\u53EF\u9009\uFF1A\u9876\u90E8\u4FE1\u606F\u80F6\u56CA\uFF0C\u5982 ["\u6570\u636E\u622A\u81F3 10-11","\u7B2C11\u5929/30\u5929","\u6709\u6548\u671F 5~11"]'),
-  theme: external_exports2.enum(["light", "dark"]).optional().describe("\u53EF\u9009\u4E3B\u9898\uFF1B\u4E00\u822C\u4E0D\u8981\u586B\uFF0C\u8DDF\u968F\u7528\u6237\u504F\u597D"),
-  blocks: external_exports2.array(reportBlock).min(1).max(40).describe("\u62A5\u8868\u533A\u5757\uFF0C\u6309\u5C55\u793A\u987A\u5E8F\u6392\u5217\uFF1B\u5206\u8282\u7528 section \u5F00\u5934")
-});
-var htmlReportSchema = external_exports2.object({
-  component: external_exports2.string().default(HTML_REPORT_COMPONENT).describe(`\u6E32\u67D3\u7EC4\u4EF6\u540D\uFF0C\u56FA\u5B9A\u7528 ${HTML_REPORT_COMPONENT}`),
-  title: external_exports2.string().describe("\u62A5\u544A\u6807\u9898\uFF0C\u4E2D\u6587"),
-  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898/\u65F6\u95F4\u8303\u56F4"),
-  height: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe('\u9884\u89C8\u9AD8\u5EA6\uFF08px\uFF09\uFF0C\u4F20 320 \u6216 "320px" \u90FD\u53EF\u4EE5'),
-  template: external_exports2.string().optional().describe("\u62A5\u544A\u6A21\u677F\uFF1Adaily=\u4F5C\u4E1A\u65E5\u62A5 / weekly=\u8FD0\u8425\u5468\u62A5 / monthly=\u8FD0\u8425\u6708\u62A5 / inventory=\u5E93\u5B58\u5FEB\u7167 / exception=\u5F02\u5E38\u4E13\u62A5 / compare=\u591A\u4ED3\u5BF9\u6BD4\uFF1B\u5199\u4E2D\u6587\uFF08\u5468\u62A5/\u5E93\u5B58\u5FEB\u7167/\u5F02\u5E38\u4E13\u62A5\u2026\uFF09\u4E5F\u53EF\u4EE5\uFF0C\u5224\u65AD\u4E0D\u4E86\u7528 auto"),
-  period: external_exports2.string().optional().describe("\u7EDF\u8BA1\u671F\u95F4\uFF0C\u5982 2025-08-01 ~ 2025-08-31"),
-  scope: external_exports2.string().optional().describe("\u7EDF\u8BA1\u53E3\u5F84\uFF0C\u5982 \u5168\u4ED3\u5408\u8BA1 / \u534E\u4E1C\u4ED3 / \u67D0\u8D27\u4E3B / \u542B\u51BB\u7ED3\u5E93\u5B58"),
-  sources: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u6765\u6E90\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF0C\u6570\u7EC4\u6216\u201C\u987F\u53F7/\u9017\u53F7\u5206\u9694\u7684\u5B57\u7B26\u4E32\u201D\u90FD\u53EF\u4EE5"),
-  warnings: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF08\u7A7A\u503C/\u622A\u65AD/\u8D1F\u5E93\u5B58\u7B49\uFF09\uFF0C\u6570\u7EC4\u6216\u5206\u9694\u5B57\u7B26\u4E32\u90FD\u53EF\u4EE5"),
-  html: external_exports2.string().describe('\u62A5\u544A\u6B63\u6587 HTML \u7247\u6BB5\uFF08\u4E0D\u8981 <html>/<head>/<body>\uFF0C\u53EF\u542B <style>\uFF09\u3002\u56FE\u8868\u5BB9\u5668\u7528 <div class="ol-chart" data-id="xxx" style="height:320px"></div>\uFF0C\u5BF9\u5E94\u7684 ECharts option \u653E\u5230 charts.xxx \u5B57\u6BB5\u3002\u7981\u6B62\u5F15\u7528\u4EFB\u4F55\u5916\u90E8 CDN/\u811A\u672C/\u56FE\u7247\u94FE\u63A5\u3002'),
-  charts: external_exports2.union([external_exports2.record(external_exports2.string(), external_exports2.record(external_exports2.string(), external_exports2.any())), external_exports2.string()]).optional().describe("\u56FE\u8868\uFF1Akey \u5BF9\u5E94 .ol-chart \u7684 data-id\uFF0Cvalue \u4E3A\u6807\u51C6 ECharts option\uFF08\u6570\u636E\u5185\u5D4C\uFF09\uFF1B\u4E5F\u63A5\u53D7 JSON \u5B57\u7B26\u4E32")
-});
-var HTML_REPORT_TOOL_DESCRIPTION = '\u5F53\u7528\u6237\u8981"\u4E00\u4EFD\u5B8C\u6574\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u6C47\u62A5\u5927\u5C4F"\uFF0C\u9700\u8981\u5206\u8282\u3001\u5927\u91CF\u5361\u7247\u4E0E\u660E\u7EC6\u65F6\uFF0C\u8C03\u7528\u672C\u5DE5\u5177\u76F4\u63A5\u4EA7\u51FA HTML \u62A5\u544A\u3002\n\u3010\u786C\u6027\u8981\u6C42\u3011\n1) html \u53EA\u5199\u6B63\u6587\u7247\u6BB5\uFF08\u4E0D\u8981 <html>/<head>/<body>\uFF09\uFF1B\u7981\u6B62\u4EFB\u4F55\u5916\u90E8 CDN\u3001<script>\u3001<img src="http...">\u3002\n2) \u5FC5\u987B\u4F7F\u7528\u4E0B\u9762\u8FD9\u5957\u56FA\u5B9A\u7C7B\u540D\uFF08\u6837\u5F0F\u5DF2\u5185\u7F6E\uFF0C\u591A\u5199\u5185\u8054 style \u53EA\u4F1A\u7834\u574F\u7EDF\u4E00\uFF09\uFF1A\n- \u5916\u5C42\uFF1A<div class="report"> \u2192 \u9876\u90E8\u533A <div class="report-header"><h1 class="report-title">\u6807\u9898</h1><div class="report-sub">\u65F6\u95F4/\u53E3\u5F84</div><div class="report-meta"><span class="meta-chip">\u2026</span></div></div>\n- \u5206\u8282\uFF1A<section class="section"><div class="section-head"><span class="section-no">1</span><div><div class="section-title">\u62A5\u544A\u6982\u8981</div><div class="section-sub">Executive Summary</div></div></div> \u2026</section>\n- \u5361\u7247\uFF1A<div class="card"><div class="card-title">\u6807\u9898</div> \u2026</div>\uFF08\u5E76\u6392\u7528 <div class="grid grid-2">\u2026</div> \u6216 grid-3\uFF09\n- \u6838\u5FC3\u7ED3\u8BBA\uFF1A<div class="callout"><div class="callout-title">\u6838\u5FC3\u7ED3\u8BBA</div><p>\u2026</p></div>\n- \u63D0\u793A\uFF1A<div class="notice is-warning|is-danger|is-success|is-info">\u2026</div>\n- \u5B8C\u6210\u7387\u6A2A\u6761\uFF1A<div class="bar-row"><div class="bar-label">\u710A\u88C5</div><div class="bar-track"><div class="bar-fill" style="width:83%;background:#ef4444"></div></div><div class="bar-value">83.21%</div></div>\n- \u8FDB\u5EA6\u6761\uFF1A<div class="progress-row"><div class="progress-top"><span>\u6708\u5EA6\u76EE\u6807</span><b>91.02%</b></div><div class="progress-track"><div class="progress-fill" style="width:91%"></div></div><div class="progress-status">\u9884\u8BA1\u8FBE\u6807</div></div>\n- \u5C0F\u6307\u6807\uFF1A<div class="chips"><div class="chip"><div class="chip-value">1,280<small>\u4E07</small></div><div class="chip-label">\u9500\u552E\u989D</div></div>\u2026</div>\n- \u5206\u5E03\uFF1A<div class="dist-bar"><div class="dist-seg" style="flex:5;background:#ef4444">5</div>\u2026</div><div class="dist-legend"><span><i style="background:#ef4444"></i>\u9AD8\u98CE\u9669<b>5</b></span>\u2026</div>\n- \u8868\u683C\uFF08\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u53EA\u653E Top 10 \u5E76\u7528\u4E00\u884C\u300C\u5176\u4F59 N \u9879\u5408\u8BA1\u300D\u6536\u5C3E\uFF0C\u4E0D\u8981\u628A\u5B8C\u6574\u660E\u7EC6\u585E\u8FDB\u6B63\u6587\u3001\u4E5F\u4E0D\u8981\u7528\u6298\u53E0\uFF1B\u6BCF\u4E00\u884C\u7684 <td> \u6570\u91CF\u5FC5\u987B\u4E0E\u8868\u5934 <th> \u5B8C\u5168\u4E00\u81F4\uFF0C\u7A7A\u503C\u4E5F\u8981\u8F93\u51FA <td>\u2014</td>\uFF0C\u7F3A\u5355\u5143\u683C\u4F1A\u5BFC\u81F4\u6574\u884C\u9519\u4F4D\uFF1B\u9664\u7B2C\u4E00\u5217\u5916\u6240\u6709\u5217\u9ED8\u8BA4\u53F3\u5BF9\u9F50\uFF0C\u8868\u5934\u4E0E\u6570\u503C\u81EA\u52A8\u5BF9\u9F50\uFF1B\u6570\u5B57\u5217\u52A0 class="num"\uFF0C\u6587\u672C\u5217\u5982\u72B6\u6001/\u5907\u6CE8/\u8D1F\u8D23\u4EBA\u52A0 class="txt" \u8BA9\u5B83\u5DE6\u5BF9\u9F50\uFF09\uFF1A<table><thead><tr><th>\u540D\u79F0</th><th class="num">\u6570\u91CF</th><th class="txt">\u5907\u6CE8</th></tr></thead><tbody><tr><td>A</td><td class="num">123</td><td class="txt">\u6B63\u5E38</td></tr></tbody></table>\n- \u98CE\u9669/\u603B\u7ED3\uFF1A<div class="risk-list"><div class="risk-item is-danger"><div class="risk-title">\u6807\u9898</div><div class="risk-text">\u8BF4\u660E</div></div>\u2026</div>\n- \u56FE\u8868\uFF1A<div class="ol-chart" data-id="c1" style="height:320px"></div>\uFF0Coption \u653E\u8FDB charts.c1\uFF08\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\u3002\n- \u3010\u6570\u5B57\u5C55\u793A\u3011\u62A5\u544A\u662F\u7ED9\u9886\u5BFC\u770B\u7684\uFF0C\u6570\u5B57\u8981\u5927\u3001\u8981\u7A81\u51FA\uFF0C\u4F18\u5148\u7528\u4E0B\u9762\u8FD9\u51E0\u79CD\uFF0C\u4E0D\u8981\u901A\u7BC7\u90FD\u662F\u8868\u683C\uFF1A\n  \xB7 \u82F1\u96C4\u6570\u5B57\u5361\uFF08\u4E00\u5C4F\u6700\u4E0A\u9762\u653E 2~4 \u4E2A\uFF09\uFF1A<div class="stat-grid"><div class="stat"><div class="stat-label">\u672C\u6708\u9500\u552E\u989D<span class="badge is-success">\u8FBE\u6807</span></div><div class="stat-value">1,284.5<span class="unit">\u4E07\u5143</span></div><div class="stat-foot"><span class="delta up">\u2191 12.3%</span><span class="muted">\u73AF\u6BD4</span></div><div class="stat-note">\u53E3\u5F84\uFF1A\u542B\u7A0E \xB7 \u6570\u636E\u622A\u81F3 10-18</div></div>\u2026</div>\uFF08\u53EF\u9009 tone\uFF1Aclass="stat is-success" / is-warning / is-danger\uFF1B\u8FF7\u4F60\u8D8B\u52BF\u5199 <div class="spark"><i style="height:40%"></i><i style="height:62%"></i>\u2026</div>\uFF0C\u6BCF\u6839\u67F1\u4E00\u4E2A i\uFF0C\u6700\u540E\u4E00\u6839\u52A0 class="is-last"\uFF09\n  \xB7 \u540C\u6BD4/\u73AF\u6BD4\u5BF9\u6BD4\uFF1A<div class="compare-grid"><div class="compare"><div class="compare-title">\u9500\u552E\u989D<span class="badge is-warning">\u9884\u8B66</span></div><div class="compare-now">1,284.5<span class="unit">\u4E07\u5143</span></div><div class="compare-foot"><span class="delta up">\u2191 140.6</span><span>\u8F83\u4E0A\u671F</span><span class="compare-prev">1,143.9 \u4E07</span></div></div>\u2026</div>\n  \xB7 \u8FBE\u6210\u7387\u73AF\uFF1A<div class="ring-grid"><div class="ring is-success" style="--v:83"><div class="ring-dial"><div class="ring-center"><span class="ring-value">83<span class="ring-unit">%</span></span></div></div><div class="ring-label">\u6708\u5EA6\u76EE\u6807\u5B8C\u6210\u7387</div></div>\u2026</div>\uFF08--v \u586B 0~100 \u7684\u7EAF\u6570\u5B57\uFF0C\u4E0D\u5E26 %\uFF1Bclass \u53EF\u52A0 is-success / is-warning / is-danger\uFF09\n  \xB7 \u6392\u884C\u699C TOP N\uFF1A<div class="rank-list"><div class="rank-row"><span class="rank-no">1</span><span class="rank-name">\u4EA7\u54C1A</span><span class="rank-bar"><i style="width:82%"></i></span><span class="rank-value">1,280<small>\u4E07</small></span><span class="rank-share">28.4%</span></div>\u2026</div>\uFF08rank-bar \u7684 width \u6309\u672C\u7EC4\u6700\u5927\u503C\u6298\u7B97\u6210 100%\uFF1B\u524D 3 \u540D\u5E8F\u53F7\u81EA\u52A8\u663E\u793A\u91D1/\u94F6/\u94DC\uFF09\n- \u3010\u6570\u5B57\u683C\u5F0F\u3011\u5FC5\u987B\u7EDF\u4E00\uFF1A\u5343\u5206\u4F4D\u5206\u9694\uFF1B\u91D1\u989D/\u6570\u91CF \u22651 \u4EBF\u5199\u300C\u4EBF\u300D\u3001\u22651 \u4E07\u5199\u300C\u4E07\u300D\uFF0C\u4FDD\u7559 1~2 \u4F4D\u5C0F\u6570\uFF0C\u5355\u4F4D\u653E <span class="unit">\uFF1B\u767E\u5206\u6BD4\u4FDD\u7559 1 \u4F4D\u5C0F\u6570\uFF1B\u589E\u957F\u7528 <span class="delta up">\u2191 x.x%</span>\u3001\u4E0B\u964D\u7528 <span class="delta down">\u2193 x.x%</span>\u3001\u6301\u5E73\u7528 <span class="delta flat">\u2192 0.0%</span>\uFF1B\u72B6\u6001\u7528 <span class="badge is-success|is-warning|is-danger|is-info">\u8FBE\u6807/\u9884\u8B66/\u843D\u540E</span>\uFF1B\u6BCF\u4E2A\u5173\u952E\u6570\u5B57\u90FD\u8981\u80FD\u770B\u51FA\u65F6\u95F4\u8303\u56F4\u4E0E\u53E3\u5F84\uFF08\u5199\u5728 report-sub \u6216 stat-note \u91CC\uFF09\uFF1B\u8868\u683C\u91CC\u6570\u5B57\u5217\u52A0 class="num"\u3001\u6587\u672C\u5217\u52A0 class="txt"\uFF08\u9ED8\u8BA4\u9664\u7B2C\u4E00\u5217\u5916\u90FD\u662F\u53F3\u5BF9\u9F50\uFF0C\u8868\u5934\u4E0E\u6570\u503C\u624D\u4F1A\u5BF9\u9F50\uFF09\u3002\n- \u3010\u589E\u5F3A\u5C55\u793A\uFF0C\u6709\u771F\u5B9E\u6570\u636E\u624D\u7528\uFF0C\u6CA1\u6709\u5C31\u7701\u7565\u3011\n  \xB7 \u76EE\u6807/\u7F3A\u53E3\uFF08\u4EC5\u5F53\u5E93\u91CC\u786E\u6709\u76EE\u6807/\u8BA1\u5212\u6570\u636E\uFF09\uFF1A<div class="stat-target"><span>\u76EE\u6807 1,200 \u4E07</span><span>\u7F3A\u53E3 116 \u4E07</span><span class="delta down">\u5DEE 9.7%</span></div>\n  \xB7 \u540C\u73AF\u6BD4\u4E09\u6BB5\u5F0F\uFF1A<span class="delta up">\u2191 140.6 \u4E07 (+12.3%)</span>\n  \xB7 \u6392\u540D\u53D8\u5316 / \u7D2F\u8BA1\u5360\u6BD4\uFF1A<span class="rank-delta up">\u21912</span>\u3001<span class="rank-cum">\u7D2F\u8BA1 62.4%</span>\n  \xB7 \u98CE\u9669\u9879\u5E26\u5206\u7EA7\u4E0E\u5EFA\u8BAE\uFF1A<div class="risk-item is-danger"><div class="risk-title">\u8D85\u65F6\u672A\u53D1<span class="badge is-danger">\u9AD8</span></div><div class="risk-text">\u8BF4\u660E</div><div class="risk-impact">\u5F71\u54CD\uFF1A1,240 \u5355 / 86 \u4E07\u5143</div><div class="risk-action">\u5EFA\u8BAE\uFF1A...</div></div>\n3) \u9664 \u6A2A\u6761\u5BBD\u5EA6/\u989C\u8272\u3001\u5206\u5E03 flex\u3001\u56FE\u8868\u9AD8\u5EA6\u3001.spark i \u7684\u9AD8\u5EA6\u3001.rank-bar i \u7684\u5BBD\u5EA6\u3001.ring \u7684 --v \u5916\uFF0C\u4E0D\u8981\u5199\u5176\u5B83\u5185\u8054 style\uFF1B\u989C\u8272\u53EA\u7528\uFF1A\u4E3B #4f7cff\u3001\u6210\u529F #16a34a\u3001\u5371\u9669 #ef4444\u3001\u8B66\u544A #f59e0b\u3002\n4) \u7ED3\u6784\u53C2\u8003\uFF1Areport-header \u2192 notice \u2192 section(1 \u62A5\u544A\u6982\u8981\uFF1Acallout + stat-grid/ring-grid) \u2192 section(2 \u5206\u6790\uFF1Acard + \u56FE\u8868 + compare-grid/rank-list/dist + \u8868\u683C) \u2192 section(3 \u98CE\u9669\u603B\u7ED3\uFF1Arisk-list)\u3002\n5) \u56FE\u8868\u8981\u591A\u6837\u3001\u597D\u770B\uFF1A\u6BCF\u4EFD\u62A5\u544A\u81F3\u5C11 2~4 \u5F20\u56FE\uFF0C\u7C7B\u578B\u5C3D\u91CF\u4E0D\u540C\uFF08line \u6298\u7EBF / bar \u67F1\u72B6 / \u5806\u53E0\u67F1 / \u6C34\u5E73\u6761 / pie \u997C / \u73AF\u5F62 / radar \u96F7\u8FBE / funnel \u6F0F\u6597 / gauge \u4EEA\u8868\u76D8 / scatter \u6563\u70B9 / heatmap \u70ED\u529B\uFF09\uFF0C\u4E0D\u8981\u91CD\u590D\u540C\u4E00\u7C7B\u578B\u3002\u56FE\u8868\u5BB9\u5668\u5FC5\u987B\u5199\u6B7B\u9AD8\u5EA6\uFF0C\u5982 <div class="ol-chart" data-id="c1" style="height:340px"></div>\uFF0Coption \u653E\u8FDB charts.c1\uFF08\u6570\u636E\u5185\u5D4C\uFF1B\u914D\u8272/tooltip \u524D\u7AEF\u4F1A\u81EA\u52A8\u8865\u5168\uFF09\uFF1B\u5E76\u6392\u56FE\u7528 <div class="grid grid-2"> \u5404\u5305\u4E00\u4E2A card\u3002\n6) \u5E03\u5C40\u8981\u56E0\u5185\u5BB9\u800C\u5F02\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u540C\u4E00\u5957\u7ED3\u6784\uFF1A\u6309\u6570\u636E\u7279\u70B9\u7EC4\u5408 \u5206\u8282 / \u5361\u7247 / \u56FE\u8868 / \u6570\u5B57\u5361 / \u73AF / \u6392\u884C\u699C / \u5BF9\u6BD4 / \u8868\u683C / \u8FDB\u5EA6 / \u5206\u5E03 / \u98CE\u9669 \u7B49\u3002\n7) \u6240\u6709\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199\u4E00\u53E5"\u62A5\u544A\u5DF2\u751F\u6210"\u3002\n8) \u5DE6\u4FA7\u7AE0\u8282\u5BFC\u822A\u3001\u751F\u6210\u65F6\u95F4\u9875\u811A\u3001\u6C34\u5370\u3001\u6570\u5B57\u5343\u5206\u4F4D\u7531\u9875\u9762\u81EA\u52A8\u5904\u7406\uFF0C\u4F60\u4E0D\u8981\u81EA\u5DF1\u5199\u76EE\u5F55/\u9875\u811A\uFF1B\u62A5\u544A\u4F1A\u81EA\u52A8\u5265\u79BB <script> \u4E0E\u6240\u6709\u5916\u90E8\u8D44\u6E90\uFF08CDN/\u56FE\u7247\u94FE\u63A5\uFF09\uFF0C\u5199\u4E86\u4E5F\u4E0D\u4F1A\u751F\u6548\u3002\n9) \u9664 html/charts \u5916\uFF0C\u8FD8\u8981\u586B template\uFF08\u6A21\u677F\uFF09\u3001period\uFF08\u7EDF\u8BA1\u671F\u95F4\uFF09\u3001scope\uFF08\u7EDF\u8BA1\u53E3\u5F84\uFF09\u3001sources\uFF08\u6570\u636E\u8868\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF09\u3001warnings\uFF08\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF1A\u7A7A\u503C/\u622A\u65AD/\u8D1F\u5E93\u5B58\u7B49\uFF09\uFF1B\u8FD9\u4E9B\u4F1A\u6E32\u67D3\u5230\u62A5\u544A\u9875\u811A\u548C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u91CC\u3002\n10) \u672C\u5DE5\u5177\u4E0D\u4F1A\u56E0\u4E3A\u683C\u5F0F\u95EE\u9898\u5931\u8D25\uFF1A\u8868\u683C\u5217\u6570\u4E0D\u4E00\u81F4\u3001\u56FE\u8868\u7F3A option \u4F1A\u7531\u524D\u7AEF\u515C\u5E95\u5E76\u5728\u62A5\u544A\u9876\u90E8\u663E\u793A\u4E3A\u201C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u201D\uFF0C\u4F60\u4E0D\u9700\u8981\u53CD\u590D\u91CD\u8BD5\u6216\u91CD\u65B0\u751F\u6210\u6574\u4EFD\u62A5\u544A\u3002\n11) \u6570\u636E\u5E93\u53EF\u80FD\u5F88\u5927\uFF1A\u4F18\u5148\u7528\u805A\u5408 SQL\uFF08GROUP BY / SUM / COUNT / TOP\uFF09\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\uFF1B\u6574\u4EFD\u62A5\u544A\u7684 SQL \u67E5\u8BE2\u5C3D\u91CF\u63A7\u5236\u5728 3~5 \u6B21\u4EE5\u5185\uFF0C\u4E00\u6B21 SQL \u5C3D\u91CF\u540C\u65F6\u53D6\u56DE\u591A\u4E2A\u6307\u6807\u3002\ncomponent \u56FA\u5B9A\u4E3A ${HTML_REPORT_COMPONENT}\u3002';
-var REPORT_TOOL_DESCRIPTION = `\u5F53\u7528\u6237\u7684\u95EE\u9898\u5C5E\u4E8E\u6570\u636E\u5206\u6790\uFF08\u8D8B\u52BF\u3001\u5206\u5E03\u3001\u5BF9\u6BD4\u3001\u5360\u6BD4\u3001\u6392\u884C\u3001\u6C47\u603B\u3001\u7ED3\u6784\u53D8\u5316\u7B49\uFF09\u6216\u8981\u6C42\u770B\u62A5\u8868/\u65E5\u62A5/\u56FE\u8868\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u524D\u7AEF\u4F1A\u6E32\u67D3\u6210\u4E00\u4EFD\u53EF\u89C6\u5316\u62A5\u8868\uFF08\u7C7B\u4F3C\u4EEA\u8868\u76D8 / \u6C47\u62A5\u5927\u5C4F\uFF09\u3002
-\u6392\u7248\u5EFA\u8BAE\uFF08blocks \u987A\u5E8F\uFF09\uFF1A
-- \u7528 section \u5206\u8282\uFF1A\u6BCF\u4E2A\u4E3B\u9898\u7528 section \u5F00\u5934\uFF08\u7ED9 no \u7F16\u53F7 + title\uFF0C\u53EF\u5E26\u82F1\u6587 subtitle\uFF09\uFF0C\u524D\u7AEF\u4F1A\u636E\u6B64\u751F\u6210\u76EE\u5F55\u5BFC\u822A\uFF1B
-- section \u540E\u63A5 summary\uFF08\u6838\u5FC3\u7ED3\u8BBA\uFF09\u6216 notice\uFF08\u9884\u8B66/\u63D0\u793A\uFF09\uFF1B
-- \u5173\u952E\u6307\u6807\u7528 kpi\uFF082~4 \u4E2A\u4E00\u6392\uFF0C\u8865 note \u8BF4\u660E\u53E3\u5F84\uFF09\uFF1B
-- \u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4\u7528 hbar\uFF1B\u8FBE\u6210\u60C5\u51B5\u7528 progress\uFF1B\u4E00\u6392\u5C0F\u6307\u6807\u7528 chips\uFF1B\u6784\u6210\u5206\u5E03\u7528 dist\uFF1B
-- \u8D8B\u52BF/\u5BF9\u6BD4\u56FE\u7528 chart\uFF08\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\uFF1B
-- \u660E\u7EC6\u7528 table\uFF1B\u98CE\u9669\u4E0E\u603B\u7ED3\u7528 risk\uFF08danger/warning/success \u914D\u8272\uFF09\uFF1B\u6700\u540E\u53EF\u7528 insights \u6536\u5C3E\u3002
-\u89C4\u5219\uFF1A\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u540C\u4E00\u7EF4\u5EA6\u53EA\u653E\u4E00\u5F20\u6700\u5408\u9002\u7684\u56FE\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\uFF0C\u4E0D\u91CD\u590D\u62A5\u8868\u91CC\u7684\u6570\u5B57\u3002
-component \u56FA\u5B9A\u586B ${REPORT_COMPONENT}\u3002`;
-
 // dist/tools.js
 var DEFAULT_VISUAL_COMPONENT = LEGACY_CHART_COMPONENT;
 function cellSpan(rowHtml) {
@@ -155531,6 +155877,7 @@ var TEMPLATE_ALIASES = {
   daily: "daily",
   weekly: "weekly",
   monthly: "monthly",
+  annual: "annual",
   inventory: "inventory",
   exception: "exception",
   compare: "compare",
@@ -155543,6 +155890,12 @@ var TEMPLATE_ALIASES = {
   \u6708\u62A5: "monthly",
   \u8FD0\u8425\u6708\u62A5: "monthly",
   \u6708\u62A5\u544A: "monthly",
+  \u5E74\u5EA6: "annual",
+  \u5E74\u62A5: "annual",
+  \u5E74\u5EA6\u62A5\u544A: "annual",
+  \u5E74\u5EA6\u603B\u7ED3: "annual",
+  \u5E74\u5EA6\u7ECF\u8425\u5206\u6790: "annual",
+  \u5E74\u5EA6\u590D\u76D8: "annual",
   \u5E93\u5B58: "inventory",
   \u5E93\u5B58\u5FEB\u7167: "inventory",
   \u5E93\u5B58\u62A5\u8868: "inventory",
@@ -155553,6 +155906,39 @@ var TEMPLATE_ALIASES = {
   \u591A\u4ED3\u5BF9\u6BD4: "compare",
   \u4ED3\u5E93\u5BF9\u6BD4: "compare"
 };
+var LAYOUT_ALIASES = {
+  executive: "executive",
+  \u9AD8\u5C42: "executive",
+  \u9AD8\u5C42\u6458\u8981: "executive",
+  \u6458\u8981: "executive",
+  \u6C47\u62A5: "executive",
+  \u9886\u5BFC: "executive",
+  \u8001\u677F: "executive",
+  dashboard: "dashboard",
+  \u770B\u677F: "dashboard",
+  \u4EEA\u8868\u76D8: "dashboard",
+  \u76D1\u63A7: "dashboard",
+  \u8FD0\u8425\u770B\u677F: "dashboard",
+  narrative: "narrative",
+  \u53D9\u4E8B: "narrative",
+  \u53D9\u4E8B\u5206\u6790: "narrative",
+  \u4E13\u9898: "narrative",
+  \u5206\u6790\u62A5\u544A: "narrative",
+  comparison: "comparison",
+  \u5BF9\u6BD4: "comparison",
+  \u6A2A\u5411\u5BF9\u6BD4: "comparison",
+  \u6BD4\u8F83: "comparison",
+  \u591A\u4ED3: "comparison",
+  timeline: "timeline",
+  \u65F6\u95F4\u8F74: "timeline",
+  \u5E74\u5EA6: "timeline",
+  \u5B63\u5EA6: "timeline",
+  \u590D\u76D8: "timeline",
+  \u91CC\u7A0B\u7891: "timeline",
+  auto: "auto",
+  \u81EA\u52A8: "auto"
+};
+var MAX_CSS_CHARS = 60 * 1e3;
 function normalizeTemplate(value) {
   if (typeof value !== "string")
     return "auto";
@@ -155560,6 +155946,82 @@ function normalizeTemplate(value) {
   if (!key || key === "auto")
     return "auto";
   return TEMPLATE_ALIASES[key] || TEMPLATE_ALIASES[value.trim()] || "auto";
+}
+function normalizeLayout(value) {
+  if (typeof value !== "string")
+    return "auto";
+  const raw = value.trim();
+  if (!raw)
+    return "auto";
+  const key = raw.toLowerCase();
+  const hit = LAYOUT_ALIASES[key] || LAYOUT_ALIASES[raw];
+  if (hit)
+    return hit;
+  const lowered = raw.toLowerCase();
+  const alias = Object.keys(LAYOUT_ALIASES).find((name) => name !== "auto" && lowered.includes(name.toLowerCase()));
+  if (alias)
+    return LAYOUT_ALIASES[alias];
+  const matched = REPORT_LAYOUT_KEYS.find((k) => lowered.includes(k));
+  return matched || "auto";
+}
+function normalizeVisualStyle(value) {
+  if (typeof value !== "string")
+    return "";
+  return value.trim().slice(0, 120);
+}
+function normalizeCss(value) {
+  if (typeof value !== "string")
+    return "";
+  return value.trim();
+}
+var ELEMENT_KEY_SET = new Set(REPORT_ELEMENT_KEYS);
+function normalizeElementName(value) {
+  if (typeof value !== "string")
+    return "";
+  const name = value.trim().replace(/^\./, "").toLowerCase();
+  return ELEMENT_KEY_SET.has(name) ? name : "";
+}
+function extractChartTypes(charts) {
+  const types = /* @__PURE__ */ new Set();
+  Object.values(charts || {}).forEach((option) => {
+    if (!option || typeof option !== "object")
+      return;
+    const raw = option.series;
+    const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    list.forEach((item) => {
+      if (!item || typeof item !== "object")
+        return;
+      const type = item.type;
+      if (typeof type === "string" && type.trim())
+        types.add(type.trim());
+    });
+  });
+  return Array.from(types);
+}
+function extractReportElements(html) {
+  const found = /* @__PURE__ */ new Set();
+  const classRe = /class\s*=\s*["']([^"']*)["']/gi;
+  let match;
+  while (match = classRe.exec(html || "")) {
+    const tokens = match[1].split(/\s+/);
+    for (const token of tokens) {
+      const name = normalizeElementName(token);
+      if (name)
+        found.add(name);
+    }
+  }
+  return Array.from(found);
+}
+function analyzeReportRichness(html, charts) {
+  const elements = extractReportElements(html);
+  return {
+    elements,
+    dataElements: elements.filter((key) => reportElementCategory(key) === "data"),
+    narrativeElements: elements.filter((key) => reportElementCategory(key) === "narrative"),
+    chartTypes: extractChartTypes(charts),
+    sections: (html.match(/<section\b/gi) || []).length,
+    tables: (html.match(/<table\b/gi) || []).length
+  };
 }
 function normalizeHeight(value) {
   if (typeof value === "number" && Number.isFinite(value) && value > 0) {
@@ -155593,8 +156055,17 @@ function normalizeCharts(value) {
 }
 function normalizeHtmlReportInput(input2) {
   const html = typeof input2.html === "string" ? input2.html : "";
+  const css = normalizeCss(input2.css);
   const charts = normalizeCharts(input2.charts);
   const warnings = toStringArray(input2.warnings);
+  const declaredElements = toStringArray(input2.elements, 20).map(normalizeElementName).filter(Boolean);
+  const elements = Array.from(/* @__PURE__ */ new Set([...declaredElements, ...extractReportElements(html)]));
+  if (!html.trim()) {
+    warnings.push("\u62A5\u544A\u6B63\u6587\u4E3A\u7A7A\uFF08html \u4E3A\u7A7A\uFF09");
+  }
+  if (css.length > MAX_CSS_CHARS) {
+    warnings.push(`CSS \u8FC7\u5927\uFF08${Math.round(css.length / 1024)}KB\uFF09\uFF0C\u524D\u7AEF\u4F1A\u622A\u65AD\u5230 ${MAX_CSS_CHARS / 1024}KB`);
+  }
   const tableProblem = validateHtmlTables(html);
   if (tableProblem) {
     warnings.push(`\u8868\u683C\u7ED3\u6784\u63D0\u793A\uFF1A${tableProblem}\uFF08\u524D\u7AEF\u4F1A\u9690\u85CF\u5217\u6570\u4E0D\u4E00\u81F4\u7684\u884C\uFF09`);
@@ -155609,11 +156080,15 @@ function normalizeHtmlReportInput(input2) {
     subtitle: typeof input2.subtitle === "string" ? input2.subtitle : "",
     height: normalizeHeight(input2.height),
     template: normalizeTemplate(input2.template),
+    layout: normalizeLayout(input2.layout),
+    visualStyle: normalizeVisualStyle(input2.visualStyle),
     period: typeof input2.period === "string" ? input2.period : "",
     scope: typeof input2.scope === "string" ? input2.scope : "",
     sources: toStringArray(input2.sources),
     warnings: Array.from(new Set(warnings)),
     html,
+    css: css || void 0,
+    elements,
     charts
   };
 }
@@ -155751,10 +156226,16 @@ function createTools(db) {
   });
   const renderHtmlReportTool = tool(async (input2) => {
     const normalized = normalizeHtmlReportInput(input2);
+    const elementInfo = normalized.elements.length ? normalized.elements.join(",") : "-";
+    const richness = analyzeReportRichness(normalized.html, normalized.charts);
+    const richnessInfo = `data=${richness.dataElements.length}(${richness.dataElements.join(",") || "-"}) narrative=${richness.narrativeElements.length}(${richness.narrativeElements.join(",") || "-"}) sections=${richness.sections} tables=${richness.tables} charts=${richness.chartTypes.join(",") || "-"}`;
+    if (richness.dataElements.length < 2) {
+      logLine("report richness warning: data elements too few");
+    }
     if (normalized.warnings.length) {
-      logLine(`tool render_html_report ok warnings=${normalized.warnings.length} ` + normalized.warnings.join(" | ").slice(0, 400));
+      logLine(`tool render_html_report ok warnings=${normalized.warnings.length} elements=${elementInfo} ${richnessInfo} ` + normalized.warnings.join(" | ").slice(0, 400));
     } else {
-      logLine(`tool render_html_report ok chars=${normalized.html.length}`);
+      logLine(`tool render_html_report ok chars=${normalized.html.length} css=${normalized.css?.length || 0} elements=${elementInfo} ${richnessInfo}`);
     }
     return JSON.stringify(normalized);
   }, {
@@ -155781,10 +156262,17 @@ var SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u6570\u636E\u5E93\u67E5\u8BE2\u4E0
 - \u4F18\u5148\u7528\u53EF\u89C6\u5316\u62A5\u8868\u8868\u8FBE\u5206\u6790\u7ED3\u679C\uFF0C\u800C\u4E0D\u662F\u5927\u6BB5\u6587\u5B57\u3002\u7528\u6237\u662F\u5728\u548C\u9886\u5BFC\u6C47\u62A5\uFF0C\u4E0D\u662F\u770B\u6587\u6863\u3002
 
 \u53EF\u89C6\u5316\u89C4\u5219\uFF08\u91CD\u8981\uFF09\uFF1A
-- \u3010\u9ED8\u8BA4\u8D70 HTML \u62A5\u544A\u3011\u53EA\u8981\u7528\u6237\u7684\u8BDD\u91CC\u51FA\u73B0"\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u6C47\u62A5 / \u5927\u5C4F / \u5B8C\u6574\u5206\u6790 / \u5206\u6790\u62A5\u544A / \u51FA\u4E00\u4EFD\u2026\u5206\u6790"\u7B49\uFF0C**\u5FC5\u987B**\u8C03\u7528 render_html_report \u751F\u6210 HTML \u62A5\u544A\u9875\uFF0C\u4E0D\u8981\u7528 render_report\u3002
-  \xB7 \u4E25\u683C\u6309\u8BE5\u5DE5\u5177\u7684\u8BBE\u8BA1\u89C4\u8303\u5199 HTML\uFF08\u56FA\u5B9A\u7C7B\u540D\u3001section \u5206\u8282\u3001\u56FE\u8868\u7528 .ol-chart + charts\uFF0C\u81F3\u5C11 2~4 \u5F20\u4E0D\u540C\u7C7B\u578B\u7684\u56FE\uFF0C\u5E03\u5C40\u8981\u56E0\u5185\u5BB9\u800C\u5F02\uFF09\uFF1B
-  \xB7 \u6570\u5B57\u4F18\u5148\uFF1A\u4E00\u5C4F\u6700\u4E0A\u9762\u5148\u653E 2~4 \u4E2A\u6838\u5FC3\u6570\u5B57\uFF08.stat \u82F1\u96C4\u6570\u5B57\u5361 / .ring \u8FBE\u6210\u7387\u73AF\uFF09\uFF0C\u518D\u653E .compare \u540C\u73AF\u6BD4\u4E0E .rank-list \u6392\u884C\u699C\uFF0C\u6700\u540E\u624D\u662F\u660E\u7EC6\u8868\uFF1B\u6570\u5B57\u8981\u5343\u5206\u4F4D\u3001\u5E26\u5355\u4F4D\u4E0E\u53E3\u5F84\uFF0C\u4E0D\u662F\u7ED9\u9886\u5BFC\u770B\u4E00\u5927\u5806\u8868\u683C\uFF1B
-  \xB7 \u660E\u7EC6\u8868\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u53EA\u653E Top 10 \u5E76\u7528\u4E00\u884C"\u5176\u4F59 N \u9879\u5408\u8BA1"\u6536\u5C3E\uFF0C\u4E0D\u8981\u7528\u6298\u53E0\u6216\u5B8C\u6574\u5927\u8868\uFF1B
+- \u3010\u9ED8\u8BA4\u8D70 HTML \u62A5\u544A\u3011\u53EA\u8981\u7528\u6237\u7684\u8BDD\u91CC\u51FA\u73B0"\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u5E74\u62A5 / \u5E74\u5EA6\u62A5\u544A / \u6C47\u62A5 / \u5927\u5C4F / \u5B8C\u6574\u5206\u6790 / \u5206\u6790\u62A5\u544A / \u51FA\u4E00\u4EFD\u2026\u5206\u6790"\u7B49\uFF0C**\u5FC5\u987B**\u8C03\u7528 render_html_report \u751F\u6210 HTML \u62A5\u544A\u9875\uFF0C\u4E0D\u8981\u7528 render_report\u3002
+  \xB7 \u5148\u5224\u65AD\u8BFB\u8005\u548C\u6570\u636E\u5F62\u6001\uFF0C\u518D\u9009 layout\uFF1Aexecutive\uFF08\u7ED3\u8BBA\u5148\u884C\uFF09/ dashboard\uFF08\u6307\u6807\u5899\uFF09/ narrative\uFF08\u53D9\u4E8B\u5206\u6790\uFF09/ comparison\uFF08\u6A2A\u5411\u5BF9\u6BD4\uFF09/ timeline\uFF08\u5E74\u5EA6/\u5B63\u5EA6\u590D\u76D8\uFF09\uFF1B\u4E0D\u8981\u6BCF\u4EFD\u90FD\u5957\u540C\u4E00\u5957 section \u987A\u5E8F\uFF0C\u540C\u4E00\u4F1A\u8BDD\u4E2D\u8981\u4E3B\u52A8\u6362\u4E00\u4E2A layout\uFF1B
+  \xB7 \u7ED3\u6784\u53EA\u662F\u5EFA\u8BAE\uFF1Asection \u6570\u91CF\u3001\u987A\u5E8F\u3001\u6A21\u5757\u7EC4\u5408\u6309\u6570\u636E\u53D6\u820D\uFF0C\u4E0D\u8981\u4E3A\u4E86\u586B\u6EE1\u7ED3\u6784\u800C\u7F16\u5185\u5BB9\uFF1B
+  \xB7 \u89C6\u89C9\u98CE\u683C\u53EF\u4EE5\u660E\u663E\u4E0D\u540C\uFF1A\u5728 css \u5B57\u6BB5\u5199 CSS\uFF0C\u6216\u7528\u5185\u8054 style\uFF0C\u6539\u53D8\u5B57\u4F53\u6C14\u8D28\u3001\u7559\u767D\u3001\u8272\u5F69\u3001\u5361\u7247\u5F62\u6001\u4E0E\u4FE1\u606F\u5BC6\u5EA6\uFF1B\u4E0D\u8981\u6BCF\u4EFD\u90FD\u957F\u6210\u540C\u4E00\u4E2A\u6A21\u677F\uFF1B
+  \xB7 \u6570\u636E\u5BC6\u5EA6\u4F18\u5148\uFF1A\u81F3\u5C11 2 \u4E2A\u6570\u636E\u578B\u5143\u7D20\uFF08hero-kpi / bullet-row / small-multiples / heat-table / top-bottom / comparison-matrix / risk-matrix\uFF09+ \u81F3\u5C11 2 \u4E2A\u53D9\u4E8B\u578B\u5143\u7D20\uFF08\u5C01\u9762 / \u53D1\u73B0 / so-what / \u65F6\u95F4\u8F74 / \u884C\u52A8\u6E05\u5355 / \u9644\u5F55\uFF09\uFF1B
+  \xB7 \u7B2C\u4E00\u4E2A section \u5FC5\u987B\u662F\u6570\u636E\u5C4F\uFF1A2~4 \u4E2A Hero KPI + 1 \u5F20\u4E3B\u56FE/\u70ED\u529B\u8868\uFF1B\u6BCF\u4E2A\u5206\u6790 section \u81F3\u5C11 1 \u4E2A\u6570\u636E\u5757\uFF0C\u7EAF\u6587\u5B57 section \u6700\u591A 1 \u4E2A\uFF1B
+  \xB7 \u4E0D\u8981\u6574\u4EFD\u62A5\u544A\u53EA\u6709\u65F6\u95F4\u8F74\u3001\u53D1\u73B0\u5217\u8868\u3001\u884C\u52A8\u6E05\u5355\u548C\u9644\u5F55\uFF1B
+  \xB7 \u4F18\u5148\u4F7F\u7528\u7CFB\u7EDF\u63D0\u793A\u91CC\u3010\u672C\u8F6E\u62A5\u544A\u5143\u7D20\u3011\u6307\u5B9A\u7684\u7279\u8272\u5143\u7D20\uFF0C\u5E76\u5C3D\u91CF\u6362\u6389\u4E0A\u4E00\u4EFD\u7528\u8FC7\u7684\u5143\u7D20\uFF1B
+  \xB7 \u56FE\u8868\u7C7B\u578B\u6309\u6570\u636E\u5F62\u6001\u9009\uFF0C\u53C2\u8003\u3010\u56FE\u8868\u914D\u65B9\u3011\uFF0C\u4E0D\u8981\u9ED8\u8BA4\u53EA\u7528\u6298\u7EBF/\u67F1\u72B6/\u997C\u56FE\uFF1B
+  \xB7 \u6570\u5B57\u4E0E\u56FE\u8868\u670D\u52A1\u4E8E\u7ED3\u8BBA\uFF1A\u6838\u5FC3\u6570\u5B57\u4F18\u5148\uFF0C\u4F46\u4E0D\u8981\u5F3A\u5236\u6BCF\u4EFD\u90FD\u653E\u6EE1 .stat/.ring/.compare/.rank-list\uFF1B
+  \xB7 \u660E\u7EC6\u8868\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u53EA\u653E Top 10 \u5E76\u7528\u4E00\u884C"\u5176\u4F59 N \u9879\u5408\u8BA1"\u6536\u5C3E\uFF1B
   \xB7 \u6B63\u6587\u53EA\u56DE\u4E00\u53E5"\u62A5\u544A\u5DF2\u751F\u6210"\u4E4B\u7C7B\uFF0C\u4E0D\u91CD\u590D\u5185\u5BB9\u3002
 - \u3010\u4EC5\u8F7B\u91CF\u573A\u666F\u7528 render_report\u3011\u53EA\u6709\u5F53\u7528\u6237\u660E\u786E\u8868\u793A"\u7B80\u5355\u770B\u4E00\u4E0B / \u4E00\u53E5\u8BDD / \u53EA\u51FA\u4E00\u5F20\u56FE / \u7528\u5361\u7247\u5C31\u884C / \u4E0D\u7528\u62A5\u544A"\u65F6\uFF0C\u624D\u7528 render_report\uFF08\u6C14\u6CE1\u5185\u7684\u7ED3\u6784\u5316\u5361\u7247\uFF09\uFF1A
   \xB7 \u7EC4\u7EC7\u987A\u5E8F\uFF1Asection \u2192 summary/notice \u2192 kpi \u2192 hbar/progress/chips/dist \u2192 chart \u2192 table \u2192 risk \u2192 insights\uFF1B
@@ -155792,8 +156280,7 @@ var SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u6570\u636E\u5E93\u67E5\u8BE2\u4E0
 - \u82E5\u67E5\u8BE2\u7ED3\u679C\u4E3A\u7A7A\uFF1A\u4E0D\u8981\u51FA\u62A5\u8868\uFF0C\u76F4\u63A5\u8BF4\u660E"\u6CA1\u6709\u67E5\u8BE2\u5230\u6570\u636E"\u3002
 - \u53EA\u6709\u7528\u6237\u660E\u786E\u53EA\u60F3\u770B\u4E00\u5F20\u56FE\u3001\u4E14\u4E0D\u6D89\u53CA\u591A\u7EF4\u5206\u6790\u65F6\uFF0C\u624D\u7528 render_chart \u753B\u5355\u56FE\u3002
 - \u8C03\u7528\u53EF\u89C6\u5316\u5DE5\u5177\u540E\uFF0C\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\u603B\u7ED3\uFF0C\u4E0D\u8981\u518D\u91CD\u590D\u62A5\u8868\u91CC\u7684\u6570\u5B57\u3002
-- \u524D\u7AEF\u4F1A\u6839\u636E\u5DE5\u5177\u8C03\u7528\u81EA\u52A8\u6E32\u67D3\uFF0C\u4F60\u65E0\u9700\u3001\u4E5F\u4E0D\u5F97\u8F93\u51FA HTML / JavaScript / ECharts \u6E90\u7801\uFF0C
-  \u4E25\u7981\u8BA9\u7528\u6237"\u4FDD\u5B58\u4E3A .html \u81EA\u5DF1\u6253\u5F00"\u6216"\u53BB\u5B98\u7F51\u793A\u4F8B\u91CC\u8FD0\u884C"\u3002
+- HTML / CSS / ECharts \u6E90\u7801\u53EA\u80FD\u653E\u5728\u5DE5\u5177\u53C2\u6570\u91CC\uFF0C\u4E0D\u8981\u5728\u804A\u5929\u6B63\u6587\u91CC\u8F93\u51FA\uFF1B\u4E25\u7981\u8BA9\u7528\u6237"\u4FDD\u5B58\u4E3A .html \u81EA\u5DF1\u6253\u5F00"\u6216"\u53BB\u5B98\u7F51\u793A\u4F8B\u91CC\u8FD0\u884C"\u3002
 - \u5982\u679C\u67E5\u8BE2\u7ED3\u679C\u53EA\u6709\u4E00\u884C\u6C47\u603B\u503C\u3001\u4E14\u7528\u6237\u53EA\u662F\u95EE\u4E00\u4E2A\u6570\uFF0C\u53EF\u4EE5\u76F4\u63A5\u7528\u7B80\u77ED\u6587\u5B57\u56DE\u7B54\uFF1B\u4F46\u6D89\u53CA\u591A\u4E2A\u6570\u5B57\u6216\u5BF9\u6BD4\u65F6\uFF0C\u4ECD\u4F18\u5148\u7528 KPI \u62A5\u8868\u3002
 
 \u5DE5\u4F5C\u89C4\u5219\uFF1A
@@ -155804,11 +156291,14 @@ var SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u6570\u636E\u5E93\u67E5\u8BE2\u4E0
 5. \u5982\u679C\u7528\u6237\u7684\u95EE\u9898\u542B\u7CCA\uFF0C\u5148\u63D0\u51FA\u6F84\u6E05\u95EE\u9898\u3002
 6. \u5982\u679C\u5DE5\u5177\u8FD4\u56DE\u6743\u9650\u6216\u8BED\u6CD5\u9519\u8BEF\uFF0C\u7528\u4E00\u53E5\u4EBA\u8BDD\u5411\u7528\u6237\u8BF4\u660E\uFF0C\u4E0D\u8981\u53CD\u590D\u91CD\u8BD5\u3002
 7. \u6570\u636E\u5E93\u53EF\u80FD\u5F88\u5927\uFF1A\u4F18\u5148\u7528\u805A\u5408\u67E5\u8BE2\uFF08GROUP BY / SUM / COUNT / TOP\uFF09\uFF0C\u4E0D\u8981 SELECT * \u62C9\u5168\u91CF\u660E\u7EC6\uFF1B\u5355\u4E2A\u95EE\u9898\u5C3D\u91CF\u4E00\u6B21 SQL \u53D6\u56DE\u591A\u4E2A\u6307\u6807\u3002
-8. \u540C\u4E00\u6B21\u5BF9\u8BDD\u7684\u67E5\u8BE2\u6B21\u6570\u548C\u8FD4\u56DE\u5185\u5BB9\u90FD\u6709\u4E0A\u9650\u3002\u5982\u679C\u5DE5\u5177\u8FD4\u56DE\u201C\u5DF2\u8FBE\u4E0A\u9650 / \u7ED3\u679C\u8FC7\u5927 / \u5DF2\u622A\u65AD\u201D\u7684\u63D0\u793A\uFF0C**\u4E0D\u8981\u518D\u67E5\u8BE2\u3001\u4E0D\u8981\u91CD\u8BD5**\uFF0C\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u56DE\u7B54\u6216\u751F\u6210\u62A5\u544A\uFF0C\u5E76\u5728\u62A5\u544A\u91CC\u5982\u5B9E\u6CE8\u660E\u6570\u636E\u7F3A\u53E3\u3002
+8. \u5E74\u5EA6/\u5B8C\u6574\u62A5\u544A\u8F6E\u6B21\u7684\u9884\u7B97\u5DF2\u653E\u5BBD\u5230 SQL 10 \u6B21\u3001\u8868\u7ED3\u6784 8 \u6B21\uFF1B\u62A5\u544A\u9700\u8981\u591A\u4E2A\u53E3\u5F84\u65F6\uFF0C\u53EF\u4EE5\u67E5 6~10 \u6B21\uFF0C\u4F46\u6BCF\u6B21\u90FD\u8981\u5C3D\u91CF\u540C\u65F6\u53D6\u56DE\u591A\u4E2A\u6307\u6807\u3002
+9. \u540C\u4E00\u6B21\u5BF9\u8BDD\u7684\u67E5\u8BE2\u6B21\u6570\u548C\u8FD4\u56DE\u5185\u5BB9\u90FD\u6709\u4E0A\u9650\u3002\u5982\u679C\u5DE5\u5177\u8FD4\u56DE\u201C\u5DF2\u8FBE\u4E0A\u9650 / \u7ED3\u679C\u8FC7\u5927 / \u5DF2\u622A\u65AD\u201D\u7684\u63D0\u793A\uFF0C**\u4E0D\u8981\u518D\u67E5\u8BE2\u3001\u4E0D\u8981\u91CD\u8BD5**\uFF0C\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u56DE\u7B54\u6216\u751F\u6210\u62A5\u544A\uFF0C\u5E76\u5728\u62A5\u544A\u91CC\u5982\u5B9E\u6CE8\u660E\u6570\u636E\u7F3A\u53E3\u3002
 
 ${WMS_METRIC_PROMPT}
 
-${TEMPLATE_PROMPT}`;
+${TEMPLATE_PROMPT}
+
+${CHART_RECIPE_PROMPT}`;
 var runtimes = /* @__PURE__ */ new Map();
 var RUNTIME_TTL_MS = 30 * 60 * 1e3;
 var MAX_RUNTIMES = 8;
@@ -155816,7 +156306,8 @@ function buildRuntime(cfg) {
   const model = new ChatOpenAI({
     model: cfg.llm.model,
     apiKey: cfg.llm.apiKey,
-    temperature: 0,
+    temperature: cfg.llm.temperature,
+    topP: cfg.llm.topP,
     timeout: cfg.llm.timeoutMs,
     maxRetries: 1,
     maxTokens: cfg.maxOutputTokens,
@@ -155927,6 +156418,190 @@ function decryptConfigPayload(payload) {
   }
 }
 
+// dist/report-variant.js
+var LAYOUT_CANDIDATES = {
+  annual: ["timeline", "executive", "narrative"],
+  monthly: ["dashboard", "executive", "timeline"],
+  weekly: ["dashboard", "comparison", "narrative"],
+  daily: ["dashboard", "executive"],
+  inventory: ["dashboard", "comparison"],
+  exception: ["narrative", "comparison"],
+  compare: ["comparison", "dashboard"],
+  auto: ["executive", "dashboard", "narrative", "comparison", "timeline"]
+};
+var STYLE_CANDIDATES = {
+  annual: ["\u8463\u4E8B\u4F1A\u7B80\u62A5", "\u6742\u5FD7\u7F16\u8F91\u98CE", "\u6570\u636E\u6545\u4E8B"],
+  monthly: ["\u8463\u4E8B\u4F1A\u7B80\u62A5", "\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6570\u636E\u6545\u4E8B"],
+  weekly: ["\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6570\u636E\u6545\u4E8B", "\u6742\u5FD7\u7F16\u8F91\u98CE"],
+  daily: ["\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6781\u7B80\u9ED1\u767D"],
+  inventory: ["\u6DF1\u8272\u9A7E\u9A76\u8231", "\u6781\u7B80\u9ED1\u767D"],
+  exception: ["\u6742\u5FD7\u7F16\u8F91\u98CE", "\u6781\u7B80\u9ED1\u767D"],
+  compare: ["\u8463\u4E8B\u4F1A\u7B80\u62A5", "\u6781\u7B80\u9ED1\u767D"],
+  auto: REPORT_VISUAL_STYLES.map((item) => item.label)
+};
+var FEATURE_ELEMENT_SETS = {
+  annual: [
+    ["report-cover", "hero-kpi", "heat-table", "timeline", "action-list"],
+    ["hero-kpi", "small-multiples", "comparison-matrix", "finding-list", "report-appendix"],
+    ["bullet-row", "top-bottom", "risk-matrix", "so-what", "pull-quote"]
+  ],
+  monthly: [
+    ["report-cover", "hero-kpi", "comparison-matrix", "action-list"],
+    ["hero-kpi", "small-multiples", "heat-table", "finding-list", "report-appendix"],
+    ["bullet-row", "top-bottom", "risk-matrix", "so-what", "action-list"]
+  ],
+  weekly: [
+    ["hero-kpi", "small-multiples", "heat-table", "finding-list", "so-what"],
+    ["report-cover", "bullet-row", "top-bottom", "finding-list", "action-list"],
+    ["hero-kpi", "comparison-matrix", "risk-matrix", "so-what", "report-appendix"]
+  ],
+  daily: [
+    ["hero-kpi", "bullet-row", "top-bottom", "so-what", "action-list"],
+    ["hero-kpi", "small-multiples", "heat-table", "finding-list", "so-what"]
+  ],
+  inventory: [
+    ["hero-kpi", "comparison-matrix", "heat-table", "top-bottom", "so-what", "action-list"],
+    ["hero-kpi", "bullet-row", "risk-matrix", "finding-list", "action-list"]
+  ],
+  exception: [
+    ["risk-matrix", "top-bottom", "finding-list", "so-what", "action-list"],
+    ["comparison-matrix", "heat-table", "timeline", "finding-list", "report-appendix"]
+  ],
+  compare: [
+    ["comparison-matrix", "top-bottom", "risk-matrix", "so-what", "action-list"],
+    ["hero-kpi", "bullet-row", "small-multiples", "finding-list", "report-appendix"]
+  ],
+  auto: [
+    ["report-cover", "hero-kpi", "heat-table", "finding-list", "action-list"],
+    ["hero-kpi", "small-multiples", "comparison-matrix", "so-what", "report-appendix"],
+    ["bullet-row", "top-bottom", "risk-matrix", "timeline", "action-list"]
+  ]
+};
+var KEYWORD_LAYOUTS = [
+  { re: /给领导|老板|汇报|决策|摘要|一页|executive/i, layout: "executive" },
+  { re: /年度|年报|同比|全年|季度|复盘|时间轴|里程碑|timeline/i, layout: "timeline" },
+  { re: /对比|多仓|环比|差距|排名|benchmark|comparison/i, layout: "comparison" },
+  { re: /异常|原因|专题|分析报告|深度|发现|narrative/i, layout: "narrative" },
+  { re: /看板|监控|日报|周报|dashboard/i, layout: "dashboard" }
+];
+function guessTemplateFromText(text) {
+  const raw = text || "";
+  if (/年度|年报|全年|年度报告|年度总结/.test(raw))
+    return "annual";
+  if (/月报|月度|本月|上月/.test(raw))
+    return "monthly";
+  if (/周报|周度|本周|上周/.test(raw))
+    return "weekly";
+  if (/日报|今日|昨日|当天/.test(raw))
+    return "daily";
+  if (/库存|库龄|呆滞|临期|周转/.test(raw))
+    return "inventory";
+  if (/异常|预警|超时|差异|缺货/.test(raw))
+    return "exception";
+  if (/对比|多仓|环比|同比|排名/.test(raw))
+    return "compare";
+  return "auto";
+}
+function fnv1a(text) {
+  let hash2 = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash2 ^= text.charCodeAt(i);
+    hash2 = Math.imul(hash2, 16777619);
+  }
+  return hash2 >>> 0;
+}
+function rotate(list, seed, previous) {
+  if (!list.length)
+    return void 0;
+  let index2 = fnv1a(seed) % list.length;
+  if (previous && list.length > 1 && list[index2] === previous) {
+    index2 = (index2 + 1) % list.length;
+  }
+  return list[index2];
+}
+function overlapRatio(left, right) {
+  if (!left.length || !right.length)
+    return 0;
+  const rightSet = new Set(right);
+  const hit = left.filter((item) => rightSet.has(item)).length;
+  return hit / Math.min(left.length, right.length);
+}
+function categoryCounts(elements) {
+  let data = 0;
+  let narrative = 0;
+  elements.forEach((key) => {
+    const category = reportElementCategory(key);
+    if (category === "data")
+      data += 1;
+    if (category === "narrative")
+      narrative += 1;
+  });
+  return { data, narrative };
+}
+function isBalanced(elements) {
+  const counts = categoryCounts(elements);
+  return counts.data >= 2 && counts.narrative >= 2;
+}
+function pickFeatureElements(template, seed, lastElements) {
+  const rawSets = FEATURE_ELEMENT_SETS[template] || FEATURE_ELEMENT_SETS.auto;
+  const sets = rawSets.filter(isBalanced);
+  const pool = sets.length ? sets : rawSets;
+  const start = fnv1a(seed + "|elements") % pool.length;
+  if (lastElements && lastElements.length) {
+    for (let offset = 0; offset < pool.length; offset++) {
+      const candidate = pool[(start + offset) % pool.length];
+      if (overlapRatio(candidate, lastElements) <= 0.5)
+        return candidate;
+    }
+  }
+  return pool[start];
+}
+function candidatesFor(template, userText) {
+  const key = template && LAYOUT_CANDIDATES[template] ? template : "auto";
+  const layouts = [...LAYOUT_CANDIDATES[key] || LAYOUT_CANDIDATES.auto];
+  const styles2 = [...STYLE_CANDIDATES[key] || STYLE_CANDIDATES.auto];
+  const text = userText || "";
+  const hit = KEYWORD_LAYOUTS.find((item) => item.re.test(text));
+  if (hit) {
+    const index2 = layouts.indexOf(hit.layout);
+    if (index2 > 0) {
+      layouts.splice(index2, 1);
+      layouts.unshift(hit.layout);
+    }
+  }
+  return { layouts, styles: styles2 };
+}
+function pickReportVariant(input2 = {}) {
+  const template = input2.template || "auto";
+  const seed = String(input2.seed || "") + "|" + template;
+  const { layouts, styles: styles2 } = candidatesFor(template, input2.userText || "");
+  const layout = rotate(layouts, seed + "|layout", input2.lastLayout) || "dashboard";
+  const visualStyle = rotate(styles2, seed + "|style", input2.lastVisualStyle) || REPORT_VISUAL_STYLES[0].label;
+  const featureElements = pickFeatureElements(template, seed + "|" + layout, input2.lastElements);
+  const layoutLabel = REPORT_LAYOUTS[layout]?.label || layout;
+  return {
+    layout,
+    visualStyle,
+    featureElements,
+    reason: `template=${template}; candidates=${layouts.join("/")}; picked=${layout}(${layoutLabel}); elements=${featureElements.join(",")}`
+  };
+}
+function buildVariantHint(variant, previous) {
+  const layoutLabel = REPORT_LAYOUTS[variant.layout]?.label || variant.layout;
+  const lines = [
+    "\u3010\u672C\u8F6E\u62A5\u544A\u7248\u5F0F\u8981\u6C42\u3011",
+    `layout=${variant.layout}\uFF08${layoutLabel}\uFF09`,
+    `visualStyle=${variant.visualStyle}`,
+    `\u3010\u672C\u8F6E\u62A5\u544A\u5143\u7D20\u3011\u4F18\u5148\u4F7F\u7528\uFF1A${variant.featureElements.join(" / ")}`,
+    "\u5176\u4E2D\u6570\u636E\u578B\u5143\u7D20\u81F3\u5C11 2 \u4E2A\u3001\u53D9\u4E8B\u578B\u5143\u7D20\u81F3\u5C11 2 \u4E2A\uFF1B\u7B2C\u4E00\u4E2A section \u5FC5\u987B\u662F\u6570\u636E\u5C4F\uFF08Hero KPI + \u4E3B\u56FE/\u70ED\u529B\u8868\uFF09\u3002",
+    "\u8BF7\u4F18\u5148\u6309\u8BE5\u7248\u5F0F\u7EC4\u7EC7\u5185\u5BB9\uFF0C\u5E76\u7528 CSS \u505A\u51FA\u4E0E\u8BE5\u98CE\u683C\u4E00\u81F4\u7684\u89C6\u89C9\u6548\u679C\uFF1B\u7ED3\u6784\u8981\u670D\u52A1\u4E8E\u6570\u636E\uFF0C\u4E0D\u8981\u4E3A\u4E86\u586B\u6EE1\u6A21\u5757\u800C\u7F16\u5185\u5BB9\u3002"
+  ];
+  if (previous && (previous.layout || previous.visualStyle || previous.elements?.length)) {
+    lines.push(`\u4E0A\u4E00\u4EFD\u62A5\u544A\u4F7F\u7528\u4E86 layout=${previous.layout || "\u672A\u77E5"} / visualStyle=${previous.visualStyle || "\u672A\u77E5"} / \u5143\u7D20=${previous.elements?.length ? previous.elements.join("\u3001") : "\u672A\u77E5"}\uFF0C\u672C\u6B21\u8BF7\u660E\u663E\u4E0D\u540C\uFF0C\u81F3\u5C11\u6362\u6389\u4E00\u534A\u5143\u7D20\u3002`);
+  }
+  return lines.join("\n");
+}
+
 // dist/index.js
 var app = (0, import_fastify.default)({ logger: true });
 app.addHook("onRequest", async (_request, reply) => {
@@ -156016,6 +156691,35 @@ app.post("/chat/stream", async (request, reply) => {
     return;
   }
   const messages = body.messages.map(toMessage);
+  const lastUserText = [...body.messages].reverse().find((message) => message.role === "user")?.content || "";
+  const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|出一份|来一份/.test(lastUserText);
+  if (wantsReport) {
+    const userTurns = body.messages.filter((message) => message.role === "user").length;
+    const variant = pickReportVariant({
+      template: guessTemplateFromText(lastUserText),
+      userText: lastUserText,
+      lastLayout: body.lastLayout,
+      lastVisualStyle: body.lastVisualStyle,
+      lastElements: Array.isArray(body.lastElements) ? body.lastElements : [],
+      seed: `${body.conversationId || "anonymous"}|${userTurns}`
+    });
+    const hint = buildVariantHint(variant, {
+      layout: body.lastLayout,
+      visualStyle: body.lastVisualStyle,
+      elements: Array.isArray(body.lastElements) ? body.lastElements : []
+    });
+    const lastUserIndex = messages.reduce((index2, message, i) => message._getType() === "human" ? i : index2, -1);
+    if (lastUserIndex >= 0) {
+      messages.splice(lastUserIndex, 0, new SystemMessage(hint));
+    }
+    request.log.info({
+      layout: variant.layout,
+      visualStyle: variant.visualStyle,
+      elements: variant.featureElements,
+      reason: variant.reason
+    }, "report variant");
+    logLine(`report variant ${variant.reason} style=${variant.visualStyle} elements=${variant.featureElements.join(",")}`);
+  }
   const controller = new AbortController();
   let timedOut = false;
   let finished = false;
@@ -156030,8 +156734,9 @@ app.post("/chat/stream", async (request, reply) => {
   raw.on("close", onClientClose);
   activeStreams += 1;
   const budget = new TurnBudget({
-    maxSqlQueries: resolved.maxSqlQueries,
-    maxSchemaCalls: resolved.maxSchemaCalls,
+    // 报告轮次需要多取几个口径，普通问答仍使用配置值
+    maxSqlQueries: wantsReport ? Math.max(resolved.maxSqlQueries, 10) : resolved.maxSqlQueries,
+    maxSchemaCalls: wantsReport ? Math.max(resolved.maxSchemaCalls, 8) : resolved.maxSchemaCalls,
     maxResultChars: resolved.maxResultChars,
     maxTotalToolChars: resolved.maxTotalToolChars
   });

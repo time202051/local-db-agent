@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { TurnBudget } from './budget.js';
 import {
+  analyzeReportRichness,
   extractChartIds,
+  extractChartTypes,
+  extractReportElements,
   normalizeHtmlReportInput,
+  normalizeLayout,
+  normalizeVisualStyle,
   validateChartOption,
   validateHtmlTables,
   validateReportCharts,
@@ -90,11 +95,76 @@ describe('validateReportCharts', () => {
   });
 });
 
+describe('analyzeReportRichness', () => {
+  it('区分数据型与叙事型元素', () => {
+    const html =
+      '<section class="section"><div class="hero-kpi"></div><div class="heat-table"></div>' +
+      '<div class="report-cover"></div><div class="finding-list"></div><div class="timeline"></div>' +
+      '<table></table></section>';
+    const r = analyzeReportRichness(html, { c1: { series: [{ type: 'line', data: [1] }] } });
+    expect(r.dataElements).toEqual(['hero-kpi', 'heat-table']);
+    expect(r.narrativeElements).toEqual(['report-cover', 'finding-list', 'timeline']);
+    expect(r.sections).toBe(1);
+    expect(r.tables).toBe(1);
+    expect(r.chartTypes).toEqual(['line']);
+  });
+});
+
+describe('extractChartTypes', () => {
+  it('统计图表 series 类型并去重', () => {
+    expect(
+      extractChartTypes({
+        c1: { series: [{ type: 'line', data: [1] }] },
+        c2: { series: [{ type: 'bar', data: [1] }, { type: 'line', data: [2] }] },
+      }),
+    ).toEqual(['line', 'bar']);
+  });
+});
+
+describe('extractReportElements', () => {
+  it('从 HTML class 中提取已知元素', () => {
+    const html =
+      '<div class="report-cover"><div class="timeline"></div></div>' +
+      '<div class="risk-matrix"></div><div class="custom-class"></div>';
+    expect(extractReportElements(html)).toEqual(['report-cover', 'timeline', 'risk-matrix']);
+  });
+
+  it('忽略未知 class 与重复项', () => {
+    expect(extractReportElements('<div class="timeline timeline custom"></div>')).toEqual([
+      'timeline',
+    ]);
+  });
+});
+
+describe('normalizeLayout', () => {
+  it('兼容英文 key 与中文别名', () => {
+    expect(normalizeLayout('timeline')).toBe('timeline');
+    expect(normalizeLayout('时间轴复盘')).toBe('timeline');
+    expect(normalizeLayout('给领导看的高层摘要')).toBe('executive');
+    expect(normalizeLayout('多仓横向对比')).toBe('comparison');
+  });
+
+  it('未知值回落到 auto', () => {
+    expect(normalizeLayout('随便')).toBe('auto');
+    expect(normalizeLayout(undefined)).toBe('auto');
+  });
+});
+
+describe('normalizeVisualStyle', () => {
+  it('去空格并限制长度', () => {
+    expect(normalizeVisualStyle('  深色驾驶舱  ')).toBe('深色驾驶舱');
+    expect(normalizeVisualStyle('x'.repeat(200)).length).toBe(120);
+  });
+});
+
 describe('normalizeHtmlReportInput', () => {
   it('兼容中文模板 / 字符串数组 / 320px / JSON 字符串 charts', () => {
     const n = normalizeHtmlReportInput({
       title: '测试',
       template: '周报',
+      layout: '看板',
+      visualStyle: '深色驾驶舱',
+      css: '  .report{background:#000}  ',
       sources: '表A,表B、表C',
       warnings: '结果被截断',
       height: '320px',
@@ -102,10 +172,30 @@ describe('normalizeHtmlReportInput', () => {
       html: '<div class="ol-chart" data-id="c1"></div>',
     });
     expect(n.template).toBe('weekly');
+    expect(n.layout).toBe('dashboard');
+    expect(n.visualStyle).toBe('深色驾驶舱');
+    expect(n.css).toBe('.report{background:#000}');
     expect(n.sources).toEqual(['表A', '表B', '表C']);
     expect(n.warnings).toEqual(['结果被截断']);
     expect(n.height).toBe(320);
     expect(n.charts).toEqual({ c1: { series: [{ type: 'pie', data: [{ value: 1 }] }] } });
+  });
+
+  it('合并声明元素与 HTML 中自动提取的元素', () => {
+    const n = normalizeHtmlReportInput({
+      html: '<div class="timeline"></div><div class="hero-kpi"></div>',
+      elements: ['action-list', 'unknown-element'],
+    });
+    expect(n.elements).toEqual(['action-list', 'timeline', 'hero-kpi']);
+  });
+
+  it('年度报告别名归一化为 annual', () => {
+    expect(normalizeHtmlReportInput({ html: '<div></div>', template: '年度总结' }).template).toBe(
+      'annual',
+    );
+    expect(normalizeHtmlReportInput({ html: '<div></div>', template: '年报' }).template).toBe(
+      'annual',
+    );
   });
 
   it('格式问题只进 warnings，绝不抛错', () => {

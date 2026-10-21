@@ -48,8 +48,10 @@ const DEFAULTS = {
   llmBaseUrl: 'https://api.deepseek.com/v1',
   llmModel: 'deepseek-chat',
   llmTimeoutSec: 60,
+  llmTemperature: 0.3,
+  llmTopP: 0.9,
   recursionLimit: 80,
-  turnTimeoutSec: 120,
+  turnTimeoutSec: 180,
   maxConcurrent: 3,
   summaryTriggerTokens: 6000,
   summaryKeepMessages: 12,
@@ -58,7 +60,7 @@ const DEFAULTS = {
   maxSchemaCalls: 6,
   maxResultChars: 8000,
   maxTotalToolChars: 40000,
-  maxOutputTokens: 8000,
+  maxOutputTokens: 12000,
 };
 
 // ============================================================
@@ -89,6 +91,10 @@ export interface LimitsInput {
   costLimit?: number;
   commandTimeoutSec?: number;
   llmTimeoutSec?: number;
+  /** 采样温度（默认 0.3）：越大报告结构与视觉风格越多变，SQL 稳定性略降 */
+  temperature?: number;
+  /** 核采样（默认 0.9） */
+  topP?: number;
   recursionLimit?: number;
   turnTimeoutSec?: number;
   maxConcurrent?: number;
@@ -126,6 +132,8 @@ export interface LlmRuntime {
   baseUrl: string;
   model: string;
   timeoutMs: number;
+  temperature: number;
+  topP: number;
 }
 
 /** 归一化后的完整配置（每次请求一份） */
@@ -151,6 +159,10 @@ export class ConfigError extends Error {}
 
 function num(value: number | undefined, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
 /** ODBC 值转义：含 ; { } 等字符时用大括号包裹 */
@@ -241,6 +253,8 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     baseUrl,
     model,
     timeoutMs: Math.max(1, num(lim.llmTimeoutSec, DEFAULTS.llmTimeoutSec)) * 1000,
+    temperature: clamp(num(lim.temperature, DEFAULTS.llmTemperature), 0, 2),
+    topP: clamp(num(lim.topP, DEFAULTS.llmTopP), 0.1, 1),
   };
 
   const recursionLimit = Math.max(1, num(lim.recursionLimit, DEFAULTS.recursionLimit));

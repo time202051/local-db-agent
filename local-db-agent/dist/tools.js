@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { budgetMessage, currentBudget } from './budget.js';
 import { getSchema, getTableSchema, runQuery } from './db.js';
 import { logLine } from './log.js';
-import { HTML_REPORT_COMPONENT, HTML_REPORT_TOOL_DESCRIPTION, HTML_REPORT_TOOL_NAME, LEGACY_CHART_COMPONENT, LEGACY_CHART_TOOL_NAME, REPORT_TOOL_DESCRIPTION, REPORT_TOOL_NAME, htmlReportSchema, reportSchema, } from './visual-spec.js';
+import { HTML_REPORT_COMPONENT, HTML_REPORT_TOOL_DESCRIPTION, HTML_REPORT_TOOL_NAME, LEGACY_CHART_COMPONENT, LEGACY_CHART_TOOL_NAME, REPORT_ELEMENT_KEYS, REPORT_LAYOUT_KEYS, REPORT_TOOL_DESCRIPTION, reportElementCategory, REPORT_TOOL_NAME, htmlReportSchema, reportSchema, } from './visual-spec.js';
 /** 所有会触发前端 visual 渲染的工具名（index.ts 据此把工具结果转成 visual 事件）。 */
 export { VISUAL_TOOL_NAMES } from './visual-spec.js';
 /** 前端默认的可视化组件名（ECharts 图表，旧协议）。 */
@@ -141,6 +141,7 @@ const TEMPLATE_ALIASES = {
     daily: 'daily',
     weekly: 'weekly',
     monthly: 'monthly',
+    annual: 'annual',
     inventory: 'inventory',
     exception: 'exception',
     compare: 'compare',
@@ -153,6 +154,12 @@ const TEMPLATE_ALIASES = {
     月报: 'monthly',
     运营月报: 'monthly',
     月报告: 'monthly',
+    年度: 'annual',
+    年报: 'annual',
+    年度报告: 'annual',
+    年度总结: 'annual',
+    年度经营分析: 'annual',
+    年度复盘: 'annual',
     库存: 'inventory',
     库存快照: 'inventory',
     库存报表: 'inventory',
@@ -163,6 +170,39 @@ const TEMPLATE_ALIASES = {
     多仓对比: 'compare',
     仓库对比: 'compare',
 };
+const LAYOUT_ALIASES = {
+    executive: 'executive',
+    高层: 'executive',
+    高层摘要: 'executive',
+    摘要: 'executive',
+    汇报: 'executive',
+    领导: 'executive',
+    老板: 'executive',
+    dashboard: 'dashboard',
+    看板: 'dashboard',
+    仪表盘: 'dashboard',
+    监控: 'dashboard',
+    运营看板: 'dashboard',
+    narrative: 'narrative',
+    叙事: 'narrative',
+    叙事分析: 'narrative',
+    专题: 'narrative',
+    分析报告: 'narrative',
+    comparison: 'comparison',
+    对比: 'comparison',
+    横向对比: 'comparison',
+    比较: 'comparison',
+    多仓: 'comparison',
+    timeline: 'timeline',
+    时间轴: 'timeline',
+    年度: 'timeline',
+    季度: 'timeline',
+    复盘: 'timeline',
+    里程碑: 'timeline',
+    auto: 'auto',
+    自动: 'auto',
+};
+const MAX_CSS_CHARS = 60 * 1000;
 export function normalizeTemplate(value) {
     if (typeof value !== 'string')
         return 'auto';
@@ -170,6 +210,88 @@ export function normalizeTemplate(value) {
     if (!key || key === 'auto')
         return 'auto';
     return TEMPLATE_ALIASES[key] || TEMPLATE_ALIASES[value.trim()] || 'auto';
+}
+/** 结构蓝图归一化：支持英文 key、中文别名，未知值回落到 auto。 */
+export function normalizeLayout(value) {
+    if (typeof value !== 'string')
+        return 'auto';
+    const raw = value.trim();
+    if (!raw)
+        return 'auto';
+    const key = raw.toLowerCase();
+    const hit = LAYOUT_ALIASES[key] || LAYOUT_ALIASES[raw];
+    if (hit)
+        return hit;
+    const lowered = raw.toLowerCase();
+    const alias = Object.keys(LAYOUT_ALIASES).find(name => name !== 'auto' && lowered.includes(name.toLowerCase()));
+    if (alias)
+        return LAYOUT_ALIASES[alias];
+    const matched = REPORT_LAYOUT_KEYS.find(k => lowered.includes(k));
+    return matched || 'auto';
+}
+/** 视觉风格是自由文本，只做去空格和长度保护。 */
+export function normalizeVisualStyle(value) {
+    if (typeof value !== 'string')
+        return '';
+    return value.trim().slice(0, 120);
+}
+/** CSS 只做字符串归一化；真正的安全过滤在前端注入时完成。 */
+export function normalizeCss(value) {
+    if (typeof value !== 'string')
+        return '';
+    return value.trim();
+}
+const ELEMENT_KEY_SET = new Set(REPORT_ELEMENT_KEYS);
+function normalizeElementName(value) {
+    if (typeof value !== 'string')
+        return '';
+    const name = value.trim().replace(/^\./, '').toLowerCase();
+    return ELEMENT_KEY_SET.has(name) ? name : '';
+}
+/** 统计图表类型，用于日志观察模型是否只用 line/bar/pie。 */
+export function extractChartTypes(charts) {
+    const types = new Set();
+    Object.values(charts || {}).forEach(option => {
+        if (!option || typeof option !== 'object')
+            return;
+        const raw = option.series;
+        const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+        list.forEach(item => {
+            if (!item || typeof item !== 'object')
+                return;
+            const type = item.type;
+            if (typeof type === 'string' && type.trim())
+                types.add(type.trim());
+        });
+    });
+    return Array.from(types);
+}
+/** 从 HTML 里自动提取实际使用的报告元素 class。 */
+export function extractReportElements(html) {
+    const found = new Set();
+    const classRe = /class\s*=\s*["']([^"']*)["']/gi;
+    let match;
+    while ((match = classRe.exec(html || ''))) {
+        const tokens = match[1].split(/\s+/);
+        for (const token of tokens) {
+            const name = normalizeElementName(token);
+            if (name)
+                found.add(name);
+        }
+    }
+    return Array.from(found);
+}
+/** 统计报告的数据密度，用于日志判断是否退化成“长文章”。 */
+export function analyzeReportRichness(html, charts) {
+    const elements = extractReportElements(html);
+    return {
+        elements,
+        dataElements: elements.filter(key => reportElementCategory(key) === 'data'),
+        narrativeElements: elements.filter(key => reportElementCategory(key) === 'narrative'),
+        chartTypes: extractChartTypes(charts),
+        sections: (html.match(/<section\b/gi) || []).length,
+        tables: (html.match(/<table\b/gi) || []).length,
+    };
 }
 export function normalizeHeight(value) {
     if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
@@ -209,8 +331,19 @@ export function normalizeCharts(value) {
  */
 export function normalizeHtmlReportInput(input) {
     const html = typeof input.html === 'string' ? input.html : '';
+    const css = normalizeCss(input.css);
     const charts = normalizeCharts(input.charts);
     const warnings = toStringArray(input.warnings);
+    const declaredElements = toStringArray(input.elements, 20)
+        .map(normalizeElementName)
+        .filter(Boolean);
+    const elements = Array.from(new Set([...declaredElements, ...extractReportElements(html)]));
+    if (!html.trim()) {
+        warnings.push('报告正文为空（html 为空）');
+    }
+    if (css.length > MAX_CSS_CHARS) {
+        warnings.push(`CSS 过大（${Math.round(css.length / 1024)}KB），前端会截断到 ${MAX_CSS_CHARS / 1024}KB`);
+    }
     const tableProblem = validateHtmlTables(html);
     if (tableProblem) {
         warnings.push(`表格结构提示：${tableProblem}（前端会隐藏列数不一致的行）`);
@@ -225,11 +358,15 @@ export function normalizeHtmlReportInput(input) {
         subtitle: typeof input.subtitle === 'string' ? input.subtitle : '',
         height: normalizeHeight(input.height),
         template: normalizeTemplate(input.template),
+        layout: normalizeLayout(input.layout),
+        visualStyle: normalizeVisualStyle(input.visualStyle),
         period: typeof input.period === 'string' ? input.period : '',
         scope: typeof input.scope === 'string' ? input.scope : '',
         sources: toStringArray(input.sources),
         warnings: Array.from(new Set(warnings)),
         html,
+        css: css || undefined,
+        elements,
         charts,
     };
 }
@@ -388,12 +525,23 @@ export function createTools(db) {
     });
     const renderHtmlReportTool = tool(async (input) => {
         const normalized = normalizeHtmlReportInput(input);
+        const elementInfo = normalized.elements.length ? normalized.elements.join(',') : '-';
+        const richness = analyzeReportRichness(normalized.html, normalized.charts);
+        const richnessInfo = `data=${richness.dataElements.length}(${richness.dataElements.join(',') || '-'}) ` +
+            `narrative=${richness.narrativeElements.length}(${richness.narrativeElements.join(',') || '-'}) ` +
+            `sections=${richness.sections} tables=${richness.tables} ` +
+            `charts=${richness.chartTypes.join(',') || '-'}`;
+        if (richness.dataElements.length < 2) {
+            logLine('report richness warning: data elements too few');
+        }
         if (normalized.warnings.length) {
-            logLine(`tool render_html_report ok warnings=${normalized.warnings.length} ` +
+            logLine(`tool render_html_report ok warnings=${normalized.warnings.length} elements=${elementInfo} ` +
+                `${richnessInfo} ` +
                 normalized.warnings.join(' | ').slice(0, 400));
         }
         else {
-            logLine(`tool render_html_report ok chars=${normalized.html.length}`);
+            logLine(`tool render_html_report ok chars=${normalized.html.length} css=${normalized.css?.length || 0} ` +
+                `elements=${elementInfo} ${richnessInfo}`);
         }
         return JSON.stringify(normalized);
     }, {

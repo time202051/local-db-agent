@@ -44,8 +44,10 @@ const DEFAULTS = {
     llmBaseUrl: 'https://api.deepseek.com/v1',
     llmModel: 'deepseek-chat',
     llmTimeoutSec: 60,
+    llmTemperature: 0.3,
+    llmTopP: 0.9,
     recursionLimit: 80,
-    turnTimeoutSec: 120,
+    turnTimeoutSec: 180,
     maxConcurrent: 3,
     summaryTriggerTokens: 6000,
     summaryKeepMessages: 12,
@@ -54,13 +56,16 @@ const DEFAULTS = {
     maxSchemaCalls: 6,
     maxResultChars: 8000,
     maxTotalToolChars: 40000,
-    maxOutputTokens: 8000,
+    maxOutputTokens: 12000,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
 export class ConfigError extends Error {
 }
 function num(value, fallback) {
     return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
 }
 /** ODBC 值转义：含 ; { } 等字符时用大括号包裹 */
 function odbcValue(value) {
@@ -145,6 +150,8 @@ export function resolveRequestConfig(raw) {
         baseUrl,
         model,
         timeoutMs: Math.max(1, num(lim.llmTimeoutSec, DEFAULTS.llmTimeoutSec)) * 1000,
+        temperature: clamp(num(lim.temperature, DEFAULTS.llmTemperature), 0, 2),
+        topP: clamp(num(lim.topP, DEFAULTS.llmTopP), 0.1, 1),
     };
     const recursionLimit = Math.max(1, num(lim.recursionLimit, DEFAULTS.recursionLimit));
     const turnTimeoutMs = Math.max(1, num(lim.turnTimeoutSec, DEFAULTS.turnTimeoutSec)) * 1000;
