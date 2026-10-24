@@ -38,26 +38,27 @@ export const serverConfig = {
 };
 /** 内置安全兜底（前端不传 limits 时使用；不需要在 agent 端配置）。 */
 const DEFAULTS = {
-    dbMaxRows: 200,
-    dbCommandTimeoutSec: 15,
-    dbCostLimit: 30,
+    dbMaxRows: 500,
+    dbCommandTimeoutSec: 60,
+    dbCostLimit: 50,
     dbKingbasePort: 54321,
     llmBaseUrl: 'https://api.deepseek.com/v1',
     llmModel: 'deepseek-chat',
     llmTimeoutSec: 60,
     llmTemperature: 0.3,
     llmTopP: 0.9,
-    recursionLimit: 80,
-    turnTimeoutSec: 180,
+    recursionLimit: 30,
+    turnTimeoutSec: 120,
     maxConcurrent: 3,
-    summaryTriggerTokens: 6000,
+    // 报告优先保证数据完整；阈值提高，避免生成报告前把旧查询结果清掉。
+    summaryTriggerTokens: 40000,
     summaryKeepMessages: 12,
-    // 单轮预算：防止海量数据被反复查询、把上下文和 token 撑爆
+    // 普通问答预算；报告轮在 index.ts 中不再按条数限制
     maxSqlQueries: 6,
-    maxSchemaCalls: 6,
+    maxSchemaCalls: 4,
     maxResultChars: 8000,
-    maxTotalToolChars: 40000,
-    maxOutputTokens: 12000,
+    maxTotalToolChars: 24000,
+    maxOutputTokens: 20000,
     requireSqlApproval: false,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
@@ -206,7 +207,8 @@ export function resolveRequestConfig(raw) {
         schemas: normalizeStringList(dbInput.schemas, dbType === 'kingbase' ? ['public'] : []),
         hiddenTables: normalizeStringList(dbInput.hiddenTables, []),
         blockedTables: normalizeStringList(dbInput.blockedTables, []),
-        profile: dbInput.profile === 'generic' ? 'generic' : 'wms',
+        // 兼容旧页面；核心不再读取，业务知识改走 knowledge/
+        profile: typeof dbInput.profile === 'string' ? dbInput.profile : 'generic',
         businessPrompt: typeof dbInput.businessPrompt === 'string' ? dbInput.businessPrompt.trim().slice(0, 8000) : '',
     };
     const db = dbType === 'kingbase'
@@ -233,7 +235,8 @@ export function resolveRequestConfig(raw) {
     const recursionLimit = Math.max(1, num(lim.recursionLimit, DEFAULTS.recursionLimit));
     const turnTimeoutMs = Math.max(1, num(lim.turnTimeoutSec, DEFAULTS.turnTimeoutSec)) * 1000;
     const maxConcurrent = Math.max(1, num(lim.maxConcurrent, DEFAULTS.maxConcurrent));
-    const summaryTriggerTokens = Math.max(500, num(lim.summaryTriggerTokens, DEFAULTS.summaryTriggerTokens));
+    // 报告优先保证数据完整：低阈值会在生成报告前清掉旧查询结果
+    const summaryTriggerTokens = Math.max(20000, num(lim.summaryTriggerTokens, DEFAULTS.summaryTriggerTokens));
     const summaryKeepMessages = Math.max(1, num(lim.summaryKeepMessages, DEFAULTS.summaryKeepMessages));
     const maxSqlQueries = Math.max(1, num(lim.maxSqlQueries, DEFAULTS.maxSqlQueries));
     const maxSchemaCalls = Math.max(1, num(lim.maxSchemaCalls, DEFAULTS.maxSchemaCalls));

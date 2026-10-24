@@ -433,35 +433,31 @@ export const REPORT_VISUAL_STYLES = [
         brief: '渐变强调、非对称卡片、分节色带、图文节奏感强',
     },
 ];
-const layoutCatalog = REPORT_LAYOUT_KEYS.map(key => {
-    const item = REPORT_LAYOUTS[key];
-    return (`- ${key}（${item.label}）：适合 ${item.when}；参考结构：${item.sections}；` +
-        `推荐元素：${item.elements.join(' / ')}；密度：${item.density}；注意：${item.avoid}`);
-}).join('\n');
-const styleCatalog = REPORT_VISUAL_STYLES.map(item => `- ${item.label}：${item.brief}`).join('\n');
-const elementCatalog = REPORT_ELEMENT_KIT.map(item => `- ${item.label}（${item.key}）：${item.when}\n  ${item.html}`).join('\n');
+/** 关键元素的 HTML 骨架：让模型写报告时能直接用组件 class，而不是退回普通 HTML。 */
+const KEY_REPORT_ELEMENTS = new Set([
+    'report-cover',
+    'finding-list',
+    'so-what',
+    'timeline',
+    'action-list',
+    'risk-matrix',
+    'hero-kpi',
+    'heat-table',
+]);
+const elementCatalog = REPORT_ELEMENT_KIT.filter(item => KEY_REPORT_ELEMENTS.has(item.key))
+    .map(item => `- ${item.key}（${item.label}）：${item.html}`)
+    .join('\n');
 /** 图表配方：解决模型默认只用 line/bar/pie 的问题。 */
 export const CHART_RECIPE_PROMPT = `【图表配方（按数据形态选，不要默认只用折线/柱状/饼图）】
-- 时间趋势：line/area，smooth + 渐变 areaStyle + symbol:'none'；关键点用 markPoint。
-- 结构占比：treemap / sunburst / 堆叠柱，比饼图更适合多层结构；环形图中心放总数。
-- 两期对比：dumbbell（两个 scatter + 连接线）或 slope（xAxis:['期初','期末']，每个对象一条 line）。
-- 目标达成：bullet（bar + markLine 目标线）或 gauge；达成率环只用于单一指标。
-- 变化归因：waterfall（两个 stacked bar series，底层透明，顶层显示增减）。
-- 排名变化：slope 或 rank-list + delta，必须体现名次变化。
-- 分布：boxplot / 直方图，标中位数和离群值。
-- 流转：sankey（nodes + links）或 funnel，适合履约链路/库存流转。
-- 多维能力：radar，指标 4~7 个，多个对象叠加。
-- 日期密度：calendar + heatmap（coordinateSystem:'calendar'）。
-- 多对象同指标：small multiples，多个 .ol-chart 用同一刻度，禁止拼成一张花图。
-- 相关性：scatter / bubble，气泡大小表示第三维。
-- 双轴：yAxis 数组 + bar/line 组合，只在量纲确实不同时使用。
-图表统一要求：数据内嵌、中文标题/坐标/图例、颜色从 --rp-primary/--rp-success/--rp-danger 派生；图表数量由数据维度决定，不要为凑类型拆数据。`;
+- 趋势：line/area（smooth + 渐变 areaStyle + symbol:'none'，关键点 markPoint）。
+- 结构：treemap/sunburst/堆叠柱；环形图中心放总数。
+- 两期对比：dumbbell 或 slope；目标达成：bullet 或 gauge；归因：waterfall。
+- 排名：slope 或 rank-list + delta；分布：boxplot/直方图（标中位数）；流转：sankey/funnel。
+- 多维：radar（4~7 项）；日期密度：calendar+heatmap；相关性：scatter/bubble；双轴只在量纲不同时用。
+- 多对象同指标：small multiples，多个 .ol-chart 共用刻度。
+统一要求：数据内嵌、中文标题/坐标/图例、颜色从 --rp-primary/--rp-success/--rp-danger 派生；图表数量由数据维度决定，不要为凑类型拆数据。`;
 /** render_html_report 工具入参（完整 HTML 报告）。 */
 export const htmlReportSchema = z.object({
-    component: z
-        .string()
-        .default(HTML_REPORT_COMPONENT)
-        .describe(`渲染组件名，固定用 ${HTML_REPORT_COMPONENT}`),
     title: z.string().describe('报告标题，中文'),
     subtitle: z.string().optional().describe('可选副标题/时间范围'),
     height: z
@@ -471,19 +467,15 @@ export const htmlReportSchema = z.object({
     template: z
         .string()
         .optional()
-        .describe('报告模板：daily=作业日报 / weekly=运营周报 / monthly=运营月报 / annual=年度报告 / ' +
-        'inventory=库存快照 / exception=异常专报 / compare=多仓对比；' +
-        '写中文（周报/年报/年度报告/库存快照/异常专报…）也可以，判断不了用 auto'),
+        .describe('模板 key：来自知识包 reports/*.md；没有就 auto。不要硬套不存在的模板'),
     layout: z
         .enum(['auto', ...REPORT_LAYOUT_KEYS])
         .optional()
-        .describe('结构蓝图：executive=高层摘要 / dashboard=运营看板 / narrative=叙事分析 / ' +
-        'comparison=横向对比 / timeline=时间轴复盘；不确定用 auto'),
+        .describe('结构：executive/dashboard/narrative/comparison/timeline；不确定用 auto'),
     visualStyle: z
         .string()
         .optional()
-        .describe('视觉风格 brief（自由描述，如「杂志编辑风」「深色驾驶舱」「极简黑白」）。' +
-        '不同报告请主动使用不同风格，不要每份都长一样。'),
+        .describe('视觉风格 brief（如「深色驾驶舱」「极简黑白」），尽量与上一份不同'),
     period: z.string().optional().describe('统计期间，如 2025-08-01 ~ 2025-08-31'),
     scope: z.string().optional().describe('统计口径，如 全仓合计 / 华东仓 / 某货主 / 含冻结库存'),
     sources: z
@@ -496,87 +488,66 @@ export const htmlReportSchema = z.object({
         .describe('数据质量问题（空值/截断/负库存等），数组或分隔字符串都可以'),
     html: z
         .string()
-        .describe('报告正文 HTML 片段（不要 <html>/<head>/<body>）。' +
-        '图表容器用 <div class="ol-chart" data-id="xxx" style="height:320px"></div>，' +
-        '对应的 ECharts option 放到 charts.xxx 字段。禁止引用任何外部 CDN/脚本/图片链接。'),
+        .describe('报告正文 HTML 片段（不要 html/head/body）。图表容器：' +
+        '<div class="ol-chart" data-id="c1" style="height:320px"></div>，option 放 charts.c1；禁止外链。'),
     css: z
         .string()
         .optional()
-        .describe('可选：报告 CSS 片段（会注入到基础样式之后）。可以自由定义 class、覆盖 CSS 变量、' +
-        '调整字体/留白/色彩/网格；禁止 @import、外链字体/图片、expression/behavior。建议 8~30KB。'),
-    elements: z
-        .array(z.string())
-        .max(20)
-        .optional()
-        .describe('可选：本轮实际使用的元素 class（如 timeline / risk-matrix / action-list / report-appendix）。' +
-        '前端会自动从 HTML 中提取，这里只用于补全。'),
+        .describe('可选 CSS 片段，只写差异化样式，建议 8~20KB（最多 60KB）；禁止 @import/外链/expression。'),
     charts: z
         .union([z.record(z.string(), z.record(z.string(), z.any())), z.string()])
         .optional()
-        .describe('图表：key 对应 .ol-chart 的 data-id，value 为标准 ECharts option（数据内嵌）；也接受 JSON 字符串'),
+        .describe('图表：key 对应 .ol-chart 的 data-id，value 为 ECharts option（数据内嵌）'),
+    coverage: z
+        .array(z.object({
+        item: z.string().describe('指标/章节名称'),
+        status: z
+            .enum(['ok', 'missing', 'needs_review', 'pending'])
+            .describe('ok=已取到；missing=数据/字段缺失；needs_review=口径待确认；pending=还没查'),
+        source: z
+            .union([z.string(), z.array(z.string())])
+            .optional()
+            .describe('ok 时必须给数据来源：SQL/queryId/表名'),
+        note: z.string().optional().describe('missing/needs_review 时必须写原因'),
+        value: z.union([z.number(), z.string()]).optional(),
+        unit: z.string().optional(),
+    }))
+        .optional()
+        .describe('覆盖率清单（必须提供）：报告里每个指标/数字都要标注状态。有 pending 时服务端会拒绝出报告。'),
 });
 /**
  * HTML 报告工具描述。
  * 目标：给模型足够的结构与视觉自由度，同时保留组件套件、数据规则和安全边界。
  */
-export const HTML_REPORT_TOOL_DESCRIPTION = '当用户要"一份完整报告 / 日报 / 周报 / 月报 / 年报 / 年度报告 / 汇报大屏"，需要分节、卡片与明细时，调用本工具直接产出 HTML 报告。' +
-    '\n【第一原则】结构服务于内容，不要每份都套同一套模板。' +
-    '\n1) 先选 layout（本轮优先参考系统提示里的版式要求；没有就用 auto）：' +
-    `\n${layoutCatalog}` +
-    '\n2) 再选 visualStyle（尽量和上一份不同）：' +
-    `\n${styleCatalog}` +
-    '\n3) 写样式：css 字段是完整 CSS 片段，会注入到基础样式之后；也可以在 html 里写 <style> 或用内联 style。' +
-    '基础 CSS 已经提供排版、表格、卡片、图表容器和暗色主题，你只需要写“差异化”的部分。' +
-    '\n【自由 CSS 规范】' +
-    '\n- 优先覆盖 CSS 变量：--rp-primary / --rp-primary-2 / --rp-bg / --rp-surface / --rp-surface-2 / --rp-border / --rp-t1 / --rp-t2 / --rp-t3 / --rp-radius / --rp-gap；' +
-    '\n- 不要给 body/.report 写死浅色背景，用 var(--rp-bg)/var(--rp-surface)，否则暗色主题会失效；' +
-    '\n- 字体只用系统字体栈（如 Georgia, "Songti SC", "Noto Serif SC", serif 或 -apple-system, "PingFang SC", sans-serif），禁止 @font-face 外链；' +
-    '\n- 禁止 @import、url(http...)、url(//...)、expression()、behavior、-moz-binding；图片只能用纯 CSS 绘制，或 data:image/png|jpeg|gif|webp；' +
-    '\n- 至少处理 @media(max-width:820px)，保证窄屏不横向溢出；' +
-    '\n- 打印/导出：不要用 @media print 隐藏核心内容，不要依赖 position:fixed；' +
-    '\n- CSS 建议 8~30KB，超过 60KB 会被截断；!important 只在覆盖基础样式时少量使用。' +
-    '\n【可选基础组件（可自由组合、改样式，也可以完全不用）】' +
-    '\n- 外层：<div class="report"> → 顶部 <div class="report-header"><h1 class="report-title">标题</h1>' +
-    '<div class="report-sub">时间/口径</div><div class="report-meta"><span class="meta-chip">…</span></div></div>' +
-    '\n- 分节：<section class="section"><div class="section-head"><span class="section-no">1</span><div>' +
-    '<div class="section-title">标题</div><div class="section-sub">副标题</div></div></div> …</section>' +
-    '\n- 卡片/网格：<div class="card"><div class="card-title">标题</div> …</div>，并排用 <div class="grid grid-2"> 或 grid-3' +
-    '\n- 结论/提示：<div class="callout">…</div>、<div class="notice is-warning|is-danger|is-success|is-info">…</div>' +
-    '\n- 数字：.stat-grid > .stat（.stat-label/.stat-value/.stat-foot/.stat-note）、.compare-grid > .compare、' +
-    '.ring-grid > .ring（style="--v:83"）、.rank-list > .rank-row、.chips > .chip；也可以自己写 .hero-number 等自定义 class' +
-    '\n- 条形/进度/分布：.bar-row（.bar-fill 的 width 控制比例）、.progress-row、.dist-bar + .dist-legend' +
-    '\n- 风险：.risk-list > .risk-item.is-danger|is-warning|is-success；表格：<table> + thead/tbody' +
-    '\n- 图表：<div class="ol-chart" data-id="c1" style="height:320px"></div>，option 放进 charts.c1' +
-    '\n4) 表格规则：正文最多 10 行，超出只放 Top 10 并用一行「其余 N 项合计」收尾；' +
-    '每一行的 <td> 数量必须与表头 <th> 完全一致，空值也要输出 <td>—</td>，缺单元格会导致整行错位；' +
-    '数字列加 class="num"，文本列加 class="txt"（基础样式会自动对齐）。' +
-    '\n【报告元素库】' +
-    '\n- 数据型元素（至少 2 个）：hero-kpi / bullet-row / small-multiples / heat-table / top-bottom / comparison-matrix / risk-matrix；' +
-    '\n- 叙事型元素（至少 2 个）：report-cover / finding-list / so-what / pull-quote / timeline / action-list / report-appendix；' +
-    '\n- 第一个 section 必须是数据屏：2~4 个 Hero KPI + 1 张主图/热力表；' +
-    '\n- 每个分析 section 至少包含 1 个数据块（图/表/矩阵/排行榜），纯文字 section 最多 1 个；' +
-    '\n- 不要整份报告只有时间轴、发现列表、行动清单和附录；' +
+export const HTML_REPORT_TOOL_DESCRIPTION = '用户要“完整报告 / 日报 / 周报 / 月报 / 年报 / 汇报大屏”时调用本工具，直接产出 HTML 报告。' +
+    '\n【第一原则】结构服务内容，不要每份都套同一模板。' +
+    '\n1) layout：executive/dashboard/narrative/comparison/timeline；优先用系统提示【本轮报告版式要求】。' +
+    '\n2) visualStyle：杂志编辑风 / 深色驾驶舱 / 极简黑白 / 董事会简报 / 数据故事；尽量和上一份不同。' +
+    '\n3) css 只写差异化样式，优先覆盖变量：--rp-primary/--rp-bg/--rp-surface/--rp-surface-2/--rp-border/--rp-t1/--rp-radius/--rp-gap；' +
+    '不要给 body/.report 写死浅色背景；字体只用系统字体栈；禁止 @import、url(http)、expression/behavior；' +
+    '至少处理 @media(max-width:820px)；建议 8~20KB，超过 60KB 会截断。' +
+    '\n4) 基础组件：.report > .report-header(.report-title/.report-sub/.report-meta > .meta-chip)；' +
+    '<section class="section"> + .section-head(.section-no/.section-title/.section-sub)；.card + .grid.grid-2/grid-3；' +
+    '.callout / .notice.is-warning|is-danger|is-success|is-info；.stat-grid > .stat(.stat-label/.stat-value/.stat-foot)；' +
+    '.compare-grid > .compare；.ring-grid > .ring(style="--v:83")；.rank-list > .rank-row；.chips > .chip；' +
+    '.bar-row > .bar-fill；.progress-row；.dist-bar + .dist-legend；.risk-list > .risk-item.is-danger|is-warning|is-success；表格 <table>。' +
+    '\n5) 报告元素（数据型至少 2 个、叙事型至少 2 个）：数据型 hero-kpi / bullet-row / small-multiples / heat-table / top-bottom / comparison-matrix / risk-matrix；' +
+    '叙事型 report-cover / finding-list / so-what / pull-quote / timeline / action-list / report-appendix。' +
+    '第一个 section 必须是数据屏（2~4 个 KPI + 1 张主图/热力表）；每个分析 section 至少 1 个数据块，纯文字 section 最多 1 个。' +
+    '\n关键元素骨架（可直接复用并改文案）：' +
     `\n${elementCatalog}` +
-    '\n5) 图表规则：数量由数据维度决定，只有一个维度时 1 张图 + 数字卡即可；类型按数据选' +
-    '（line / bar / 堆叠柱 / 水平条 / pie / 环形 / radar / funnel / gauge / scatter / heatmap / ' +
-    'treemap / sunburst / sankey / boxplot / calendar heatmap / waterfall / dumbbell / slope / small multiples），' +
-    '不要为了凑类型而拆数据；图表容器必须写死高度，option 数据内嵌，标题/坐标/图例用中文。' +
-    '\n- 高级图的具体 option 要点见系统提示里的【图表配方】。' +
-    '\n6) 数字格式：千分位分隔；金额/数量 ≥1 亿写「亿」、≥1 万写「万」，保留 1~2 位小数；' +
-    '百分比保留 1 位小数；增长用 <span class="delta up">↑ x.x%</span>、下降用 ' +
-    '<span class="delta down">↓ x.x%</span>、持平用 <span class="delta flat">→ 0.0%</span>；' +
-    '关键数字要能看出时间范围与口径。' +
-    '\n7) 左侧章节导航、生成时间页脚、水印、数字千分位由页面自动处理，你不要自己写目录/页脚；' +
-    '报告会自动剥离 <script> 与所有外部资源（CDN/图片链接），写了也不会生效。' +
-    '\n8) 所有数值必须来自真实查询，不得编造；查询为空时不要调用本工具；调用后正文只写一句"报告已生成"。' +
-    '\n9) 除 html/charts/css 外，还要填 template（模板）、layout（结构）、visualStyle（视觉风格）、' +
-    'period（统计期间）、scope（统计口径）、sources（数据表与口径说明）、warnings（数据质量问题）；' +
-    '这些会渲染到报告页脚和数据质量提示里。' +
-    '\n10) 本工具不会因为格式问题失败：表格列数不一致、图表缺 option 会由前端兜底并显示为“数据质量提示”，' +
-    '你不需要反复重试或重新生成整份报告。' +
-    '\n11) 数据库可能很大：优先用聚合 SQL（GROUP BY / SUM / COUNT 等聚合），不要拉全量明细；' +
-    '整份报告的 SQL 查询尽量控制在 3~5 次以内，一次 SQL 尽量同时取回多个指标。' +
-    "\ncomponent 固定为 ${HTML_REPORT_COMPONENT}。";
+    '\n5.1) section-no 只放 1~2 位数字（01/02），禁止写英文或说明；英文副标题放 section-sub 且 ≤8 个字符；' +
+    'section-head 用 flex/grid，禁止 position:absolute/fixed 覆盖标题、数字或表格。' +
+    '\n6) 图表：<div class="ol-chart" data-id="c1" style="height:320px"></div>，option 放 charts.c1；' +
+    '高度写死、数据内嵌、中文标题/坐标/图例；类型按数据选，具体见系统提示【图表配方】。' +
+    '\n7) 表格：正文最多 10 行，超出用 Top 10 + “其余 N 项合计”；每行 <td> 数量必须与 <th> 一致，空值写 <td>—</td>；数字列 class="num"。' +
+    '\n8) 数字：千分位；≥1 亿写「亿」、≥1 万写「万」；百分比 1 位小数；涨跌用 <span class="delta up|down|flat">。' +
+    '\n9) 目录/页脚/水印自动生成，不要自己写；<script> 与外链会被剥离。' +
+    '\n10) 所有数值必须来自真实查询；查询为空不要调用；调用后正文只写一句“报告已生成”。' +
+    '\n11) 必须填 coverage：报告里每个指标/数字标注 ok / missing / needs_review / pending。' +
+    'ok 要有 SQL/queryId 来源；missing/needs_review 要写原因；有 pending 时服务端拒绝生成报告。' +
+    '\n12) 还要填 template/layout/visualStyle/period/scope/sources/warnings，用于页脚和数据质量提示。' +
+    '\n13) 格式问题不会失败（前端会兜底），不要重试或重新生成整份报告。';
 /**
  * 工具描述（模型看到的说明）。
  * 组件目录与 schema 保持一致，避免多处硬编码。

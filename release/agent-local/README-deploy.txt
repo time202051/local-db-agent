@@ -24,8 +24,6 @@ agent-local 部署说明（方案A：装在每台用户电脑）
               schemas: ['public'],       // 只展示这些 schema（SQL Server 默认全部）
               hiddenTables: [],          // 不在 list_tables 显示的表，支持 *
               blockedTables: [],         // 拒绝查询的表
-              profile: 'wms',            // 'wms' | 'generic'
-              businessPrompt: '',        // 追加业务口径/表说明
             },
            llm: { apiKey: '密钥', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
          },
@@ -37,6 +35,9 @@ agent-local 部署说明（方案A：装在每台用户电脑）
     - SQL Server 若为 Windows 集成认证，改用 trusted: true，不要填 user/password。
     - 金仓默认强制只读会话；建议业务上仍使用专用账号。
     - 组件打开时会自动做一次连接自检，失败会在面板顶部给出人话提示。
+    - 业务知识在安装包 `knowledge/` 目录（说明文档/预置查询），
+      过程性技能在 `skills/` 目录（周报/异常排查/报告步骤），
+      打包时固定，运行时只读；不要把业务口径再写进前端配置。
 
 三、一键安装（推荐）
   - 双击 install.bat（会自动请求管理员权限）→ 注册开机自启 + 立即后台启动

@@ -8,21 +8,41 @@ export class TurnBudget {
         exceeded: [],
     };
     startedAt = Date.now();
-    constructor(limits) {
+    /** 同一轮内 list_tables 结果缓存：模型重复调用时直接复用，不再花一次模型往返去重查。 */
+    schemaCache = new Map();
+    /** 同一轮内是否已经返回过“全量表清单”，用于去掉重复的大 JSON。 */
+    fullListServed = false;
+    /** 同一轮内 get_table_schema 结果缓存（按表名）。 */
+    tableSchemaCache = new Map();
+    /** 报告轮已经给过一次“优先出报告”的软提示。 */
+    reportNudgeServed = false;
+    /** 报告轮不按 SQL/Schema 条数限制，只靠 120 秒超时和覆盖率门禁。 */
+    unlimitedQueries;
+    constructor(limits, options = {}) {
         this.limits = limits;
+        this.unlimitedQueries = options.unlimitedQueries === true;
+    }
+    /** 给模型看的剩余预算；无限模式不返回剩余，避免模型误以为要按条数收尾。 */
+    remaining() {
+        if (this.unlimitedQueries)
+            return {};
+        return {
+            remainingSql: Math.max(0, this.limits.maxSqlQueries - this.usage.sqlQueries),
+            remainingSchema: Math.max(0, this.limits.maxSchemaCalls - this.usage.schemaCalls),
+        };
     }
     /** 申请一次 SQL 查询；返回 null 表示放行，否则返回给模型看的提示。 */
     takeSqlQuery() {
-        if (this.usage.sqlQueries >= this.limits.maxSqlQueries) {
+        if (!this.unlimitedQueries && this.usage.sqlQueries >= this.limits.maxSqlQueries) {
             return this.deny(`本次分析的 SQL 查询次数已达上限（${this.limits.maxSqlQueries} 次）。` +
-                '请基于已有查询结果直接生成报告，不要再查询数据库；不足的数据可以在报告里如实说明“未查询”。');
+                '请基于已有查询结果继续，并在报告 coverage 中如实标注未取到的数据。');
         }
         this.usage.sqlQueries += 1;
         return null;
     }
     /** 申请一次表结构查询（list_tables / get_table_schema）。 */
     takeSchemaCall() {
-        if (this.usage.schemaCalls >= this.limits.maxSchemaCalls) {
+        if (!this.unlimitedQueries && this.usage.schemaCalls >= this.limits.maxSchemaCalls) {
             return this.deny(`本次分析的表结构查询次数已达上限（${this.limits.maxSchemaCalls} 次）。` +
                 '请用已经了解到的字段继续，或者直接向用户说明无法继续查询。');
         }
@@ -40,6 +60,16 @@ export class TurnBudget {
         this.usage.totalChars += chars;
         return null;
     }
+    /** 报告轮达到建议查询量后，只提示一次“优先出报告”，不拦截。 */
+    takeReportNudge() {
+        if (!this.unlimitedQueries || this.reportNudgeServed)
+            return null;
+        if (this.usage.sqlQueries < 12)
+            return null;
+        this.reportNudgeServed = true;
+        return ('报告轮已执行 12 条 SQL。数据足够时请优先出报告；' +
+            '未取到的项在 coverage 标 missing/needs_review，不要为了补全反复探索。');
+    }
     deny(reason) {
         if (!this.usage.exceeded.includes(reason))
             this.usage.exceeded.push(reason);
@@ -47,8 +77,10 @@ export class TurnBudget {
     }
     summary() {
         const elapsed = ((Date.now() - this.startedAt) / 1000).toFixed(1);
-        return (`queries=${this.usage.sqlQueries}/${this.limits.maxSqlQueries} ` +
-            `schema=${this.usage.schemaCalls}/${this.limits.maxSchemaCalls} ` +
+        const sqlLimit = this.unlimitedQueries ? '∞' : String(this.limits.maxSqlQueries);
+        const schemaLimit = this.unlimitedQueries ? '∞' : String(this.limits.maxSchemaCalls);
+        return (`queries=${this.usage.sqlQueries}/${sqlLimit} ` +
+            `schema=${this.usage.schemaCalls}/${schemaLimit} ` +
             `chars=${this.usage.totalChars}/${this.limits.maxTotalToolChars} ` +
             `elapsed=${elapsed}s`);
     }
@@ -62,10 +94,12 @@ export function currentBudget() {
 }
 /** 预算超限时返回给模型的结构化结果（不是错误，不触发重试）。 */
 export function budgetMessage(kind, reason) {
+    const budget = storage.getStore();
     return JSON.stringify({
         success: false,
         budget: kind,
         error: reason,
         hint: '不要重复调用工具，直接基于已有结果继续。',
+        ...(budget ? budget.remaining() : {}),
     });
 }

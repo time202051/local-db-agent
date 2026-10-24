@@ -8,6 +8,8 @@ import type {
   ListTablesOptions,
   PingResult,
   QueryResult,
+  SchemaColumn,
+  SchemaKeyRow,
   SchemaResult,
   TableBrief,
   TableSchemaResult,
@@ -103,7 +105,7 @@ async function createPool(db: KingbaseDbRuntime): Promise<Pool> {
   const check = await pool.query(
     "SELECT current_setting('default_transaction_read_only') AS ro, " +
       "current_setting('transaction_read_only') AS tro, " +
-      'current_database() AS db, current_setting(\'server_version\') AS version',
+      "current_database() AS db, current_setting('server_version') AS version",
   );
   const ro = String(check.rows[0]?.ro ?? '');
   if (ro !== 'on') {
@@ -178,6 +180,7 @@ export async function getSchema(
     `SELECT t.table_schema,
             t.table_name,
             COUNT(c.column_name)::int AS column_count,
+            MAX(GREATEST(pc.reltuples, 0))::bigint AS row_count,
             obj_description(pc.oid) AS comment
      FROM information_schema.tables t
      LEFT JOIN information_schema.columns c
@@ -190,23 +193,51 @@ export async function getSchema(
     [schemas],
   );
 
-  const tables: TableBrief[] = [];
+  const all: TableBrief[] = [];
+  const availableSchemas = new Set<string>();
   for (const row of result.rows as Array<Record<string, unknown>>) {
     const schema = String(row.table_schema);
     const table = String(row.table_name);
     const comment = row.comment == null ? null : String(row.comment);
+    availableSchemas.add(schema);
     if (isHidden(table, schema, db.hiddenTables)) continue;
     if (isHidden(table, schema, db.blockedTables)) continue;
-    if (keyword && !`${table} ${comment ?? ''}`.toLowerCase().includes(keyword)) continue;
-    tables.push({
+    all.push({
       name: qualifiedName(schema, table),
       schema,
       columnCount: Number(row.column_count ?? 0),
+      rowCount: Number(row.row_count ?? 0),
       comment,
     });
   }
 
-  return { database, tableCount: tables.length, tables };
+  let tables = all;
+  let hint: string | undefined;
+  if (keyword) {
+    const matched = all.filter((item) =>
+      `${item.name} ${item.comment ?? ''}`.toLowerCase().includes(keyword),
+    );
+    if (matched.length) {
+      tables = matched;
+    } else if (all.length) {
+      tables = all;
+      hint =
+        `keyword "${options.keyword}" 未匹配到表名或表注释，已返回全部 ${all.length} 张表；` +
+        '请直接从列表里选表，不要再用其它 keyword 重试。';
+    }
+  }
+  if (!all.length) {
+    hint = `schema（${schemas.join(', ')}）下没有可访问的基础表，请检查 schemas 配置或账号权限。`;
+  }
+
+  return {
+    database,
+    tableCount: tables.length,
+    tables,
+    availableSchemas: Array.from(availableSchemas).sort(),
+    totalTables: all.length,
+    ...(hint ? { hint } : {}),
+  };
 }
 
 export { parseTableName } from './identifiers.js';
@@ -270,6 +301,92 @@ export async function getTableSchema(
     comment: tableComment,
     columns,
   };
+}
+
+/** 一次性读取所有可见表的列清单，用于本地检索索引。 */
+export async function getAllColumns(db: KingbaseDbRuntime): Promise<SchemaColumn[]> {
+  const pool = await getPool(db);
+  const schemas = db.schemas.length ? db.schemas : ['public'];
+  const result = await pool.query(
+    `SELECT n.nspname AS table_schema,
+            c.relname AS table_name,
+            a.attname AS column_name,
+            format_type(a.atttypid, a.atttypmod) AS data_type,
+            a.attnotnull AS not_null,
+            a.attnum AS ordinal,
+            col_description(c.oid, a.attnum) AS comment
+     FROM pg_class c
+     JOIN pg_namespace n ON n.oid = c.relnamespace
+     JOIN pg_attribute a ON a.attrelid = c.oid
+     WHERE c.relkind IN ('r', 'v')
+       AND n.nspname = ANY($1::text[])
+       AND a.attnum > 0
+       AND NOT a.attisdropped
+     ORDER BY n.nspname, c.relname, a.attnum`,
+    [schemas],
+  );
+  return (result.rows as Array<Record<string, unknown>>).map((row) => ({
+    schema: String(row.table_schema),
+    table: String(row.table_name),
+    name: String(row.column_name),
+    type: String(row.data_type),
+    nullable: !row.not_null,
+    comment: row.comment == null ? null : String(row.comment),
+    ordinal: Number(row.ordinal ?? 0),
+  }));
+}
+
+/**
+ * 一次性读取 schema 内所有表的主键/唯一约束/外键，用于本地 schema 关系图。
+ * 任何失败都返回空数组（keys 是增强信息，缺失不阻塞主流程）。
+ */
+export async function getAllKeys(db: KingbaseDbRuntime): Promise<SchemaKeyRow[]> {
+  const pool = await getPool(db);
+  const schemas = db.schemas.length ? db.schemas : ['public'];
+  try {
+    const result = await pool.query(
+      `SELECT n.nspname AS table_schema,
+              c.relname AS table_name,
+              a.attname AS column_name,
+              (con.contype = 'p') AS is_primary,
+              (con.contype = 'u') AS is_unique,
+              rn.nspname AS ref_schema,
+              rc.relname AS ref_table,
+              ra.attname AS ref_column,
+              k.ord AS key_ordinal,
+              con.conname AS constraint_name
+       FROM pg_constraint con
+       JOIN pg_class c ON c.oid = con.conrelid
+       JOIN pg_namespace n ON n.oid = c.relnamespace
+       JOIN LATERAL unnest(con.conkey) WITH ORDINALITY AS k(attnum, ord) ON true
+       JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = k.attnum
+       LEFT JOIN LATERAL unnest(con.confkey) WITH ORDINALITY AS rk(attnum, ord) ON rk.ord = k.ord
+       LEFT JOIN pg_class rc ON rc.oid = con.confrelid
+       LEFT JOIN pg_namespace rn ON rn.oid = rc.relnamespace
+       LEFT JOIN pg_attribute ra ON ra.attrelid = rc.oid AND ra.attnum = rk.attnum
+       WHERE con.contype IN ('p', 'u', 'f')
+         AND n.nspname = ANY($1::text[])
+       ORDER BY n.nspname, c.relname, con.conname, k.ord`,
+      [schemas],
+    );
+    return (result.rows as Array<Record<string, unknown>>).map((row) => ({
+      schema: String(row.table_schema),
+      table: String(row.table_name),
+      column: String(row.column_name),
+      primaryKey: row.is_primary === true,
+      unique: row.is_unique === true,
+      refSchema: row.ref_schema == null ? undefined : String(row.ref_schema),
+      refTable: row.ref_table == null ? undefined : String(row.ref_table),
+      refColumn: row.ref_column == null ? undefined : String(row.ref_column),
+      ordinal: Number(row.key_ordinal ?? 0),
+      constraint: row.constraint_name == null ? undefined : String(row.constraint_name),
+    }));
+  } catch (error) {
+    console.error(
+      `[db:kingbase] getAllKeys failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return [];
+  }
 }
 
 export async function runQuery(db: KingbaseDbRuntime, sqlText: string): Promise<QueryResult> {

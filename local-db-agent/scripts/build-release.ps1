@@ -56,6 +56,18 @@ Write-Host '2/8 Bundling into a single file (dist/app.mjs) ...'
 # All pure-JS deps are inlined, so the release no longer needs a huge node_modules.
 node scripts/bundle.mjs
 
+Write-Host 'Knowledge: validating pack and generating index ...'
+if (Test-Path (Join-Path $appDir 'knowledge')) {
+  node scripts/knowledge-index.mjs
+  if ($LASTEXITCODE -ne 0) { throw "knowledge-index failed with exit code $LASTEXITCODE" }
+}
+
+Write-Host 'Skills: validating SKILL.md and generating index ...'
+if (Test-Path (Join-Path $appDir 'skills')) {
+  npm run skills:index
+  if ($LASTEXITCODE -ne 0) { throw "skills-index failed with exit code $LASTEXITCODE" }
+}
+
 Write-Host '3/8 Preparing output directory ...'
 # Keep the user's .env across builds. The backup lives next to the release dir so
 # it survives a failed/interrupted run too; fall back to an older temp backup.
@@ -90,6 +102,12 @@ Write-Host '4/8 Copying bundle + manifests ...'
 Copy-Item (Join-Path $appDir 'dist\app.mjs') (Join-Path $outDir 'dist\app.mjs')
 Copy-Item (Join-Path $appDir '.env.example') $outDir
 Copy-Item (Join-Path $appDir 'packaging\README-deploy.txt') $outDir
+if (Test-Path (Join-Path $appDir 'knowledge')) {
+  Copy-Item (Join-Path $appDir 'knowledge') (Join-Path $outDir 'knowledge') -Recurse -Force
+}
+if (Test-Path (Join-Path $appDir 'skills')) {
+  Copy-Item (Join-Path $appDir 'skills') (Join-Path $outDir 'skills') -Recurse -Force
+}
 
 # Minimal package.json: only the native module needed at runtime, so npm installs
 # a few hundred files instead of tens of thousands.

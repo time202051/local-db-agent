@@ -5,13 +5,20 @@ import { countTokensApproximately } from 'langchain';
 import { serverConfig, describeDb, resolveRequestConfig } from './config.js';
 import type { RequestConfigInput, ResolvedConfig } from './config.js';
 import { buildSystemPrompt, getRuntime, pingModel } from './runtime.js';
-import { VISUAL_TOOL_NAMES } from './tools.js';
+import { createTools, isTerminalVisualTool, VISUAL_TOOL_NAMES } from './tools.js';
 import { closeAllPools, pingDatabase } from './db.js';
 import { decryptConfigPayload, handshake } from './crypto.js';
 import type { ConfigEncPayload } from './crypto.js';
 import { TurnBudget, runWithBudget } from './budget.js';
 import { logLine } from './log.js';
 import { buildVariantHint, guessTemplateFromText, pickReportVariant } from './report-variant.js';
+import { generateSuggestions } from './suggest.js';
+import type { SuggestionMeta } from './suggest.js';
+import { getKnowledgeStatus } from './knowledge.js';
+import type { KnowledgeStatus } from './knowledge.js';
+import { getSkillStatus } from './skills.js';
+import type { SkillStatus } from './skills.js';
+import { formatTableCandidates, retrieveTables } from './schema-cache.js';
 
 const app = Fastify({ logger: true });
 
@@ -97,6 +104,8 @@ app.setErrorHandler((error, request, reply) => {
 });
 
 let activeStreams = 0;
+const noKnowledgeNotified = new Set<string>();
+let anonymousKnowledgeNotified = false;
 
 app.post('/chat/stream', async (request, reply) => {
   const body = request.body as ChatRequestBody;
@@ -144,15 +153,31 @@ app.post('/chat/stream', async (request, reply) => {
     return;
   }
 
+  const knowledgeStatus = getKnowledgeStatus();
+  if (!knowledgeStatus.loaded) {
+    const key = body.conversationId || '';
+    const notified = key ? noKnowledgeNotified.has(key) : anonymousKnowledgeNotified;
+    if (!notified) {
+      send({ type: 'status', message: '未加载知识包，将按表结构分析' });
+      if (key) {
+        if (noKnowledgeNotified.size > 500) noKnowledgeNotified.clear();
+        noKnowledgeNotified.add(key);
+      } else {
+        anonymousKnowledgeNotified = true;
+      }
+      logLine(`knowledge pack: none (${knowledgeStatus.reason || 'generic mode'})`);
+    }
+  }
+
   // 历史直接交给 agent；上下文优化由 LangChain 的 summarizationMiddleware 负责
   const messages: BaseMessage[] = body.messages.map(toMessage);
 
   // 报告版式轮换：在模型选模板前先按用户措辞推断类型，再结合上一份版式避开重复。
   const lastUserText =
-    [...body.messages].reverse().find(message => message.role === 'user')?.content || '';
+    [...body.messages].reverse().find((message) => message.role === 'user')?.content || '';
   const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|出一份|来一份/.test(lastUserText);
   if (wantsReport) {
-    const userTurns = body.messages.filter(message => message.role === 'user').length;
+    const userTurns = body.messages.filter((message) => message.role === 'user').length;
     const variant = pickReportVariant({
       template: guessTemplateFromText(lastUserText),
       userText: lastUserText,
@@ -188,6 +213,28 @@ app.post('/chat/stream', async (request, reply) => {
     );
   }
 
+  // 相关表检索：本轮先给 Top 8 紧凑目录，模型不需要全量 list_tables。
+  try {
+    const candidates = await withTimeout(
+      retrieveTables(resolved.db, lastUserText, 8),
+      12000,
+      '相关表检索超时',
+    );
+    const block = formatTableCandidates(candidates);
+    if (block) {
+      const lastUserIndex = messages.reduce(
+        (index, message, i) => (message._getType() === 'human' ? i : index),
+        -1,
+      );
+      if (lastUserIndex >= 0) {
+        messages.splice(lastUserIndex, 0, new SystemMessage(block));
+      }
+      logLine(`table retrieval candidates=${candidates.length}`);
+    }
+  } catch (error) {
+    logLine(`table retrieval failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
   // 单轮总时长上限 + 客户端断开即中止（避免挂起、持续烧 token / 占着数据库）
   const controller = new AbortController();
   let timedOut = false;
@@ -204,16 +251,31 @@ app.post('/chat/stream', async (request, reply) => {
 
   activeStreams += 1;
 
-  const budget = new TurnBudget({
-    // 报告轮次需要多取几个口径，普通问答仍使用配置值
-    maxSqlQueries: wantsReport ? Math.max(resolved.maxSqlQueries, 10) : resolved.maxSqlQueries,
-    maxSchemaCalls: wantsReport ? Math.max(resolved.maxSchemaCalls, 8) : resolved.maxSchemaCalls,
-    maxResultChars: resolved.maxResultChars,
-    maxTotalToolChars: resolved.maxTotalToolChars,
-  });
+  const budget = new TurnBudget(
+    {
+      // 普通问答仍用前端 limits；报告轮不按 SQL/Schema 条数限制
+      maxSqlQueries: resolved.maxSqlQueries,
+      maxSchemaCalls: resolved.maxSchemaCalls,
+      // 报告需要完整聚合结果；普通问答保持原值
+      maxResultChars: wantsReport
+        ? Math.max(resolved.maxResultChars, 20000)
+        : resolved.maxResultChars,
+      maxTotalToolChars: wantsReport
+        ? Math.max(resolved.maxTotalToolChars, 120000)
+        : resolved.maxTotalToolChars,
+    },
+    { unlimitedQueries: wantsReport },
+  );
   let turnError = '';
   const turnStartedAt = Date.now();
-  const bridge = createTurnBridge({ send, resolved, budget, turnStartedAt });
+  const bridge = createTurnBridge({
+    send,
+    resolved,
+    budget,
+    turnStartedAt,
+    knowledge: knowledgeStatus,
+    skills: getSkillStatus(),
+  });
   const threadId = resolved.requireSqlApproval
     ? `${body.conversationId || 'anonymous'}:${Date.now().toString(36)}:${Math.random()
         .toString(36)
@@ -229,81 +291,100 @@ app.post('/chat/stream', async (request, reply) => {
   let agent: ReturnType<typeof getRuntime> | null = null;
 
   await runWithBudget(budget, async () => {
-  try {
-    agent = getRuntime(resolved);
+    try {
+      agent = getRuntime(resolved, wantsReport);
 
-    // 用 LangChain 自带的近似 token 统计判断本轮是否会触发摘要。
-    // 只用于给前端一个轻量提示，不参与上下文裁剪。
-    const approxTokens = countTokensApproximately([
-      new SystemMessage(buildSystemPrompt(resolved)),
-      ...messages,
-    ]);
-    if (approxTokens >= resolved.summaryTriggerTokens) {
-      logLine(`context summary expected tokens~${approxTokens}`);
-      send({ type: 'status', message: '上下文较长，正在压缩…' });
-    }
+      // 用 LangChain 自带的近似 token 统计判断本轮是否会触发摘要。
+      // 只用于给前端一个轻量提示，不参与上下文裁剪。
+      const approxTokens = countTokensApproximately(
+        [new SystemMessage(buildSystemPrompt(resolved, wantsReport)), ...messages],
+        createTools(resolved.db, {
+          batchQueries: !resolved.requireSqlApproval,
+          reportMode: wantsReport,
+        }),
+      );
+      if (approxTokens >= resolved.summaryTriggerTokens) {
+        logLine(`context summary expected tokens~${approxTokens}`);
+        send({ type: 'status', message: '上下文较长，正在压缩…' });
+      }
 
-    // LangChain 的 summarizationMiddleware 会给内部摘要调用打 nostream 标签；
-    // 用 streamEvents 自带的 excludeTags 过滤，不把内部摘要转发给用户。
-    const streamConfig: Record<string, unknown> = {
-      version: 'v2',
-      recursionLimit: resolved.recursionLimit,
-      signal: controller.signal,
-    };
-    if (threadId) streamConfig.configurable = { thread_id: threadId };
-    const stream = await agent.streamEvents(
-      { messages },
-      streamConfig,
-      { excludeTags: ['nostream'] },
-    );
+      // LangChain 的 summarizationMiddleware 会给内部摘要调用打 nostream 标签；
+      // 用 streamEvents 自带的 excludeTags 过滤，不把内部摘要转发给用户。
+      const streamConfig: Record<string, unknown> = {
+        version: 'v2',
+        recursionLimit: resolved.recursionLimit,
+        signal: controller.signal,
+      };
+      if (threadId) streamConfig.configurable = { thread_id: threadId };
+      const stream = await agent.streamEvents({ messages }, streamConfig, {
+        excludeTags: ['nostream'],
+      });
 
-    for await (const event of stream) {
-      bridge.handle(event as StreamEventLike);
-    }
+      for await (const event of stream) {
+        bridge.handle(event as StreamEventLike);
+        if (bridge.shouldStop()) {
+          controller.abort();
+          break;
+        }
+      }
 
-    if (agent && threadId) {
-      const interrupts = await collectInterrupts(agent, threadId);
-      if (interrupts.length) {
+      if (bridge.shouldStop()) {
+        send({ type: 'token', content: '报告已生成。' });
         bridge.sendEnrichment();
-        send({ type: 'interrupt', threadId, interrupts });
+        send({ type: 'done' });
         return;
       }
-    }
 
-    bridge.sendEnrichment();
-    send({ type: 'done' });
-  } catch (error) {
-    if (agent && threadId) {
-      const interrupts = await collectInterrupts(agent, threadId);
-      if (interrupts.length) {
+      if (agent && threadId) {
+        const interrupts = await collectInterrupts(agent, threadId);
+        if (interrupts.length) {
+          bridge.sendEnrichment();
+          send({ type: 'interrupt', threadId, interrupts });
+          return;
+        }
+      }
+
+      bridge.sendEnrichment();
+      send({ type: 'done' });
+    } catch (error) {
+      if (bridge.shouldStop()) {
+        send({ type: 'token', content: '报告已生成。' });
         bridge.sendEnrichment();
-        send({ type: 'interrupt', threadId, interrupts });
+        send({ type: 'done' });
         return;
       }
+      if (agent && threadId) {
+        const interrupts = await collectInterrupts(agent, threadId);
+        if (interrupts.length) {
+          bridge.sendEnrichment();
+          send({ type: 'interrupt', threadId, interrupts });
+          return;
+        }
+      }
+      const rawMessage = error instanceof Error ? error.message : String(error);
+      const message = timedOut
+        ? '处理超时，已中断'
+        : /recursion limit/i.test(rawMessage)
+          ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
+          : rawMessage;
+      turnError = rawMessage;
+      request.log.error({ err: error }, 'agent stream failed');
+      logLine(`turn error ${rawMessage}`);
+      bridge.sendEnrichment();
+      send({ type: 'error', message });
+    } finally {
+      finished = true;
+      clearTimeout(turnTimer);
+      clearInterval(heartbeat);
+      raw.off('close', onClientClose);
+      activeStreams -= 1;
+      logLine(
+        `turn end ${budget.summary()} ${bridge.stats()}` +
+          `${bridge.shouldStop() ? ' stop=visual' : ''}${turnError ? ' error=1' : ''}` +
+          `${budget.usage.exceeded.length ? ' exceeded=1' : ''}`,
+      );
+      raw.end();
     }
-    const rawMessage = error instanceof Error ? error.message : String(error);
-    const message = timedOut
-      ? '处理超时，已中断'
-      : /recursion limit/i.test(rawMessage)
-        ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
-        : rawMessage;
-    turnError = rawMessage;
-    request.log.error({ err: error }, 'agent stream failed');
-    logLine(`turn error ${rawMessage}`);
-    bridge.sendEnrichment();
-    send({ type: 'error', message });
-  } finally {
-    finished = true;
-    clearTimeout(turnTimer);
-    clearInterval(heartbeat);
-    raw.off('close', onClientClose);
-    activeStreams -= 1;
-    logLine(
-      `turn end ${budget.summary()}${turnError ? ' error=1' : ''}` +
-        `${budget.usage.exceeded.length ? ' exceeded=1' : ''}`,
-    );
-    raw.end();
-  }
   });
 });
 
@@ -369,17 +450,22 @@ app.post('/chat/resume', async (request, reply) => {
   raw.on('close', onClientClose);
   activeStreams += 1;
 
-  const budget = new TurnBudget({
-    maxSqlQueries: resolved.maxSqlQueries,
-    maxSchemaCalls: resolved.maxSchemaCalls,
-    maxResultChars: resolved.maxResultChars,
-    maxTotalToolChars: resolved.maxTotalToolChars,
-  });
+  const budget = new TurnBudget(
+    {
+      maxSqlQueries: resolved.maxSqlQueries,
+      maxSchemaCalls: resolved.maxSchemaCalls,
+      maxResultChars: Math.max(resolved.maxResultChars, 20000),
+      maxTotalToolChars: Math.max(resolved.maxTotalToolChars, 120000),
+    },
+    { unlimitedQueries: true },
+  );
   const bridge = createTurnBridge({
     send,
     resolved,
     budget,
     turnStartedAt: Date.now(),
+    knowledge: getKnowledgeStatus(),
+    skills: getSkillStatus(),
   });
   const heartbeat = setInterval(() => {
     send({ type: 'heartbeat', ts: Date.now() });
@@ -401,6 +487,17 @@ app.post('/chat/resume', async (request, reply) => {
       );
       for await (const event of stream) {
         bridge.handle(event as StreamEventLike);
+        if (bridge.shouldStop()) {
+          controller.abort();
+          break;
+        }
+      }
+
+      if (bridge.shouldStop()) {
+        send({ type: 'token', content: '报告已生成。' });
+        bridge.sendEnrichment();
+        send({ type: 'done' });
+        return;
       }
 
       const interrupts = await collectInterrupts(agent, body.threadId as string);
@@ -411,6 +508,12 @@ app.post('/chat/resume', async (request, reply) => {
         send({ type: 'done' });
       }
     } catch (error) {
+      if (bridge.shouldStop()) {
+        send({ type: 'token', content: '报告已生成。' });
+        bridge.sendEnrichment();
+        send({ type: 'done' });
+        return;
+      }
       const interrupts = await collectInterrupts(
         getRuntime(resolved),
         body.threadId as string,
@@ -437,17 +540,67 @@ app.post('/chat/resume', async (request, reply) => {
       clearInterval(heartbeat);
       raw.off('close', onClientClose);
       activeStreams = Math.max(0, activeStreams - 1);
-      logLine(`resume end ${budget.summary()}${turnError ? ' error=1' : ''}`);
+      logLine(
+        `resume end ${budget.summary()} ${bridge.stats()}` +
+          `${bridge.shouldStop() ? ' stop=visual' : ''}${turnError ? ' error=1' : ''}`,
+      );
       raw.end();
     }
   });
 });
 
+// 追问建议：只调用大模型，不连接数据库；失败时返回空数组，前端保留本地兜底推荐
+app.post('/chat/suggest', async (request, reply) => {
+  const body = request.body as
+    | {
+        question?: string;
+        answer?: string;
+        meta?: SuggestionMeta | null;
+        config?: RequestConfigInput;
+        configEnc?: ConfigEncPayload;
+      }
+    | undefined;
+
+  const question = typeof body?.question === 'string' ? body.question.trim() : '';
+  const answer = typeof body?.answer === 'string' ? body.answer.trim() : '';
+  const meta = body?.meta || null;
+  if (!question || !answer) {
+    reply.send({ items: [] });
+    return;
+  }
+
+  const hasData =
+    Number(meta?.queries) > 0 ||
+    Number(meta?.rowCount) > 0 ||
+    (Array.isArray(meta?.tables) && meta.tables.length > 0) ||
+    Boolean(meta?.report);
+  if (!hasData) {
+    reply.send({ items: [] });
+    return;
+  }
+
+  let resolved: ResolvedConfig;
+  try {
+    resolved = resolveOrThrow(configFromBody(body ?? {}));
+  } catch (e) {
+    request.log.warn({ err: e }, 'chat/suggest config error');
+    reply.send({ items: [] });
+    return;
+  }
+
+  try {
+    const items = await generateSuggestions(resolved.llm, { question, answer, meta });
+    reply.send({ items });
+  } catch (e) {
+    request.log.warn({ err: e }, 'chat/suggest failed');
+    reply.send({ items: [] });
+  }
+});
+
 // 连接自检：真实连一下数据库 + 轻量探一下大模型；用于前端打开组件时友好提示
 app.post('/config/check', async (request, reply) => {
   const body = request.body as
-    | { config?: RequestConfigInput; configEnc?: ConfigEncPayload }
-    | undefined;
+    { config?: RequestConfigInput; configEnc?: ConfigEncPayload } | undefined;
 
   let resolved: ResolvedConfig;
   try {
@@ -461,10 +614,14 @@ app.post('/config/check', async (request, reply) => {
     ok: boolean;
     db: Record<string, unknown>;
     llm: Record<string, unknown>;
+    knowledge: KnowledgeStatus;
+    skills: SkillStatus;
   } = {
     ok: false,
     db: { ok: false, target: describeDb(resolved.db) },
     llm: { ok: false, model: resolved.llm.model },
+    knowledge: getKnowledgeStatus(),
+    skills: getSkillStatus(),
   };
 
   try {
@@ -497,7 +654,8 @@ app.post('/config/check', async (request, reply) => {
     };
   }
 
-  result.ok = Boolean((result.db as { ok?: boolean }).ok) && Boolean((result.llm as { ok?: boolean }).ok);
+  result.ok =
+    Boolean((result.db as { ok?: boolean }).ok) && Boolean((result.llm as { ok?: boolean }).ok);
   request.log.info(
     { db: result.db.ok, llm: result.llm.ok, target: describeDb(resolved.db) },
     'config/check',
@@ -521,6 +679,12 @@ function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promise<T> 
   });
 }
 
+function toRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
 /** 把工具返回的 JSON 字符串解析成对象；失败返回 null。 */
 function safeParseObject(text: string): Record<string, unknown> | null {
   try {
@@ -540,6 +704,13 @@ const TOOL_LABELS: Record<string, string> = {
   render_report: '生成分析报表',
   render_html_report: '生成 HTML 报告',
   render_chart: '生成图表',
+  search_tables: '检索相关表',
+  search_knowledge: '搜索知识包',
+  read_knowledge: '读取知识文档',
+  run_saved_query: '执行预置查询',
+  list_skills: '浏览技能',
+  read_skill: '读取技能',
+  read_skill_file: '读取技能文件',
 };
 
 function toolLabel(name: string): string {
@@ -550,9 +721,35 @@ function toolLabel(name: string): string {
 function compactToolInput(name: string, input: unknown): unknown {
   if (!input || typeof input !== 'object') return undefined;
   const raw = input as Record<string, unknown>;
-  if (name === 'run_sql') return { sql: raw.sql };
-  if (name === 'get_table_schema') return { table: raw.table };
+  if (name === 'run_sql') {
+    const queries = Array.isArray(raw.queries)
+      ? raw.queries.map((item) => String(item || '')).filter(Boolean)
+      : [];
+    if (queries.length) {
+      return { sql: queries.join(';\n'), queries, count: queries.length };
+    }
+    return { sql: raw.sql };
+  }
+  if (name === 'get_table_schema') {
+    const tableList = Array.isArray(raw.tables)
+      ? raw.tables.map((item) => String(item || '')).filter(Boolean)
+      : [];
+    const base = tableList.length
+      ? { tables: tableList, count: tableList.length }
+      : { table: raw.table };
+    return {
+      ...base,
+      ...(typeof raw.detail === 'string' && raw.detail ? { detail: raw.detail } : {}),
+      ...(Array.isArray(raw.columns) && raw.columns.length ? { columns: raw.columns } : {}),
+    };
+  }
   if (name === 'list_tables') return { keyword: raw.keyword || '' };
+  if (name === 'search_tables' || name === 'search_knowledge') return { query: raw.query };
+  if (name === 'read_knowledge') return { path: raw.path };
+  if (name === 'run_saved_query') return { key: raw.key, params: raw.params };
+  if (name === 'list_skills') return { keyword: raw.keyword || '' };
+  if (name === 'read_skill') return { name: raw.name };
+  if (name === 'read_skill_file') return { name: raw.name, path: raw.path };
   return undefined;
 }
 
@@ -575,7 +772,7 @@ interface ToolSummary {
 function summarizeToolOutput(name: string, output: string): ToolSummary {
   const parsed = safeParseObject(output) || {};
   const warnings = Array.isArray(parsed.warnings)
-    ? parsed.warnings.map(item => String(item)).filter(Boolean)
+    ? parsed.warnings.map((item) => String(item)).filter(Boolean)
     : [];
   const summary: ToolSummary = {
     success: parsed.success !== false,
@@ -594,19 +791,31 @@ function summarizeToolOutput(name: string, output: string): ToolSummary {
   };
 
   if (name === 'run_sql') {
-    summary.rowCount = Number(parsed.rowCount) || (Array.isArray(parsed.rows) ? parsed.rows.length : 0);
+    summary.rowCount =
+      Number(parsed.rowCount) || (Array.isArray(parsed.rows) ? parsed.rows.length : 0);
     summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
     summary.truncated = parsed.truncated === true;
   } else if (name === 'get_table_schema') {
-    summary.table = typeof parsed.table === 'string' ? parsed.table : '';
-    summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
+    const schemas = Array.isArray(parsed.schemas) ? parsed.schemas : [];
+    if (schemas.length) {
+      summary.tableCount = schemas.length;
+      // 批量时不要拼成一个 "A, B" 的假表名；单表仍保留原名给 tool_end 展示
+      summary.table =
+        schemas.length === 1 && schemas[0] && typeof schemas[0] === 'object'
+          ? String((schemas[0] as Record<string, unknown>).table || '')
+          : '';
+      summary.columns = schemas.reduce((sum, item) => {
+        const columns =
+          item && typeof item === 'object' ? (item as Record<string, unknown>).columns : undefined;
+        return sum + (Array.isArray(columns) ? columns.length : 0);
+      }, 0);
+    } else {
+      summary.table = typeof parsed.table === 'string' ? parsed.table : '';
+      summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
+    }
   } else if (name === 'list_tables') {
     summary.tableCount = Number(parsed.tableCount) || 0;
-  } else if (
-    name === 'render_report' ||
-    name === 'render_html_report' ||
-    name === 'render_chart'
-  ) {
+  } else if (name === 'render_report' || name === 'render_html_report' || name === 'render_chart') {
     summary.component = typeof parsed.component === 'string' ? parsed.component : '';
     summary.title = typeof parsed.title === 'string' ? parsed.title : '';
     summary.template = typeof parsed.template === 'string' ? parsed.template : '';
@@ -648,24 +857,42 @@ interface TurnBridgeOptions {
   resolved: ResolvedConfig;
   budget: TurnBudget;
   turnStartedAt: number;
+  knowledge: KnowledgeStatus;
+  skills: SkillStatus;
 }
 
 /** 把 LangChain 的 streamEvents 统一映射成前端 SSE 事件（普通对话与 HITL 恢复共用）。 */
-function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeOptions) {
+function createTurnBridge({
+  send,
+  resolved,
+  budget,
+  turnStartedAt,
+  knowledge,
+  skills,
+}: TurnBridgeOptions) {
   const toolStarts = new Map<string, { name: string; startedAt: number }>();
   const tablesUsed = new Set<string>();
   const dataWarnings = new Set<string>();
   let inputTokens = 0;
   let outputTokens = 0;
+  let modelCalls = 0;
+  let maxInputTokens = 0;
   let totalRowCount = 0;
   let anyTruncated = false;
   let lastReportSpec: Record<string, unknown> | null = null;
+  /** HTML 报告已成功下发：无需再让模型补最后一句，省一次完整上下文调用。 */
+  let stopAfterVisual = false;
 
   const addUsage = (usage?: { input_tokens?: number; output_tokens?: number }) => {
     if (!usage) return;
     inputTokens += usage.input_tokens || 0;
     outputTokens += usage.output_tokens || 0;
+    maxInputTokens = Math.max(maxInputTokens, usage.input_tokens || 0);
   };
+
+  /** 便于日志判断 token 是“单次上下文大”还是“模型调用次数多”。 */
+  const stats = () =>
+    `calls=${modelCalls} input=${inputTokens} output=${outputTokens} maxInput=${maxInputTokens}`;
 
   const reportMeta = () => {
     if (!lastReportSpec) return null;
@@ -684,7 +911,15 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
 
   const sendEnrichment = () => {
     const elapsedMs = Date.now() - turnStartedAt;
-    send({ type: 'usage', model: resolved.llm.model, inputTokens, outputTokens, elapsedMs });
+    send({
+      type: 'usage',
+      model: resolved.llm.model,
+      inputTokens,
+      outputTokens,
+      calls: modelCalls,
+      maxInputTokens,
+      elapsedMs,
+    });
     send({
       type: 'meta',
       elapsedMs,
@@ -695,6 +930,8 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
       tables: Array.from(tablesUsed),
       warnings: Array.from(dataWarnings),
       report: reportMeta(),
+      knowledge,
+      skills,
     });
   };
 
@@ -712,8 +949,13 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
       const startedAt = Date.now();
       toolStarts.set(runId, { name, startedAt });
       if (name === 'get_table_schema') {
-        const table = (input as { table?: unknown } | undefined)?.table;
-        if (typeof table === 'string' && table.trim()) tablesUsed.add(table.trim());
+        const schemaInput = input as { table?: unknown; tables?: unknown } | undefined;
+        const tableList = Array.isArray(schemaInput?.tables)
+          ? schemaInput.tables
+          : [schemaInput?.table];
+        tableList.forEach((item) => {
+          if (typeof item === 'string' && item.trim()) tablesUsed.add(item.trim());
+        });
       }
       send({
         type: 'tool_start',
@@ -728,7 +970,11 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
     if (event.event === 'on_tool_end') {
       const name = event.name || 'tool';
       const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
-      const output = extractText(event.data?.output);
+      const rawOutput = event.data?.output;
+      const output = extractText(rawOutput);
+      // 可视化工具把完整 spec 放在 ToolMessage.artifact，content 只有轻量确认；
+      // 不能再用 content 解析 spec，否则前端拿不到 HTML/CSS/charts。
+      const artifact = toRecord(toRecord(rawOutput)?.artifact);
       const summary = summarizeToolOutput(name, output);
       const started = toolStarts.get(runId);
       if (summary.table) tablesUsed.add(summary.table);
@@ -736,16 +982,24 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
         totalRowCount += summary.rowCount;
         if (summary.truncated) anyTruncated = true;
       }
-      summary.warnings.forEach(item => dataWarnings.add(item));
+      summary.warnings.forEach((item) => dataWarnings.add(item));
 
       const isVisual = VISUAL_TOOL_NAMES.has(name);
-      const spec = isVisual ? safeParseObject(output) : null;
+      const parsedOutput = safeParseObject(output);
+      const rawSpec = isVisual ? artifact || parsedOutput : null;
+      // success:false 是覆盖率门禁/参数错误的工具结果，不能当成 visual 下发
+      const spec = rawSpec && rawSpec.success !== false ? rawSpec : null;
       if (spec) {
         lastReportSpec = spec;
         const specWarnings = Array.isArray(spec.warnings) ? spec.warnings : [];
-        specWarnings.forEach(item => dataWarnings.add(String(item)));
+        specWarnings.forEach((item) => dataWarnings.add(String(item)));
       }
-      const visualError = isVisual && !spec ? '可视化结果解析失败' : '';
+      const visualError =
+        isVisual && !spec
+          ? typeof parsedOutput?.error === 'string'
+            ? parsedOutput.error
+            : '可视化结果解析失败'
+          : '';
       send({
         type: 'tool_end',
         id: runId,
@@ -770,12 +1024,14 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
       });
       if (spec) {
         send({ type: 'visual', ...spec, toolId: runId });
+        // 报告已是本轮最终产物：不再让模型重新读取整份 HTML 参数去补一句结尾
+        if (isTerminalVisualTool(name)) stopAfterVisual = true;
       } else if (isVisual) {
         send({
           type: 'tool_result',
           id: runId,
           name,
-          output: JSON.stringify({ success: false, error: visualError }),
+          output: output || JSON.stringify({ success: false, error: visualError }),
         });
       } else {
         send({ type: 'tool_result', id: runId, name, output });
@@ -805,15 +1061,18 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt }: TurnBridgeO
       return;
     }
     if (event.event === 'on_chat_model_end') {
+      modelCalls += 1;
       addUsage(
-        (event.data?.output as {
-          usage_metadata?: { input_tokens?: number; output_tokens?: number };
-        })?.usage_metadata,
+        (
+          event.data?.output as {
+            usage_metadata?: { input_tokens?: number; output_tokens?: number };
+          }
+        )?.usage_metadata,
       );
     }
   };
 
-  return { handle, sendEnrichment };
+  return { handle, sendEnrichment, stats, shouldStop: () => stopAfterVisual };
 }
 
 async function collectInterrupts(
@@ -828,8 +1087,10 @@ async function collectInterrupts(
     };
     const state = await graph.getState({ configurable: { thread_id: threadId } });
     const tasks = Array.isArray(state.tasks) ? state.tasks : [];
-    const interrupts = tasks.flatMap(task => (Array.isArray(task.interrupts) ? task.interrupts : []));
-    return interrupts.map(item => ({ id: item.id, value: item.value }));
+    const interrupts = tasks.flatMap((task) =>
+      Array.isArray(task.interrupts) ? task.interrupts : [],
+    );
+    return interrupts.map((item) => ({ id: item.id, value: item.value }));
   } catch {
     return [];
   }

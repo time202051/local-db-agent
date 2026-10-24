@@ -1,0 +1,15 @@
+{
+  "skills": [
+    {
+      "name": "data-analysis",
+      "description": "通用数据库数据分析：趋势、对比、分布、异常、数据质量，适配任意库",
+      "when_to_use": "用户要分析数据/看趋势/找原因/做对比/查数据质量",
+      "version": 1,
+      "applies_to": {},
+      "folder": "data-analysis",
+      "files": [],
+      "chars": 1076
+    }
+  ],
+  "generatedAt": "2026-10-23T09:29:35.595Z"
+}

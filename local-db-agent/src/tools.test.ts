@@ -1,14 +1,18 @@
 import { describe, it, expect } from 'vitest';
+import { ToolMessage } from '@langchain/core/messages';
 import { TurnBudget } from './budget.js';
 import {
   analyzeReportRichness,
+  createTools,
   extractChartIds,
   extractChartTypes,
   extractReportElements,
   normalizeHtmlReportInput,
   normalizeLayout,
+  normalizeSectionNo,
   normalizeVisualStyle,
   validateChartOption,
+  validateHtmlLayout,
   validateHtmlTables,
   validateReportCharts,
 } from './tools.js';
@@ -206,6 +210,118 @@ describe('normalizeHtmlReportInput', () => {
       charts: {},
     });
     expect(n.warnings.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('normalizeSectionNo', () => {
+  it('把 “01 / OVERVIEW” 归一化成纯数字', () => {
+    const r = normalizeSectionNo(
+      '<div class="section"><span class="section-no">01 / OVERVIEW</span>' +
+        '<div class="section-title">本周核心数字</div></div>',
+    );
+    expect(r.changed).toBe(1);
+    expect(r.html).toContain('<span class="section-no">01</span>');
+    expect(r.html).not.toContain('OVERVIEW');
+  });
+
+  it('已经是数字时不动', () => {
+    const html = '<span class="section-no">02</span>';
+    expect(normalizeSectionNo(html)).toEqual({ html, changed: 0 });
+  });
+
+  it('兼容 section-divider__no', () => {
+    const r = normalizeSectionNo('<div class="section-divider__no">03 / TIMELINE</div>');
+    expect(r.html).toBe('<div class="section-divider__no">03</div>');
+  });
+});
+
+describe('validateHtmlLayout', () => {
+  it('拦住章节编号的绝对定位', () => {
+    expect(validateHtmlLayout('<div class="section-no">01</div>', '.section-no{position:absolute;top:0}')).toContain(
+      'position',
+    );
+  });
+
+  it('正常布局不报错', () => {
+    expect(validateHtmlLayout('<div class="section-no">01</div>', '.section-no{width:28px}')).toBeNull();
+  });
+});
+
+describe('可视化工具 artifact', () => {
+  const tools = createTools({ type: 'sqlserver' } as never);
+
+  const invoke = async (name: string, args: Record<string, unknown>) => {
+    const target = tools.find(tool => tool.name === name) as
+      | { invoke: (input: unknown) => Promise<unknown> }
+      | undefined;
+    if (!target) throw new Error(`missing tool ${name}`);
+    return target.invoke({ type: 'tool_call', id: 'call-1', name, args });
+  };
+
+  it('render_html_report 只把轻量确认给模型，完整 spec 放 artifact', async () => {
+    const message = (await invoke('render_html_report', {
+      title: '测试报告',
+      template: 'weekly',
+      layout: 'dashboard',
+      html:
+        '<section class="section"><div class="hero-kpi"></div>' +
+        '<div class="ol-chart" data-id="c1" style="height:320px"></div></section>',
+      charts: { c1: { series: [{ type: 'pie', data: [{ value: 1 }] }] } },
+      coverage: [{ item: '测试指标', status: 'ok', source: 'test-query' }],
+    })) as ToolMessage;
+
+    expect(message).toBeInstanceOf(ToolMessage);
+    expect(String(message.content).length).toBeLessThan(600);
+    expect(String(message.content)).toContain('报告已渲染');
+    const artifact = message.artifact as Record<string, unknown>;
+    expect(artifact.title).toBe('测试报告');
+    expect(artifact.component).toBe('ol-html-report');
+    expect(String(artifact.html)).toContain('data-id="c1"');
+    expect(artifact.charts).toEqual({
+      c1: { series: [{ type: 'pie', data: [{ value: 1 }] }] },
+    });
+  });
+
+  it('render_report 同样把 blocks 放 artifact', async () => {
+    const message = (await invoke('render_report', {
+      title: '报表',
+      blocks: [{ type: 'summary', text: '结论' }],
+    })) as ToolMessage;
+
+    expect(String(message.content).length).toBeLessThan(400);
+    const artifact = message.artifact as Record<string, unknown>;
+    expect(artifact.component).toBe('ol-report');
+    expect(artifact.blocks).toEqual([{ type: 'summary', text: '结论' }]);
+  });
+
+  it('有 pending 指标时拒绝生成报告', async () => {
+    const message = (await invoke('render_html_report', {
+      title: '测试',
+      html: '<section class="section"><div class="hero-kpi"></div></section>',
+      coverage: [{ item: '出库单量', status: 'pending' }],
+    })) as ToolMessage;
+    expect(String(message.content)).toContain('pending');
+    expect(message.artifact).toBeNull();
+  });
+
+  it('ok 指标缺少来源时拒绝生成报告', async () => {
+    const message = (await invoke('render_html_report', {
+      title: '测试',
+      html: '<section class="section"><div class="hero-kpi"></div></section>',
+      coverage: [{ item: '出库单量', status: 'ok' }],
+    })) as ToolMessage;
+    expect(String(message.content)).toContain('来源');
+    expect(message.artifact).toBeNull();
+  });
+
+  it('missing 指标缺少原因时拒绝生成报告', async () => {
+    const message = (await invoke('render_html_report', {
+      title: '测试',
+      html: '<section class="section"><div class="hero-kpi"></div></section>',
+      coverage: [{ item: '库存金额', status: 'missing' }],
+    })) as ToolMessage;
+    expect(String(message.content)).toContain('原因');
+    expect(message.artifact).toBeNull();
   });
 });
 

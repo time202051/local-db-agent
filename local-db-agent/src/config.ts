@@ -42,33 +42,31 @@ export const serverConfig = {
 
 /** 内置安全兜底（前端不传 limits 时使用；不需要在 agent 端配置）。 */
 const DEFAULTS = {
-  dbMaxRows: 200,
-  dbCommandTimeoutSec: 15,
-  dbCostLimit: 30,
+  dbMaxRows: 500,
+  dbCommandTimeoutSec: 60,
+  dbCostLimit: 50,
   dbKingbasePort: 54321,
   llmBaseUrl: 'https://api.deepseek.com/v1',
   llmModel: 'deepseek-chat',
   llmTimeoutSec: 60,
   llmTemperature: 0.3,
   llmTopP: 0.9,
-  recursionLimit: 80,
-  turnTimeoutSec: 180,
+  recursionLimit: 30,
+  turnTimeoutSec: 120,
   maxConcurrent: 3,
-  summaryTriggerTokens: 6000,
+  // 报告优先保证数据完整；阈值提高，避免生成报告前把旧查询结果清掉。
+  summaryTriggerTokens: 40000,
   summaryKeepMessages: 12,
-  // 单轮预算：防止海量数据被反复查询、把上下文和 token 撑爆
+  // 普通问答预算；报告轮在 index.ts 中不再按条数限制
   maxSqlQueries: 6,
-  maxSchemaCalls: 6,
+  maxSchemaCalls: 4,
   maxResultChars: 8000,
-  maxTotalToolChars: 40000,
-  maxOutputTokens: 12000,
+  maxTotalToolChars: 24000,
+  maxOutputTokens: 20000,
   requireSqlApproval: false,
 };
 
 export type DbType = 'sqlserver' | 'kingbase';
-
-/** wms = 复用现有 WMS 指标口径；generic = 不注入业务指标 */
-export type PromptProfile = 'wms' | 'generic';
 
 // ============================================================
 // 前端下发配置（Vue.use(AgentChat, { db, llm, limits })）
@@ -130,16 +128,9 @@ export interface DbInput {
    * 适合拦截用户表、接口配置、连接串等敏感表。
    */
   blockedTables?: string[];
-  /**
-   * 业务提示词档位：
-   * - 'wms'（默认）：注入现有 WMS 指标口径，适合仓储业务
-   * - 'generic'：不注入任何业务指标，只按表结构分析
-   */
-  profile?: PromptProfile;
-  /**
-   * 追加到系统提示里的业务说明，适合写表含义、口径、日期字段、软删除规则等。
-   * 示例：'统计库存要加 "IsDeleted" = false；库存流水查 "WMS_StockHistorys" 父表'
-   */
+  /** @deprecated 业务知识请放 knowledge/；仅为旧页面兼容保留，核心不注入 */
+  profile?: string;
+  /** @deprecated 业务知识请放 knowledge/；仅为旧页面兼容保留，核心不注入 */
   businessPrompt?: string;
 }
 
@@ -201,10 +192,10 @@ interface DbRuntimeBase {
   hiddenTables: string[];
   /** 拒绝查询/查看结构的表 */
   blockedTables: string[];
-  /** 业务提示词档位 */
-  profile: PromptProfile;
-  /** 追加到系统提示里的业务说明 */
-  businessPrompt: string;
+  /** @deprecated 业务知识请放 knowledge/；核心不再注入 */
+  profile?: string;
+  /** @deprecated 业务知识请放 knowledge/；核心不再注入 */
+  businessPrompt?: string;
 }
 
 type DbCommonRuntime = Omit<DbRuntimeBase, 'type'>;
@@ -419,7 +410,8 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     schemas: normalizeStringList(dbInput.schemas, dbType === 'kingbase' ? ['public'] : []),
     hiddenTables: normalizeStringList(dbInput.hiddenTables, []),
     blockedTables: normalizeStringList(dbInput.blockedTables, []),
-    profile: dbInput.profile === 'generic' ? 'generic' : 'wms',
+    // 兼容旧页面；核心不再读取，业务知识改走 knowledge/
+    profile: typeof dbInput.profile === 'string' ? dbInput.profile : 'generic',
     businessPrompt:
       typeof dbInput.businessPrompt === 'string' ? dbInput.businessPrompt.trim().slice(0, 8000) : '',
   };
@@ -452,8 +444,9 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
   const turnTimeoutMs =
     Math.max(1, num(lim.turnTimeoutSec, DEFAULTS.turnTimeoutSec)) * 1000;
   const maxConcurrent = Math.max(1, num(lim.maxConcurrent, DEFAULTS.maxConcurrent));
+  // 报告优先保证数据完整：低阈值会在生成报告前清掉旧查询结果
   const summaryTriggerTokens = Math.max(
-    500,
+    20000,
     num(lim.summaryTriggerTokens, DEFAULTS.summaryTriggerTokens),
   );
   const summaryKeepMessages = Math.max(

@@ -12,10 +12,16 @@ export async function getTableSchema(db, tableName) {
         ? kingbase.getTableSchema(db, tableName)
         : sqlserver.getTableSchema(db, tableName);
 }
+/** 全库列清单（用于本地检索索引，不发模型）。 */
+export async function getAllColumns(db) {
+    return db.type === 'kingbase' ? kingbase.getAllColumns(db) : sqlserver.getAllColumns(db);
+}
+/** 全库主键/唯一/外键清单（用于 schema 关系图，不发模型）。失败返回空数组。 */
+export async function getAllKeys(db) {
+    return db.type === 'kingbase' ? kingbase.getAllKeys(db) : sqlserver.getAllKeys(db);
+}
 export async function runQuery(db, sqlText) {
-    return db.type === 'kingbase'
-        ? kingbase.runQuery(db, sqlText)
-        : sqlserver.runQuery(db, sqlText);
+    return db.type === 'kingbase' ? kingbase.runQuery(db, sqlText) : sqlserver.runQuery(db, sqlText);
 }
 /** 轻量连接探测（供 /config/check 用） */
 export async function pingDatabase(db) {

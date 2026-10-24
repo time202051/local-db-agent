@@ -114,7 +114,7 @@ describe('resolveRequestConfig', () => {
     expect(cfg.db.schemas).toEqual(['public']);
     expect(cfg.db.hiddenTables).toEqual([]);
     expect(cfg.db.blockedTables).toEqual([]);
-    expect(cfg.db.profile).toBe('wms');
+    expect(cfg.db.profile).toBe('generic');
     expect(cfg.db.businessPrompt).toBe('');
     expect(cfg.db.ssl).toBe(false);
     expect(describeDb(cfg.db)).not.toContain('secret');
