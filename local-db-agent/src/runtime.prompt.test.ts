@@ -41,10 +41,11 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('needs_review');
   });
 
-  it('报告轮不注入技能目录，但注入报告执行计划', () => {
+  it('报告轮注入技能目录和报告执行计划', () => {
     const prompt = buildSystemPrompt(config({ type: 'sqlserver' }), true);
     expect(prompt).toContain('【报告轮执行计划】');
     expect(prompt).toContain('render_html_report');
-    expect(prompt).not.toContain('【可用技能');
+    expect(prompt).toContain('【可用技能');
+    expect(prompt).toContain('read_skill');
   });
 });

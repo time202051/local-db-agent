@@ -8,13 +8,16 @@ import { createTools, isTerminalVisualTool, VISUAL_TOOL_NAMES } from './tools.js
 import { closeAllPools, pingDatabase } from './db.js';
 import { decryptConfigPayload, handshake } from './crypto.js';
 import { TurnBudget, runWithBudget } from './budget.js';
-import { logLine } from './log.js';
+import { BudgetExceededError } from './cost-guard.js';
+import { logFeedback, logLine } from './log.js';
+import { estimateCost, extractUsage, getUsageLedger } from './usage.js';
 import { buildVariantHint, guessTemplateFromText, pickReportVariant } from './report-variant.js';
 import { generateSuggestions } from './suggest.js';
 import { getKnowledgeStatus } from './knowledge.js';
 import { getSkillStatus } from './skills.js';
 import { formatTableCandidates, retrieveTables } from './schema-cache.js';
-const app = Fastify({ logger: true });
+// 图片以 dataURL 随消息上传，默认 1MB body 限制不够用
+const app = Fastify({ logger: true, bodyLimit: 20 * 1024 * 1024 });
 app.addHook('onRequest', async (_request, reply) => {
     reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -33,12 +36,69 @@ app.get('/health', async () => ({
 }));
 // 传输加密公钥：前端用它加密 config（含数据库密码 / API Key）
 app.get('/handshake', async () => handshake);
+function shortText(value, max) {
+    return String(value == null ? '' : value)
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, max);
+}
+// 回答反馈：落 logs/feedback.jsonl，前端也可只监听组件事件不调用此接口
+app.post('/chat/feedback', async (request, reply) => {
+    const body = request.body;
+    const rating = body?.rating === 'up' || body?.rating === 'down' ? body.rating : '';
+    if (!rating) {
+        reply.code(400);
+        return { ok: false, error: 'rating 必须是 up 或 down' };
+    }
+    const reasons = Array.isArray(body?.reasons)
+        ? body.reasons.map((item) => shortText(item, 40)).filter(Boolean).slice(0, 10)
+        : [];
+    let metaText = '';
+    try {
+        metaText = JSON.stringify(body?.meta || null);
+    }
+    catch {
+        metaText = '';
+    }
+    await logFeedback({
+        ts: new Date().toISOString(),
+        conversationId: shortText(body?.conversationId, 120),
+        messageId: shortText(body?.messageId, 160),
+        rating,
+        reasons,
+        comment: shortText(body?.comment, 500),
+        question: shortText(body?.question, 1000),
+        answer: shortText(body?.answer, 4000),
+        model: shortText(body?.model, 120),
+        meta: metaText.length <= 8000 ? metaText : metaText.slice(0, 8000),
+    });
+    return { ok: true };
+});
+const MAX_MESSAGE_IMAGES = 3;
+const MAX_IMAGE_DATA_URL_CHARS = 8 * 1024 * 1024;
+function sanitizeImageUrls(input) {
+    if (!Array.isArray(input))
+        return [];
+    return input
+        .map((item) => String(item || ''))
+        .filter((url) => /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(url))
+        .filter((url) => url.length <= MAX_IMAGE_DATA_URL_CHARS)
+        .slice(0, MAX_MESSAGE_IMAGES);
+}
 function toMessage(message) {
     if (message.role === 'assistant')
         return new AIMessage(message.content);
     if (message.role === 'system')
         return new SystemMessage(message.content);
-    return new HumanMessage(message.content);
+    const images = sanitizeImageUrls(message.images);
+    if (!images.length)
+        return new HumanMessage(message.content);
+    const text = String(message.content || '').trim() || '请分析这张图片，提取关键信息并给出结论。';
+    const content = [
+        { type: 'text', text },
+        ...images.map((url) => ({ type: 'image_url', image_url: { url } })),
+    ];
+    return new HumanMessage({ content });
 }
 function resolveOrThrow(input) {
     return resolveRequestConfig(input);
@@ -112,6 +172,13 @@ app.post('/chat/stream', async (request, reply) => {
         fail('当前会话过多，请稍后再试');
         return;
     }
+    const conversationKey = body.conversationId || 'anonymous';
+    const ledger = getUsageLedger();
+    const dailyDeny = ledger.check(conversationKey, resolved.maxDailyTokens);
+    if (dailyDeny) {
+        fail(dailyDeny);
+        return;
+    }
     const knowledgeStatus = getKnowledgeStatus();
     if (!knowledgeStatus.loaded) {
         const key = body.conversationId || '';
@@ -162,6 +229,24 @@ app.post('/chat/stream', async (request, reply) => {
         logLine(`report variant ${variant.reason} style=${variant.visualStyle} ` +
             `elements=${variant.featureElements.join(',')}`);
     }
+    // 轻量分析：带上上一份组件结构，提示模型换一种组织方式，避免每份长得一样。
+    if (!wantsReport) {
+        const lastStructure = Array.isArray(body.lastStructure)
+            ? body.lastStructure
+                .map((item) => String(item || '').trim().slice(0, 40))
+                .filter(Boolean)
+                .slice(0, 20)
+            : [];
+        if (lastStructure.length) {
+            const hint = `【版式去重】上一份可视化结构：${lastStructure.join(' → ')}。` +
+                '本次请按数据重新设计组件顺序与分栏，不要复用同一套骨架；除非用户明确要求沿用。';
+            const lastUserIndex = messages.reduce((index, message, i) => (message._getType() === 'human' ? i : index), -1);
+            if (lastUserIndex >= 0) {
+                messages.splice(lastUserIndex, 0, new SystemMessage(hint));
+            }
+            logLine(`visual structure dedupe=${lastStructure.join(',')}`);
+        }
+    }
     // 相关表检索：本轮先给 Top 8 紧凑目录，模型不需要全量 list_tables。
     try {
         const candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8), 12000, '相关表检索超时');
@@ -203,6 +288,9 @@ app.post('/chat/stream', async (request, reply) => {
         maxTotalToolChars: wantsReport
             ? Math.max(resolved.maxTotalToolChars, 120000)
             : resolved.maxTotalToolChars,
+        maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : resolved.maxTurnTokens,
+        maxModelCalls: wantsReport ? resolved.maxReportModelCalls : resolved.maxModelCalls,
+        strictNumberCheck: resolved.strictNumberCheck,
     }, { unlimitedQueries: wantsReport });
     let turnError = '';
     const turnStartedAt = Date.now();
@@ -232,6 +320,7 @@ app.post('/chat/stream', async (request, reply) => {
             const approxTokens = countTokensApproximately([new SystemMessage(buildSystemPrompt(resolved, wantsReport)), ...messages], createTools(resolved.db, {
                 batchQueries: !resolved.requireSqlApproval,
                 reportMode: wantsReport,
+                clarify: resolved.enableClarify,
             }));
             if (approxTokens >= resolved.summaryTriggerTokens) {
                 logLine(`context summary expected tokens~${approxTokens}`);
@@ -256,6 +345,11 @@ app.post('/chat/stream', async (request, reply) => {
                     break;
                 }
             }
+            if (bridge.clarifyPending()) {
+                bridge.sendEnrichment();
+                send({ type: 'done' });
+                return;
+            }
             if (bridge.shouldStop()) {
                 send({ type: 'token', content: '报告已生成。' });
                 bridge.sendEnrichment();
@@ -274,6 +368,11 @@ app.post('/chat/stream', async (request, reply) => {
             send({ type: 'done' });
         }
         catch (error) {
+            if (bridge.clarifyPending()) {
+                bridge.sendEnrichment();
+                send({ type: 'done' });
+                return;
+            }
             if (bridge.shouldStop()) {
                 send({ type: 'token', content: '报告已生成。' });
                 bridge.sendEnrichment();
@@ -291,9 +390,11 @@ app.post('/chat/stream', async (request, reply) => {
             const rawMessage = error instanceof Error ? error.message : String(error);
             const message = timedOut
                 ? '处理超时，已中断'
-                : /recursion limit/i.test(rawMessage)
-                    ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
-                    : rawMessage;
+                : error instanceof BudgetExceededError
+                    ? rawMessage
+                    : /recursion limit/i.test(rawMessage)
+                        ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
+                        : rawMessage;
             turnError = rawMessage;
             request.log.error({ err: error }, 'agent stream failed');
             logLine(`turn error ${rawMessage}`);
@@ -306,8 +407,18 @@ app.post('/chat/stream', async (request, reply) => {
             clearInterval(heartbeat);
             raw.off('close', onClientClose);
             activeStreams -= 1;
+            ledger.record(conversationKey, {
+                inputTokens: budget.usage.inputTokens,
+                outputTokens: budget.usage.outputTokens,
+                cacheReadTokens: budget.usage.cacheReadTokens,
+                cacheCreationTokens: budget.usage.cacheCreationTokens,
+            }, budget.usage.cost);
             logLine(`turn end ${budget.summary()} ${bridge.stats()}` +
-                `${bridge.shouldStop() ? ' stop=visual' : ''}${turnError ? ' error=1' : ''}` +
+                `${bridge.clarifyPending()
+                    ? ' stop=clarify'
+                    : bridge.shouldStop()
+                        ? ' stop=visual'
+                        : ''}${turnError ? ' error=1' : ''}` +
                 `${budget.usage.exceeded.length ? ' exceeded=1' : ''}`);
             raw.end();
         }
@@ -352,6 +463,13 @@ app.post('/chat/resume', async (request, reply) => {
         fail('当前会话过多，请稍后再试');
         return;
     }
+    const resumeKey = body.threadId;
+    const resumeLedger = getUsageLedger();
+    const resumeDeny = resumeLedger.check(resumeKey, resolved.maxDailyTokens);
+    if (resumeDeny) {
+        fail(resumeDeny);
+        return;
+    }
     const controller = new AbortController();
     let timedOut = false;
     let finished = false;
@@ -370,6 +488,9 @@ app.post('/chat/resume', async (request, reply) => {
         maxSchemaCalls: resolved.maxSchemaCalls,
         maxResultChars: Math.max(resolved.maxResultChars, 20000),
         maxTotalToolChars: Math.max(resolved.maxTotalToolChars, 120000),
+        maxTurnTokens: resolved.maxReportTurnTokens,
+        maxModelCalls: resolved.maxReportModelCalls,
+        strictNumberCheck: resolved.strictNumberCheck,
     }, { unlimitedQueries: true });
     const bridge = createTurnBridge({
         send,
@@ -399,6 +520,11 @@ app.post('/chat/resume', async (request, reply) => {
                     break;
                 }
             }
+            if (bridge.clarifyPending()) {
+                bridge.sendEnrichment();
+                send({ type: 'done' });
+                return;
+            }
             if (bridge.shouldStop()) {
                 send({ type: 'token', content: '报告已生成。' });
                 bridge.sendEnrichment();
@@ -415,6 +541,11 @@ app.post('/chat/resume', async (request, reply) => {
             }
         }
         catch (error) {
+            if (bridge.clarifyPending()) {
+                bridge.sendEnrichment();
+                send({ type: 'done' });
+                return;
+            }
             if (bridge.shouldStop()) {
                 send({ type: 'token', content: '报告已生成。' });
                 bridge.sendEnrichment();
@@ -430,9 +561,11 @@ app.post('/chat/resume', async (request, reply) => {
             const rawMessage = error instanceof Error ? error.message : String(error);
             const message = timedOut
                 ? '处理超时，已中断'
-                : /recursion limit/i.test(rawMessage)
-                    ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
-                    : rawMessage;
+                : error instanceof BudgetExceededError
+                    ? rawMessage
+                    : /recursion limit/i.test(rawMessage)
+                        ? '本次分析步骤过多已中断。请缩小时间范围、减少指标，或把问题拆成几步再问。'
+                        : rawMessage;
             turnError = rawMessage;
             request.log.error({ err: error }, 'agent resume failed');
             logLine(`resume error ${rawMessage}`);
@@ -445,8 +578,18 @@ app.post('/chat/resume', async (request, reply) => {
             clearInterval(heartbeat);
             raw.off('close', onClientClose);
             activeStreams = Math.max(0, activeStreams - 1);
+            resumeLedger.record(resumeKey, {
+                inputTokens: budget.usage.inputTokens,
+                outputTokens: budget.usage.outputTokens,
+                cacheReadTokens: budget.usage.cacheReadTokens,
+                cacheCreationTokens: budget.usage.cacheCreationTokens,
+            }, budget.usage.cost);
             logLine(`resume end ${budget.summary()} ${bridge.stats()}` +
-                `${bridge.shouldStop() ? ' stop=visual' : ''}${turnError ? ' error=1' : ''}`);
+                `${bridge.clarifyPending()
+                    ? ' stop=clarify'
+                    : bridge.shouldStop()
+                        ? ' stop=visual'
+                        : ''}${turnError ? ' error=1' : ''}`);
             raw.end();
         }
     });
@@ -478,9 +621,35 @@ app.post('/chat/suggest', async (request, reply) => {
         reply.send({ items: [] });
         return;
     }
+    if (!resolved.enableSuggestions) {
+        reply.send({ items: [] });
+        return;
+    }
+    const suggestKey = body?.conversationId || 'anonymous';
+    const ledger = getUsageLedger();
+    if (ledger.check(suggestKey, resolved.maxDailyTokens)) {
+        reply.send({ items: [] });
+        return;
+    }
     try {
-        const items = await generateSuggestions(resolved.llm, { question, answer, meta });
-        reply.send({ items });
+        const { items, usage } = await generateSuggestions(resolved.llm, {
+            question,
+            answer,
+            meta,
+        });
+        const cost = estimateCost(usage, resolved.tokenPrices);
+        ledger.record(suggestKey, usage, cost);
+        logLine(`suggest usage input=${usage.inputTokens} output=${usage.outputTokens} ` +
+            `cache=${usage.cacheReadTokens} cost=${cost.toFixed(4)}`);
+        reply.send({
+            items,
+            usage: {
+                inputTokens: usage.inputTokens,
+                outputTokens: usage.outputTokens,
+                cacheReadTokens: usage.cacheReadTokens,
+                estimatedCost: cost,
+            },
+        });
     }
     catch (e) {
         request.log.warn({ err: e }, 'chat/suggest failed');
@@ -573,6 +742,7 @@ const TOOL_LABELS = {
     list_tables: '浏览数据表',
     get_table_schema: '查看表结构',
     run_sql: '执行查询',
+    ask_clarification: '请求补充信息',
     render_report: '生成分析报表',
     render_html_report: '生成 HTML 报告',
     render_chart: '生成图表',
@@ -588,6 +758,28 @@ function toolLabel(name) {
     return TOOL_LABELS[name] || name;
 }
 /** 工具入参里可能带整份 HTML/CSS，SSE 只下发页面真正需要的轻量字段。 */
+/** 从 SQL 里粗略提取 from/join 的表名，用于回答引用标签。 */
+function extractTablesFromSql(sql) {
+    const text = String(sql || '');
+    const result = [];
+    const seen = new Set();
+    const ident = '(`[^`]+`|"[^"]+"|\\[[^\\]]+\\]|[\\w$]+)';
+    const re = new RegExp(`\\b(?:from|join)\\s+${ident}(?:\\s*\\.\\s*${ident})?`, 'gi');
+    let match;
+    while ((match = re.exec(text))) {
+        const first = match[1] || '';
+        const second = match[2] || '';
+        const table = (second ? first + '.' + second : first)
+            .replace(/[`"[\]]/g, '')
+            .replace(/\s*\.\s*/g, '.')
+            .trim();
+        if (!table || seen.has(table))
+            continue;
+        seen.add(table);
+        result.push(table);
+    }
+    return result;
+}
 function compactToolInput(name, input) {
     if (!input || typeof input !== 'object')
         return undefined;
@@ -628,6 +820,12 @@ function compactToolInput(name, input) {
         return { name: raw.name };
     if (name === 'read_skill_file')
         return { name: raw.name, path: raw.path };
+    if (name === 'ask_clarification') {
+        return {
+            question: raw.question,
+            fields: Array.isArray(raw.fields) ? raw.fields : [],
+        };
+    }
     return undefined;
 }
 function summarizeToolOutput(name, output) {
@@ -678,6 +876,9 @@ function summarizeToolOutput(name, output) {
     else if (name === 'list_tables') {
         summary.tableCount = Number(parsed.tableCount) || 0;
     }
+    else if (name === 'ask_clarification') {
+        summary.title = '等待补充信息';
+    }
     else if (name === 'render_report' || name === 'render_html_report' || name === 'render_chart') {
         summary.component = typeof parsed.component === 'string' ? parsed.component : '';
         summary.title = typeof parsed.title === 'string' ? parsed.title : '';
@@ -710,26 +911,33 @@ function extractText(content) {
 /** 把 LangChain 的 streamEvents 统一映射成前端 SSE 事件（普通对话与 HITL 恢复共用）。 */
 function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, skills, }) {
     const toolStarts = new Map();
+    const citations = [];
     const tablesUsed = new Set();
     const dataWarnings = new Set();
-    let inputTokens = 0;
-    let outputTokens = 0;
-    let modelCalls = 0;
     let maxInputTokens = 0;
+    let observedModelCalls = 0;
     let totalRowCount = 0;
     let anyTruncated = false;
     let lastReportSpec = null;
     /** HTML 报告已成功下发：无需再让模型补最后一句，省一次完整上下文调用。 */
     let stopAfterVisual = false;
+    /** 已请求用户补充信息：本轮暂停，等待前端表单提交后重新发起。 */
+    let clarifyPending = false;
     const addUsage = (usage) => {
         if (!usage)
             return;
-        inputTokens += usage.input_tokens || 0;
-        outputTokens += usage.output_tokens || 0;
+        observedModelCalls += 1;
         maxInputTokens = Math.max(maxInputTokens, usage.input_tokens || 0);
+        // 兜底：某些 provider/流式路径下 cost-guard 可能拿不到 usage_metadata，
+        // 这里只在中间件没有记录到本次调用时补记，避免重复计数。
+        if (budget.usage.modelCalls < observedModelCalls) {
+            budget.recordModelUsage(extractUsage(usage), resolved.tokenPrices);
+        }
     };
     /** 便于日志判断 token 是“单次上下文大”还是“模型调用次数多”。 */
-    const stats = () => `calls=${modelCalls} input=${inputTokens} output=${outputTokens} maxInput=${maxInputTokens}`;
+    const stats = () => `calls=${budget.usage.modelCalls} input=${budget.usage.inputTokens} ` +
+        `output=${budget.usage.outputTokens} maxInput=${maxInputTokens} ` +
+        `cache=${budget.usage.cacheReadTokens} cost=${budget.usage.cost.toFixed(4)}`;
     const reportMeta = () => {
         if (!lastReportSpec)
             return null;
@@ -750,9 +958,12 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
         send({
             type: 'usage',
             model: resolved.llm.model,
-            inputTokens,
-            outputTokens,
-            calls: modelCalls,
+            inputTokens: budget.usage.inputTokens,
+            outputTokens: budget.usage.outputTokens,
+            cacheReadTokens: budget.usage.cacheReadTokens,
+            cacheCreationTokens: budget.usage.cacheCreationTokens,
+            estimatedCost: budget.usage.cost,
+            calls: budget.usage.modelCalls,
             maxInputTokens,
             elapsedMs,
         });
@@ -764,10 +975,18 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             rowCount: totalRowCount,
             truncated: anyTruncated,
             tables: Array.from(tablesUsed),
+            citations,
             warnings: Array.from(dataWarnings),
             report: reportMeta(),
             knowledge,
             skills,
+            usage: {
+                inputTokens: budget.usage.inputTokens,
+                outputTokens: budget.usage.outputTokens,
+                cacheReadTokens: budget.usage.cacheReadTokens,
+                estimatedCost: budget.usage.cost,
+                modelCalls: budget.usage.modelCalls,
+            },
         });
     };
     const handle = (event) => {
@@ -783,7 +1002,14 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
             const input = event.data?.input;
             const startedAt = Date.now();
-            toolStarts.set(runId, { name, startedAt });
+            const compactInput = compactToolInput(name, input);
+            toolStarts.set(runId, {
+                name,
+                startedAt,
+                input: compactInput && typeof compactInput === 'object'
+                    ? compactInput
+                    : undefined,
+            });
             if (name === 'get_table_schema') {
                 const schemaInput = input;
                 const tableList = Array.isArray(schemaInput?.tables)
@@ -820,8 +1046,43 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
                 totalRowCount += summary.rowCount;
                 if (summary.truncated)
                     anyTruncated = true;
+                const rawInput = started?.input || {};
+                const queryList = Array.isArray(rawInput.queries)
+                    ? rawInput.queries.map((item) => String(item || '')).filter(Boolean)
+                    : [];
+                const sqlText = queryList.length
+                    ? queryList.join(';\n')
+                    : String(rawInput.sql || '');
+                if (sqlText.trim()) {
+                    citations.push({
+                        index: citations.length + 1,
+                        id: runId,
+                        sql: sqlText,
+                        tables: extractTablesFromSql(sqlText),
+                        rowCount: summary.rowCount,
+                        truncated: summary.truncated,
+                        durationMs: started ? Date.now() - started.startedAt : undefined,
+                    });
+                }
             }
             summary.warnings.forEach((item) => dataWarnings.add(item));
+            let clarifyEvent = null;
+            if (name === 'ask_clarification') {
+                const parsedClarify = safeParseObject(output) || {};
+                const fields = Array.isArray(parsedClarify.fields)
+                    ? parsedClarify.fields.slice(0, 5)
+                    : [];
+                if (fields.length) {
+                    clarifyEvent = {
+                        question: typeof parsedClarify.question === 'string'
+                            ? parsedClarify.question
+                            : '请补充以下信息，以便更准确地分析',
+                        fields,
+                        allowSkip: parsedClarify.allow_skip !== false,
+                        toolId: runId,
+                    };
+                }
+            }
             const isVisual = VISUAL_TOOL_NAMES.has(name);
             const parsedOutput = safeParseObject(output);
             const rawSpec = isVisual ? artifact || parsedOutput : null;
@@ -859,6 +1120,10 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
                     error: summary.error || visualError,
                 },
             });
+            if (clarifyEvent) {
+                clarifyPending = true;
+                send({ type: 'clarify', ...clarifyEvent });
+            }
             if (spec) {
                 send({ type: 'visual', ...spec, toolId: runId });
                 // 报告已是本轮最终产物：不再让模型重新读取整份 HTML 参数去补一句结尾
@@ -900,11 +1165,16 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             return;
         }
         if (event.event === 'on_chat_model_end') {
-            modelCalls += 1;
             addUsage(event.data?.output?.usage_metadata);
         }
     };
-    return { handle, sendEnrichment, stats, shouldStop: () => stopAfterVisual };
+    return {
+        handle,
+        sendEnrichment,
+        stats,
+        shouldStop: () => stopAfterVisual || clarifyPending,
+        clarifyPending: () => clarifyPending,
+    };
 }
 async function collectInterrupts(agent, threadId) {
     try {

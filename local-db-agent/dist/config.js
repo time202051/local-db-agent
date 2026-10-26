@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DEFAULT_TOKEN_PRICES } from './usage.js';
 const currentDir = dirname(fileURLToPath(import.meta.url));
 function loadDotEnv(path) {
     let content;
@@ -59,6 +60,15 @@ const DEFAULTS = {
     maxResultChars: 8000,
     maxTotalToolChars: 24000,
     maxOutputTokens: 20000,
+    // 成本兜底：默认值足够跑完一次完整报告（实测约 12 万），异常时自动收尾。
+    maxTurnTokens: 150000,
+    maxReportTurnTokens: 200000,
+    maxDailyTokens: 2000000,
+    maxModelCalls: 12,
+    maxReportModelCalls: 16,
+    enableSuggestions: true,
+    enableClarify: true,
+    strictNumberCheck: false,
     requireSqlApproval: false,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
@@ -69,6 +79,14 @@ function num(value, fallback) {
 }
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
+}
+function normalizePrices(input) {
+    const pick = (value, fallback) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fallback;
+    return {
+        inputMissPerMillion: pick(input?.inputMissPerMillion, DEFAULT_TOKEN_PRICES.inputMissPerMillion),
+        inputHitPerMillion: pick(input?.inputHitPerMillion, DEFAULT_TOKEN_PRICES.inputHitPerMillion),
+        outputPerMillion: pick(input?.outputPerMillion, DEFAULT_TOKEN_PRICES.outputPerMillion),
+    };
 }
 /** ODBC 值转义：含 ; { } 等字符时用大括号包裹 */
 function odbcValue(value) {
@@ -209,7 +227,9 @@ export function resolveRequestConfig(raw) {
         blockedTables: normalizeStringList(dbInput.blockedTables, []),
         // 兼容旧页面；核心不再读取，业务知识改走 knowledge/
         profile: typeof dbInput.profile === 'string' ? dbInput.profile : 'generic',
-        businessPrompt: typeof dbInput.businessPrompt === 'string' ? dbInput.businessPrompt.trim().slice(0, 8000) : '',
+        businessPrompt: typeof dbInput.businessPrompt === 'string'
+            ? dbInput.businessPrompt.trim().slice(0, 8000)
+            : '',
     };
     const db = dbType === 'kingbase'
         ? resolveKingbaseDb(dbInput, common)
@@ -243,6 +263,15 @@ export function resolveRequestConfig(raw) {
     const maxResultChars = Math.max(1000, num(lim.maxResultChars, DEFAULTS.maxResultChars));
     const maxTotalToolChars = Math.max(2000, num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars));
     const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+    const maxTurnTokens = Math.max(1000, num(lim.maxTurnTokens, DEFAULTS.maxTurnTokens));
+    const maxReportTurnTokens = Math.max(maxTurnTokens, num(lim.maxReportTurnTokens, DEFAULTS.maxReportTurnTokens));
+    const maxDailyTokens = Math.max(0, num(lim.maxDailyTokens, DEFAULTS.maxDailyTokens));
+    const maxModelCalls = Math.max(1, num(lim.maxModelCalls, DEFAULTS.maxModelCalls));
+    const maxReportModelCalls = Math.max(maxModelCalls, num(lim.maxReportModelCalls, DEFAULTS.maxReportModelCalls));
+    const enableSuggestions = lim.enableSuggestions !== false;
+    const enableClarify = lim.enableClarify !== false;
+    const strictNumberCheck = lim.strictNumberCheck === true;
+    const tokenPrices = normalizePrices(lim.tokenPrices);
     const requireSqlApproval = lim.requireSqlApproval === true;
     const key = hashKey(JSON.stringify({
         db,
@@ -255,6 +284,14 @@ export function resolveRequestConfig(raw) {
         maxResultChars,
         maxTotalToolChars,
         maxOutputTokens,
+        maxTurnTokens,
+        maxReportTurnTokens,
+        maxDailyTokens,
+        maxModelCalls,
+        maxReportModelCalls,
+        enableSuggestions,
+        enableClarify,
+        strictNumberCheck,
         requireSqlApproval,
     }));
     return {
@@ -270,6 +307,15 @@ export function resolveRequestConfig(raw) {
         maxResultChars,
         maxTotalToolChars,
         maxOutputTokens,
+        maxTurnTokens,
+        maxReportTurnTokens,
+        maxDailyTokens,
+        maxModelCalls,
+        maxReportModelCalls,
+        enableSuggestions,
+        enableClarify,
+        strictNumberCheck,
+        tokenPrices,
         requireSqlApproval,
         key,
     };

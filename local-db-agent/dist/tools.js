@@ -2,6 +2,7 @@ import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { budgetMessage, currentBudget } from './budget.js';
 import { runQuery } from './db.js';
+import { formatNumberCheck, validateCoverageNumbers } from './report-check.js';
 import { getKnowledgePack } from './knowledge.js';
 import { getSkillPack } from './skills.js';
 import { logLine } from './log.js';
@@ -59,7 +60,10 @@ function cachedAck(message) {
 }
 /** SQL 归一化：用于同一批内去重，不改变实际执行的 SQL。 */
 function normalizeSqlKey(sql) {
-    return String(sql || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    return String(sql || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
 }
 function sqlLiteral(value, db) {
     if (typeof value === 'number' && Number.isFinite(value))
@@ -334,7 +338,7 @@ const LAYOUT_ALIASES = {
     auto: 'auto',
     自动: 'auto',
 };
-const MAX_CSS_CHARS = 60 * 1000;
+const MAX_CSS_CHARS = 40 * 1000;
 export function normalizeTemplate(value) {
     if (typeof value !== 'string')
         return 'auto';
@@ -575,18 +579,35 @@ function fitJson(build, total, maxChars) {
     }
     return best;
 }
+/**
+ * 结果紧凑化：rows 改成与 columns 顺序对齐的二维数组。
+ * 每行不再重复列名，宽表结果可省 40%+ token。
+ */
+function compactQueryResult(result) {
+    const columns = Array.isArray(result.columns) && result.columns.length
+        ? result.columns
+        : result.rows.length
+            ? Object.keys(result.rows[0])
+            : [];
+    return {
+        ...result,
+        columns,
+        rows: result.rows.map((row) => columns.map((name) => row[name])),
+    };
+}
 function trimQueryResult(result, maxChars, limitWord = 'TOP') {
-    const json = JSON.stringify(result);
+    const compact = compactQueryResult(result);
+    const json = JSON.stringify(compact);
     if (json.length <= maxChars)
         return { json, trimmed: false };
-    const hint = `结果过大已截断，请改用聚合 SQL（GROUP BY / SUM / COUNT）或加 ${limitWord} 后再查询`;
+    const hint = `结果太大已截断，请改用聚合 SQL（GROUP BY / SUM / COUNT）或 ${limitWord} 减少查询`;
     const text = fitJson((keep) => ({
-        ...result,
-        rows: result.rows.slice(0, keep),
+        ...compact,
+        rows: compact.rows.slice(0, keep),
         rowCount: keep,
         truncated: true,
         hint,
-    }), result.rows.length, maxChars);
+    }), compact.rows.length, maxChars);
     return { json: text, trimmed: true };
 }
 // ============================================================
@@ -754,6 +775,7 @@ async function runTableProfile(db, tableName, requested) {
 /** 为某次请求的数据库配置构造一组工具（工具需要闭包持有该库的连接信息）。 */
 export function createTools(db, options = {}) {
     const batchQueries = options.batchQueries !== false;
+    const clarifyEnabled = options.clarify !== false;
     const isKingbase = db.type === 'kingbase';
     const limitWord = isKingbase ? 'LIMIT' : 'TOP';
     const dialectTip = isKingbase
@@ -1097,6 +1119,17 @@ export function createTools(db, options = {}) {
             };
             json = JSON.stringify(payload);
         }
+        if (budget) {
+            results.forEach((item, index) => {
+                const parsed = parseJsonObject(item.json) || {};
+                const columns = Array.isArray(parsed.columns)
+                    ? parsed.columns.map((column) => String(column))
+                    : [];
+                const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+                const id = runnable.length === 1 && !rawQueries.length ? queryId : `${queryId}#${index + 1}`;
+                budget.recordQueryResult(id, columns, rows);
+            });
+        }
         const deny = budget ? budget.takeChars(json.length) : null;
         if (deny) {
             logLine(`tool run_sql budget blocked: ${deny}`);
@@ -1111,12 +1144,12 @@ export function createTools(db, options = {}) {
     }, {
         name: 'run_sql',
         description: batchQueries
-            ? '执行只读查询并返回 JSON 结果（columns/rows/rowCount/truncated）。' +
+            ? '执行只读查询并返回 JSON 结果（columns/rows/rowCount/truncated；rows 为二维数组，按 columns 顺序对齐）。' +
                 '能一次取回的口径请合并到 queries 数组（2~10 条独立 SQL 并行执行），少走模型往返；' +
                 '工具结果里的 remainingSql 为 0 时不要再查询，直接出报告/收尾；' +
                 `数据量大时请用 GROUP BY / ${limitWord} 聚合，不要拉全量明细。` +
                 (dialectTip ? ` ${dialectTip}` : '')
-            : '执行一条只读查询并返回 JSON 结果（columns/rows/rowCount/truncated）。' +
+            : '执行一条只读查询并返回 JSON 结果（columns/rows/rowCount/truncated；rows 为二维数组，按 columns 顺序对齐）。' +
                 '工具结果里的 remainingSql 为 0 时不要再查询，直接出报告/收尾；' +
                 `数据量大时请用 GROUP BY / ${limitWord} 聚合，不要拉全量明细。` +
                 (dialectTip ? ` ${dialectTip}` : ''),
@@ -1127,6 +1160,52 @@ export function createTools(db, options = {}) {
                 .max(10)
                 .optional()
                 .describe('2~10 条互相独立的只读 SQL，一次调用并行执行（推荐）'),
+        }),
+    });
+    const askClarificationTool = tool(async ({ question, fields, allow_skip }) => {
+        return JSON.stringify({
+            success: true,
+            clarify: true,
+            question: String(question || '').slice(0, 300),
+            fields: Array.isArray(fields) ? fields.slice(0, 5) : [],
+            allow_skip: allow_skip !== false,
+        });
+    }, {
+        name: 'ask_clarification',
+        description: '当用户问题缺少关键条件（如时间范围、仓库/组织、指标口径、统计维度）且无法从上下文推断时调用。' +
+            '一次最多问 5 个字段，只问真正影响结果的条件；能从上下文推断的不要问。' +
+            '调用后本轮会暂停，前端展示表单，用户补充后再继续分析。',
+        schema: z.object({
+            question: z.string().describe('给用户看的说明，例如：为了准确统计库存，请补充以下条件'),
+            fields: z
+                .array(z.object({
+                key: z.string().describe('字段 key，使用英文/拼音，避免中文'),
+                label: z.string().describe('字段名，例如：时间范围 / 仓库 / 指标'),
+                type: z
+                    .enum(['select', 'multiselect', 'date', 'daterange', 'number', 'text'])
+                    .describe('控件类型；有固定选项用 select，可多选用 multiselect'),
+                required: z.boolean().optional().describe('是否必填，默认 false'),
+                options: z
+                    .array(z.object({
+                    label: z.string(),
+                    value: z.union([z.string(), z.number()]),
+                }))
+                    .max(30)
+                    .optional()
+                    .describe('select/multiselect 的候选项'),
+                placeholder: z.string().optional(),
+                default: z
+                    .union([
+                    z.string(),
+                    z.number(),
+                    z.boolean(),
+                    z.array(z.union([z.string(), z.number()])),
+                ])
+                    .optional(),
+            }))
+                .min(1)
+                .max(5),
+            allow_skip: z.boolean().optional().describe('是否允许用户跳过补充，默认 true'),
         }),
     });
     const renderChartTool = tool(async (input) => {
@@ -1180,8 +1259,9 @@ export function createTools(db, options = {}) {
                 .array(z.record(z.string(), z.any()))
                 .min(1)
                 .max(40)
-                .describe('区块数组，按顺序排列；type 取 section/summary/notice/kpi/hbar/progress/' +
-                'chips/dist/chart/table/risk/insights，字段见工具描述'),
+                .describe('自由组合的区块数组；普通区块 type 取 section/summary/notice/kpi/hbar/progress/' +
+                'chips/dist/chart/table/risk/insights，任意区块都可带 span(1~12)；' +
+                '需要分栏时用 {type:"row", columns:[{span:8, blocks:[...]}, {span:4, blocks:[...]}]}；字段见工具描述'),
         }),
         responseFormat: 'content_and_artifact',
     });
@@ -1205,6 +1285,21 @@ export function createTools(db, options = {}) {
         if (noNote.length) {
             return fail('missing/needs_review 指标必须写清原因（note）。', noNote.map((entry) => entry.item));
         }
+        const budget = currentBudget();
+        const strictNumberCheck = budget?.limits.strictNumberCheck === true;
+        const numberCheck = budget
+            ? validateCoverageNumbers(coverage, budget, strictNumberCheck)
+            : null;
+        if (numberCheck && strictNumberCheck && numberCheck.mismatches.length) {
+            return fail('报告中的数值无法在本轮查询结果中找到，请核对数字，或把对应指标改标 needs_review / missing。', numberCheck.mismatches);
+        }
+        if (numberCheck?.mismatches.length) {
+            for (const mismatch of numberCheck.mismatches) {
+                normalized.warnings.push(`数值核对：${mismatch}`);
+            }
+        }
+        if (numberCheck)
+            logLine(formatNumberCheck(numberCheck));
         const elementInfo = normalized.elements.length ? normalized.elements.join(',') : '-';
         const richness = analyzeReportRichness(normalized.html, normalized.charts);
         const richnessInfo = `data=${richness.dataElements.length}(${richness.dataElements.join(',') || '-'}) ` +
@@ -1233,6 +1328,16 @@ export function createTools(db, options = {}) {
                     missing: coverage.filter((entry) => entry.status === 'missing').length,
                     needs_review: coverage.filter((entry) => entry.status === 'needs_review').length,
                 },
+                ...(numberCheck
+                    ? {
+                        numberCheck: {
+                            checked: numberCheck.checked,
+                            matched: numberCheck.matched,
+                            skipped: numberCheck.skipped,
+                            mismatches: numberCheck.mismatches,
+                        },
+                    }
+                    : {}),
                 hint: '报告已渲染。数据质量提示由前端展示，正文只写一句“报告已生成”，不要重试。',
             }),
             normalized,
@@ -1300,7 +1405,7 @@ export function createTools(db, options = {}) {
             description: '读取技能完整步骤（SKILL.md 正文，不含 frontmatter），单次最多 12000 字符。' +
                 '用户任务与技能目录中的描述匹配时先读取，再按步骤执行；不要凭标题猜流程。',
             schema: z.object({
-                name: z.string().describe('技能名，例如 weekly-report'),
+                name: z.string().describe('技能名，例如 report-authoring'),
             }),
         }), tool(async ({ name, path }) => {
             const budget = currentBudget();
@@ -1446,12 +1551,20 @@ export function createTools(db, options = {}) {
             const maxChars = budget ? budget.limits.maxResultChars : 8000;
             const { json: resultJson, trimmed } = trimQueryResult(result, maxChars, limitWord);
             const parsed = parseJsonObject(resultJson) || {};
+            const queryId = `saved-${saved.key}-${Date.now().toString(36)}`;
             const json = JSON.stringify({
                 ...parsed,
-                queryId: `saved-${saved.key}-${Date.now().toString(36)}`,
+                queryId,
                 savedQuery: saved.key,
                 complete: result.success && !trimmed && !result.truncated,
             });
+            if (budget) {
+                const columns = Array.isArray(parsed.columns)
+                    ? parsed.columns.map((column) => String(column))
+                    : [];
+                const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+                budget.recordQueryResult(queryId, columns, rows);
+            }
             const deny = budget ? budget.takeChars(json.length) : null;
             if (deny)
                 return budgetMessage('chars', deny);
@@ -1477,19 +1590,24 @@ export function createTools(db, options = {}) {
         getTableSchemaTool,
         ...extraTools,
         runQueryTool,
+        ...(clarifyEnabled ? [askClarificationTool] : []),
         renderReportTool,
         renderHtmlReportTool,
         renderChartTool,
     ].filter((item) => {
         if (!options.reportMode)
             return true;
-        // 报告轮：只保留发现表、看结构、查数、出 HTML 报告（以及知识包相关工具）。
+        // 报告轮：只保留发现表、看结构、查数、读技能、出 HTML 报告（以及知识包相关工具）。
         return [
             'list_tables',
             'search_tables',
             'get_table_schema',
             'run_sql',
+            'ask_clarification',
             'render_html_report',
+            'list_skills',
+            'read_skill',
+            'read_skill_file',
             'search_knowledge',
             'read_knowledge',
             'run_saved_query',

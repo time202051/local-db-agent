@@ -1,12 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { z } from 'zod';
-const suggestionSchema = z.object({
-    suggestions: z
-        .array(z.string())
-        .max(3)
-        .describe('用户可以继续追问的短问题，最多 3 条，中文，每条 4~18 个字'),
-});
+import { extractUsage } from './usage.js';
 const SYSTEM_PROMPT = `你是数据库分析助手。请根据本轮用户问题和最终回答，给出用户可以继续追问的 3 个短问题。
 
 要求：
@@ -14,7 +8,8 @@ const SYSTEM_PROMPT = `你是数据库分析助手。请根据本轮用户问题
 - 必须具体到数据、指标、时间范围、业务对象、异常或下一步动作。
 - 不要重复本轮问题。
 - 不要输出编号、引号、解释或前后缀。
-- 如果本轮没有数据、只是问候/澄清/错误说明，suggestions 返回空数组。`;
+- 如果本轮没有数据、只是问候/澄清/错误说明，suggestions 返回空数组。
+- 只输出一个 JSON 对象，格式：{"suggestions":["问题1","问题2","问题3"]}，不要代码块。`;
 function formatMeta(meta) {
     if (!meta)
         return '无';
@@ -27,6 +22,48 @@ function formatMeta(meta) {
         `报告类型：${report.template || '无'} / 结构：${report.layout || '无'} / 标题：${report.title || '无'} / 期间：${report.period || '无'} / 口径：${report.scope || '无'}`,
     ];
     return parts.join('\n');
+}
+function contentToText(content) {
+    if (typeof content === 'string')
+        return content;
+    if (Array.isArray(content)) {
+        return content
+            .map((item) => {
+            if (typeof item === 'string')
+                return item;
+            if (item && typeof item === 'object' && 'text' in item) {
+                return String(item.text || '');
+            }
+            return '';
+        })
+            .join('');
+    }
+    return '';
+}
+/**
+ * 解析模型返回的追问建议。
+ * 优先按 JSON 解析；失败时退化为按行提取，避免 DeepSeek 等模型不返回 JSON 时整段丢弃。
+ */
+export function parseSuggestionOutput(text) {
+    const cleaned = String(text || '')
+        .replace(/```(?:json)?/gi, '')
+        .trim();
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+        try {
+            const parsed = JSON.parse(cleaned.slice(start, end + 1));
+            if (Array.isArray(parsed.suggestions))
+                return parsed.suggestions;
+        }
+        catch {
+            /* fall through */
+        }
+    }
+    return cleaned
+        .split(/\r?\n/)
+        .map((line) => line.replace(/^[\s\-*•]+/, '').trim())
+        .filter((line) => line && !/^[{}[\],]+$/.test(line));
 }
 /** 清理模型返回：去编号、去重、限长，最多 3 条。 */
 export function normalizeSuggestions(raw, question = '') {
@@ -57,12 +94,18 @@ export function normalizeSuggestions(raw, question = '') {
     }
     return result;
 }
-/** 用一次轻量结构化调用生成追问建议；失败由调用方降级处理。 */
+/** 用一次轻量调用生成追问建议；失败由调用方降级处理。 */
 export async function generateSuggestions(llm, input) {
+    const emptyUsage = {
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadTokens: 0,
+        cacheCreationTokens: 0,
+    };
     const question = String(input.question || '').trim();
     const answer = String(input.answer || '').trim();
     if (!question || !answer)
-        return [];
+        return { items: [], usage: emptyUsage };
     const model = new ChatOpenAI({
         model: llm.model,
         apiKey: llm.apiKey,
@@ -75,8 +118,7 @@ export async function generateSuggestions(llm, input) {
             baseURL: llm.baseUrl,
         },
     });
-    const structured = model.withStructuredOutput(suggestionSchema);
-    const result = await structured.invoke([
+    const response = await model.invoke([
         new SystemMessage(SYSTEM_PROMPT),
         new HumanMessage([
             `本轮问题：${question}`,
@@ -84,5 +126,9 @@ export async function generateSuggestions(llm, input) {
             `结果信息：\n${formatMeta(input.meta)}`,
         ].join('\n\n')),
     ]);
-    return normalizeSuggestions(result && result.suggestions, question);
+    const usage = extractUsage(response.usage_metadata, response.response_metadata);
+    return {
+        items: normalizeSuggestions(parseSuggestionOutput(contentToText(response.content)), question),
+        usage,
+    };
 }

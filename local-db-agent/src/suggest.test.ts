@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSuggestions } from './suggest.js';
+import { normalizeSuggestions, parseSuggestionOutput } from './suggest.js';
 
 describe('normalizeSuggestions', () => {
   it('去掉编号、引号，并限制最多 3 条', () => {
@@ -25,5 +25,16 @@ describe('normalizeSuggestions', () => {
   it('空结果返回空数组', () => {
     expect(normalizeSuggestions(null)).toEqual([]);
     expect(normalizeSuggestions([])).toEqual([]);
+  });
+
+  it('解析 JSON / 代码块 / 普通行', () => {
+    expect(parseSuggestionOutput('{"suggestions":["查看明细","对比上月"]}')).toEqual([
+      '查看明细',
+      '对比上月',
+    ]);
+    expect(parseSuggestionOutput('```json\n{"suggestions":["查看明细"]}\n```')).toEqual([
+      '查看明细',
+    ]);
+    expect(parseSuggestionOutput('- 查看明细\n- 对比上月')).toEqual(['查看明细', '对比上月']);
   });
 });

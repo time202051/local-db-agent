@@ -9,7 +9,78 @@
       "folder": "data-analysis",
       "files": [],
       "chars": 1076
+    },
+    {
+      "name": "report-authoring",
+      "description": "通用分析报告编写规范：章节结构、KPI 与图表搭配、结论写法、数据缺口标注，适配任意数据库",
+      "when_to_use": "用户要做日报/周报/月报/经营分析/汇报/大屏/完整分析报告",
+      "version": 1,
+      "applies_to": {},
+      "folder": "report-authoring",
+      "files": [
+        "references/chart-selection.md",
+        "references/report-sections.md"
+      ],
+      "chars": 1294
+    },
+    {
+      "name": "wms-inbound-analysis",
+      "description": "WMS 入库履约分析：收货及时率、上架及时率、收货差异、越库比例、入库周期，适配不同厂家",
+      "when_to_use": "用户问入库、收货、上架、到货、越库、收货差异、入库周期",
+      "version": 1,
+      "applies_to": {
+        "system": [
+          "WMS"
+        ]
+      },
+      "folder": "wms-inbound-analysis",
+      "files": [],
+      "chars": 1668
+    },
+    {
+      "name": "wms-inventory-analysis",
+      "description": "WMS 库存健康分析：库存量/金额、库龄、周转、呆滞、ABC、库位利用率、账实差异，适配不同厂家",
+      "when_to_use": "WMS/仓储场景下用户问库存、库存金额、库龄、周转天数、呆滞/积压、ABC、库位利用率、账实差异",
+      "version": 1,
+      "applies_to": {
+        "system": [
+          "WMS"
+        ]
+      },
+      "folder": "wms-inventory-analysis",
+      "files": [
+        "references/metrics.md"
+      ],
+      "chars": 2148
+    },
+    {
+      "name": "wms-operations-analysis",
+      "description": "WMS 仓储作业效率分析：作业量、人均效能、工时效率、环节耗时、峰值、库位与设备利用率",
+      "when_to_use": "用户问人效、工时、作业量、作业峰值、环节耗时、库位利用率、设备利用率",
+      "version": 1,
+      "applies_to": {
+        "system": [
+          "WMS"
+        ]
+      },
+      "folder": "wms-operations-analysis",
+      "files": [],
+      "chars": 1740
+    },
+    {
+      "name": "wms-outbound-analysis",
+      "description": "WMS 出库履约分析：订单满足率、缺货率、准时发运、拣货准确率、履约周期、退货，适配不同厂家",
+      "when_to_use": "用户问出库、发货、拣货、缺货、订单满足率、准时率、履约周期、退货",
+      "version": 1,
+      "applies_to": {
+        "system": [
+          "WMS"
+        ]
+      },
+      "folder": "wms-outbound-analysis",
+      "files": [],
+      "chars": 1730
     }
   ],
-  "generatedAt": "2026-10-23T09:29:35.595Z"
+  "generatedAt": "2026-10-26T01:56:24.885Z"
 }

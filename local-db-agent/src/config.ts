@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DEFAULT_TOKEN_PRICES } from './usage.js';
+import type { TokenPrices } from './usage.js';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
@@ -63,6 +65,15 @@ const DEFAULTS = {
   maxResultChars: 8000,
   maxTotalToolChars: 24000,
   maxOutputTokens: 20000,
+  // 成本兜底：默认值足够跑完一次完整报告（实测约 12 万），异常时自动收尾。
+  maxTurnTokens: 150000,
+  maxReportTurnTokens: 200000,
+  maxDailyTokens: 2000000,
+  maxModelCalls: 12,
+  maxReportModelCalls: 16,
+  enableSuggestions: true,
+  enableClarify: true,
+  strictNumberCheck: false,
   requireSqlApproval: false,
 };
 
@@ -169,8 +180,26 @@ export interface LimitsInput {
   maxResultChars?: number;
   /** 单轮所有工具结果字符数上限（默认 40000） */
   maxTotalToolChars?: number;
-  /** 单次大模型输出 token 上限（默认 8000） */
+  /** 单次大模型输出 token 上限（默认 20000） */
   maxOutputTokens?: number;
+  /** 普通轮总 token 上限（input+output，默认 150000） */
+  maxTurnTokens?: number;
+  /** 报告轮总 token 上限（input+output，默认 200000） */
+  maxReportTurnTokens?: number;
+  /** 每个 conversationId 的每日 token 上限（默认 2000000，内存账本） */
+  maxDailyTokens?: number;
+  /** 普通轮模型调用次数上限（默认 12） */
+  maxModelCalls?: number;
+  /** 报告轮模型调用次数上限（默认 16） */
+  maxReportModelCalls?: number;
+  /** 是否启用 /chat/suggest 追问建议（默认 true） */
+  enableSuggestions?: boolean;
+  /** 是否允许 agent 调用 ask_clarification 请求用户补充条件（默认 true） */
+  enableClarify?: boolean;
+  /** true = 报告数值对账不通过时拒绝出报告（默认 false，只告警） */
+  strictNumberCheck?: boolean;
+  /** token 单价（每 100 万 token），默认按 deepseek-chat */
+  tokenPrices?: Partial<TokenPrices>;
   /** true = 每次 run_sql 前通过 LangChain HITL 等待前端确认（默认 false） */
   requireSqlApproval?: boolean;
 }
@@ -244,6 +273,15 @@ export interface ResolvedConfig {
   maxResultChars: number;
   maxTotalToolChars: number;
   maxOutputTokens: number;
+  maxTurnTokens: number;
+  maxReportTurnTokens: number;
+  maxDailyTokens: number;
+  maxModelCalls: number;
+  maxReportModelCalls: number;
+  enableSuggestions: boolean;
+  enableClarify: boolean;
+  strictNumberCheck: boolean;
+  tokenPrices: TokenPrices;
   /** 每次 run_sql 前是否需要人工确认（LangChain HITL） */
   requireSqlApproval: boolean;
   /** 供运行时缓存的键（哈希，不含明文密钥） */
@@ -259,6 +297,16 @@ function num(value: number | undefined, fallback: number): number {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function normalizePrices(input?: Partial<TokenPrices>): TokenPrices {
+  const pick = (value: unknown, fallback: number): number =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : fallback;
+  return {
+    inputMissPerMillion: pick(input?.inputMissPerMillion, DEFAULT_TOKEN_PRICES.inputMissPerMillion),
+    inputHitPerMillion: pick(input?.inputHitPerMillion, DEFAULT_TOKEN_PRICES.inputHitPerMillion),
+    outputPerMillion: pick(input?.outputPerMillion, DEFAULT_TOKEN_PRICES.outputPerMillion),
+  };
 }
 
 /** ODBC 值转义：含 ; { } 等字符时用大括号包裹 */
@@ -286,13 +334,13 @@ function buildOdbcString(db: DbInput): string {
 function hasAnyDbField(db: DbInput): boolean {
   return Boolean(
     db.connectionString ||
-      db.server ||
-      db.host ||
-      db.port ||
-      db.database ||
-      db.user ||
-      db.password ||
-      db.trusted,
+    db.server ||
+    db.host ||
+    db.port ||
+    db.database ||
+    db.user ||
+    db.password ||
+    db.trusted,
   );
 }
 
@@ -306,10 +354,7 @@ function hashKey(input: string): string {
   return createHash('sha1').update(input).digest('hex');
 }
 
-function resolveSqlServerDb(
-  dbInput: DbInput,
-  common: DbCommonRuntime,
-): SqlServerDbRuntime {
+function resolveSqlServerDb(dbInput: DbInput, common: DbCommonRuntime): SqlServerDbRuntime {
   let connectionString: string;
   if (dbInput.connectionString && dbInput.connectionString.trim()) {
     connectionString = dbInput.connectionString.trim();
@@ -318,7 +363,9 @@ function resolveSqlServerDb(
       throw new ConfigError('数据库配置不完整：至少需要 server（地址）和 database（库名）');
     }
     if (!dbInput.trusted && !dbInput.user) {
-      throw new ConfigError('数据库配置不完整：非集成认证时需提供 user（用户名）和 password（密码）');
+      throw new ConfigError(
+        '数据库配置不完整：非集成认证时需提供 user（用户名）和 password（密码）',
+      );
     }
     if (!/^[\x21-\x7E]+$/.test(dbInput.server.trim())) {
       throw new ConfigError('数据库地址格式不正确（server 不能含中文/全角字符/空格）');
@@ -337,10 +384,7 @@ function resolveSqlServerDb(
   };
 }
 
-function resolveKingbaseDb(
-  dbInput: DbInput,
-  common: DbCommonRuntime,
-): KingbaseDbRuntime {
+function resolveKingbaseDb(dbInput: DbInput, common: DbCommonRuntime): KingbaseDbRuntime {
   const rawHost = (dbInput.host ?? dbInput.server ?? '').trim();
   if (!rawHost) {
     throw new ConfigError('金仓数据库配置不完整：需要 host（地址）');
@@ -393,7 +437,9 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
 
   const dbType: DbType = dbInput.type === 'kingbase' ? 'kingbase' : 'sqlserver';
   if (dbInput.type && dbInput.type !== 'sqlserver' && dbInput.type !== 'kingbase') {
-    throw new ConfigError(`不支持的数据库类型：${String(dbInput.type)}（仅支持 sqlserver / kingbase）`);
+    throw new ConfigError(
+      `不支持的数据库类型：${String(dbInput.type)}（仅支持 sqlserver / kingbase）`,
+    );
   }
 
   const requestTimeoutMs =
@@ -413,7 +459,9 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     // 兼容旧页面；核心不再读取，业务知识改走 knowledge/
     profile: typeof dbInput.profile === 'string' ? dbInput.profile : 'generic',
     businessPrompt:
-      typeof dbInput.businessPrompt === 'string' ? dbInput.businessPrompt.trim().slice(0, 8000) : '',
+      typeof dbInput.businessPrompt === 'string'
+        ? dbInput.businessPrompt.trim().slice(0, 8000)
+        : '',
   };
   const db: DbRuntime =
     dbType === 'kingbase'
@@ -426,7 +474,9 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     throw new ConfigError('缺少大模型密钥：请在注册组件时传入 llm.apiKey');
   }
   if (!/^[\x21-\x7E]+$/.test(apiKey)) {
-    throw new ConfigError('大模型密钥格式不正确（含非 ASCII 字符，请检查 llm.apiKey，勿含中文/空格）');
+    throw new ConfigError(
+      '大模型密钥格式不正确（含非 ASCII 字符，请检查 llm.apiKey，勿含中文/空格）',
+    );
   }
   const baseUrl = (llmInput.baseUrl && llmInput.baseUrl.trim()) || DEFAULTS.llmBaseUrl;
   const model = (llmInput.model && llmInput.model.trim()) || DEFAULTS.llmModel;
@@ -441,8 +491,7 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
   };
 
   const recursionLimit = Math.max(1, num(lim.recursionLimit, DEFAULTS.recursionLimit));
-  const turnTimeoutMs =
-    Math.max(1, num(lim.turnTimeoutSec, DEFAULTS.turnTimeoutSec)) * 1000;
+  const turnTimeoutMs = Math.max(1, num(lim.turnTimeoutSec, DEFAULTS.turnTimeoutSec)) * 1000;
   const maxConcurrent = Math.max(1, num(lim.maxConcurrent, DEFAULTS.maxConcurrent));
   // 报告优先保证数据完整：低阈值会在生成报告前清掉旧查询结果
   const summaryTriggerTokens = Math.max(
@@ -457,11 +506,23 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
   const maxSqlQueries = Math.max(1, num(lim.maxSqlQueries, DEFAULTS.maxSqlQueries));
   const maxSchemaCalls = Math.max(1, num(lim.maxSchemaCalls, DEFAULTS.maxSchemaCalls));
   const maxResultChars = Math.max(1000, num(lim.maxResultChars, DEFAULTS.maxResultChars));
-  const maxTotalToolChars = Math.max(
-    2000,
-    num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars),
-  );
+  const maxTotalToolChars = Math.max(2000, num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars));
   const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+  const maxTurnTokens = Math.max(1000, num(lim.maxTurnTokens, DEFAULTS.maxTurnTokens));
+  const maxReportTurnTokens = Math.max(
+    maxTurnTokens,
+    num(lim.maxReportTurnTokens, DEFAULTS.maxReportTurnTokens),
+  );
+  const maxDailyTokens = Math.max(0, num(lim.maxDailyTokens, DEFAULTS.maxDailyTokens));
+  const maxModelCalls = Math.max(1, num(lim.maxModelCalls, DEFAULTS.maxModelCalls));
+  const maxReportModelCalls = Math.max(
+    maxModelCalls,
+    num(lim.maxReportModelCalls, DEFAULTS.maxReportModelCalls),
+  );
+  const enableSuggestions = lim.enableSuggestions !== false;
+  const enableClarify = lim.enableClarify !== false;
+  const strictNumberCheck = lim.strictNumberCheck === true;
+  const tokenPrices = normalizePrices(lim.tokenPrices);
   const requireSqlApproval = lim.requireSqlApproval === true;
 
   const key = hashKey(
@@ -476,6 +537,14 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
       maxResultChars,
       maxTotalToolChars,
       maxOutputTokens,
+      maxTurnTokens,
+      maxReportTurnTokens,
+      maxDailyTokens,
+      maxModelCalls,
+      maxReportModelCalls,
+      enableSuggestions,
+      enableClarify,
+      strictNumberCheck,
       requireSqlApproval,
     }),
   );
@@ -493,6 +562,15 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     maxResultChars,
     maxTotalToolChars,
     maxOutputTokens,
+    maxTurnTokens,
+    maxReportTurnTokens,
+    maxDailyTokens,
+    maxModelCalls,
+    maxReportModelCalls,
+    enableSuggestions,
+    enableClarify,
+    strictNumberCheck,
+    tokenPrices,
     requireSqlApproval,
     key,
   };

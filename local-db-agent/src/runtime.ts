@@ -11,6 +11,7 @@ import {
 } from 'langchain';
 import type { ContextEdit } from 'langchain';
 import type { LlmRuntime, ResolvedConfig } from './config.js';
+import { costGuardMiddleware } from './cost-guard.js';
 import { getKnowledgePack } from './knowledge.js';
 import { getSkillPack } from './skills.js';
 import { CHART_RECIPE_PROMPT } from './visual-spec.js';
@@ -33,6 +34,8 @@ const BASE_SYSTEM_PROMPT = `你是一个通用数据库查询与可视化分析�
 6. 不要编造数据，一切结论必须基于工具返回的真实结果；结果为空时明确说明。
 7. 工具返回 complete=false / truncated=true 时，不能当作完整数据；应改用聚合或补充查询，并在报告中说明数据缺口。
 8. 问题含糊时先提出澄清；工具返回权限/语法错误时用一句人话说明，不要反复重试。
+9. 如某条结论直接来自本轮某次 run_sql 结果，可在句末用 [n] 标注来源，n 为本轮 run_sql 调用顺序（从 1 开始，最多 9）；没有对应查询时不要编号。
+10. 用户上传图片时，先识别图片中的表格/截图/报错信息，再结合数据库回答；识别不清时直接说明，不要猜测图片内容。
 
 报告规则：
 - 用户提到"报告 / 日报 / 周报 / 月报 / 年报 / 汇报 / 大屏 / 完整分析 / 分析报告"等，使用 render_html_report；轻量卡片场景用 render_report；单图用 render_chart。
@@ -42,11 +45,16 @@ const BASE_SYSTEM_PROMPT = `你是一个通用数据库查询与可视化分析�
   · ok：必须有数据来源；
   · missing：字段/数据确实缺失，写清原因；
   · needs_review：口径待确认，不输出数值，只写说明。
-- 结构参考：section 4~8 个；数据型元素至少 2 个、叙事型至少 2 个；第一个 section 放 2~4 个 KPI + 1 张主图/热力表。
-- CSS 建议 8~20KB（最多 60KB）；章节编号 .section-no 只放 1~2 位数字；禁止 position:fixed 或用 absolute 覆盖标题/数字/表格。
+- 结构由内容决定，不要每份都套固定章节顺序；完整报告的数据型元素至少 2 个、叙事型至少 2 个，轻量分析不要硬凑。
+- CSS 建议 3~8KB（最多 40KB）；章节编号 .section-no 只放 1~2 位数字；禁止 position:fixed 或用 absolute 覆盖标题/数字/表格。
 - 明细表最多 10 行；正文只回一句"报告已生成"。
 - HTML / CSS / ECharts 源码只能放在工具参数里，严禁输出到聊天正文或让用户自己保存运行。
-- 结果只有一行汇总值且用户只问一个数时，可以直接用简短文字回答。`;
+- 结果只有一行汇总值且用户只问一个数时，可以直接用简短文字回答。
+
+可视化自由组合：
+- render_report 只是组件画布：按数据选择 kpi / chart / table / insights / risk / notice 等组件，可重复、可省略、可调整顺序。
+- 需要并排时用 row + columns(span) 做分栏；不要每份都排成单列长报表，也不要把所有组件都堆上去。
+- 轻量分析优先 1~3 个最有效的组件，布局随数据决定；连续对话中主动换一种组织方式。`;
 
 /** 金仓（PostgreSQL 兼容模式）方言与安全提示。 */
 const KINGBASE_PROMPT = `【当前数据库：KingbaseES（PostgreSQL 兼容模式，只读）】
@@ -61,6 +69,11 @@ const NO_KNOWLEDGE_PROMPT = `【当前没有业务知识包】
 - 业务口径不明确时向用户澄清，或把指标标为 needs_review / missing；
 - 不要猜业务规则、不要编造指标口径。`;
 
+const CLARIFY_PROMPT = `【澄清规则】
+- 用户问题缺少关键条件（时间范围、仓库/组织、指标口径、统计维度等）且无法从上下文推断时，先调用 ask_clarification 让用户补充；
+- 一次最多问 5 个字段，只问真正影响结果的条件；能从上下文推断的不要问；
+- 用户补充后再继续查询或出报告。`;
+
 const SKILL_RULES_PROMPT = `【技能使用规则】
 - 用户任务与技能目录中的描述匹配时，先 read_skill(name) 读取完整步骤，再按步骤执行。
 - 不要凭技能标题猜流程；技能里的 SQL/表名只是示例，执行前确认当前库的表和字段。
@@ -72,15 +85,21 @@ const REPORT_PLAN_PROMPT = `【报告轮执行计划】
 - 数据不足时用 coverage 标 missing/needs_review，不要为了补全反复探索；
 - 最后必须调用 render_html_report；禁止只输出“现在生成报告”这类文字。`;
 
+const REPORT_SKILL_HINT =
+  '- 命中报告类或业务类技能时，先 read_skill(name)，章节结构、指标和查询顺序以技能为准；下面的默认计划仅作兜底；';
+
 export function buildSystemPrompt(cfg: ResolvedConfig, reportMode = false): string {
   const parts = [BASE_SYSTEM_PROMPT];
+  if (cfg.enableClarify) parts.push(CLARIFY_PROMPT);
   if (cfg.db.type === 'kingbase') parts.push(KINGBASE_PROMPT);
   const knowledge = getKnowledgePack();
   if (knowledge) {
     parts.push(knowledge.indexText);
     const rules: string[] = [];
     if (knowledge.docs.length || knowledge.reports.length) {
-      rules.push('需要业务口径、表说明、数据质量说明时，用 search_knowledge / read_knowledge，不要凭空猜测。');
+      rules.push(
+        '需要业务口径、表说明、数据质量说明时，用 search_knowledge / read_knowledge，不要凭空猜测。',
+      );
     }
     if (knowledge.queries.length) {
       rules.push('常用指标优先用 run_saved_query；需要改口径时再用 run_sql。');
@@ -90,11 +109,21 @@ export function buildSystemPrompt(cfg: ResolvedConfig, reportMode = false): stri
     parts.push(NO_KNOWLEDGE_PROMPT);
   }
   const skills = getSkillPack();
-  if (!reportMode && skills && skills.skills.length) {
+  const hasSkills = Boolean(skills && skills.skills.length);
+  if (hasSkills && skills) {
     parts.push(skills.catalogText);
     parts.push(SKILL_RULES_PROMPT);
   }
-  if (reportMode) parts.push(REPORT_PLAN_PROMPT);
+  if (reportMode) {
+    parts.push(
+      hasSkills
+        ? REPORT_PLAN_PROMPT.replace(
+            '【报告轮执行计划】',
+            `【报告轮执行计划】\n${REPORT_SKILL_HINT}`,
+          )
+        : REPORT_PLAN_PROMPT,
+    );
+  }
   parts.push(CHART_RECIPE_PROMPT);
   return parts.join('\n\n');
 }
@@ -129,15 +158,14 @@ function compactSchemaContent(content: string): string | null {
   for (const entry of rawSchemas) {
     const columns = Array.isArray(entry.columns) ? entry.columns : [];
     const compact = columns
-      .map(column => String(column).split(' — ')[0].trim())
+      .map((column) => String(column).split(' — ')[0].trim())
       .filter(Boolean)
       .join(', ');
     if (compact) lines.push(`${String(entry.table || '?')}: ${compact}`);
   }
   if (!lines.length) return null;
   return (
-    '[已压缩表结构；需要注释/完整字段请重新 get_table_schema(detail=full)]\n' +
-    lines.join('\n')
+    '[已压缩表结构；需要注释/完整字段请重新 get_table_schema(detail=full)]\n' + lines.join('\n')
   );
 }
 
@@ -199,8 +227,8 @@ export const compactMetadataEdit: ContextEdit = {
       toolMessages.push({ index, name: message.name || '', message });
     });
     const sqlIndices = toolMessages
-      .filter(item => item.name === 'run_sql' || item.name === 'run_saved_query')
-      .map(item => item.index);
+      .filter((item) => item.name === 'run_sql' || item.name === 'run_saved_query')
+      .map((item) => item.index);
     if (sqlIndices.length < 2) return;
     const cutoff = sqlIndices[sqlIndices.length - 2];
 
@@ -241,11 +269,14 @@ function buildRuntime(cfg: ResolvedConfig, reportMode: boolean): RuntimeEntry {
   const tools = createTools(cfg.db, {
     batchQueries: !cfg.requireSqlApproval,
     reportMode,
+    clarify: cfg.enableClarify,
   });
 
   // 上下文优化（LangChain 内置）：
   // 1) 先清理较早的工具结果（不花模型调用），2) 仍超阈值时再压缩成摘要。
   const middleware: any[] = [
+    // 成本兜底：每次模型调用前检查本轮预算，调用后记录真实 token/缓存用量。
+    costGuardMiddleware(cfg.tokenPrices),
     contextEditingMiddleware({
       edits: [
         compactMetadataEdit,

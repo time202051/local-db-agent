@@ -27,6 +27,20 @@ export function logLine(line: string): void {
   });
 }
 
+/** 回答反馈单独落 JSONL，便于后续做采纳率/差评原因分析。 */
+export function logFeedback(payload: unknown): Promise<void> {
+  const text = JSON.stringify(payload) + '\n';
+  queue = queue.then(async () => {
+    try {
+      await mkdir(dir, { recursive: true });
+      await appendFile(join(dir, 'feedback.jsonl'), text, 'utf8');
+    } catch {
+      /* 反馈落盘失败不影响主流程 */
+    }
+  });
+  return queue;
+}
+
 export async function flushLog(): Promise<void> {
   await queue;
 }

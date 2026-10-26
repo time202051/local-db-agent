@@ -1,27 +1,13 @@
-2026-10-23T09:31:52.040Z knowledge pack: none (manifest.json 不存在)
-2026-10-23T09:31:52.042Z report variant template=weekly; candidates=dashboard/comparison/narrative; picked=comparison(横向对比); elements=hero-kpi,small-multiples,heat-table,finding-list,so-what style=深色驾驶舱 elements=hero-kpi,small-multiples,heat-table,finding-list,so-what
-2026-10-23T09:31:53.305Z column index tables=174/174 truncated=false columns=5034
-2026-10-23T09:31:53.331Z table retrieval candidates=2
-2026-10-23T09:31:53.332Z turn start model=deepseek-chat
-2026-10-23T09:31:54.813Z tool list_tables ok keyword=- tables=174/174 chars=6508
-2026-10-23T09:31:54.832Z tool get_table_schema ok tables=2 ok=2 chars=4978
-2026-10-23T09:31:56.445Z tool get_table_schema ok tables=5 ok=5 chars=9892
-2026-10-23T09:31:57.436Z tool run_sql ok queries=4 rows=4 chars=945 elapsed=1031ms
-2026-10-23T09:31:59.717Z tool run_sql ok queries=8 rows=40 chars=2845 elapsed=197ms
-2026-10-23T09:32:05.545Z tool run_sql ok queries=10 rows=57 chars=3473 elapsed=146ms
-2026-10-23T09:32:11.741Z tool run_sql ok queries=10 rows=23 chars=2778 elapsed=1451ms
-2026-10-23T09:32:16.607Z tool run_sql ok queries=7 rows=31 chars=2605 elapsed=382ms
-2026-10-23T09:32:56.857Z tool render_html_report ok chars=13735 css=9161 warnings=12 elements=report-cover,hero-kpi,so-what,heat-table,finding-list,action-list data=2(hero-kpi,heat-table) narrative=4(report-cover,so-what,finding-list,action-list) sections=6 tables=2 charts=line,bar 库内数据仅覆盖 2026-09-05 ~ 2026-09-22，上一周（08-29~09-04）无任何记录，无法做周环比，本报告改为链路环节横向对比 | 本周 09-11 仅 4 单，属数据截断日，趋势图已标注 | WMS_StockOuts.IsFinish 本周全部为 false（731/731），完成率口径不可用，改用 SAP 过账率与拣货/复核完成率替代 | BpmApprovalResult 字段 693 条为空字符串、37 条为 NULL，审批通过率不可计算 | 拣货任务 2999 条无 ActualPickUserName、2687 条无 PickTime，人员绩效与时效统计存在缺口 | WMS_StockIns 表为空，入库侧本周无数据 | 出库单完成率（IsFinish）：无法计算（本周 731 单 IsFinish 全为 false，字段未回写，口径不可用） | BPM
-2026-10-23T09:32:56.861Z turn end queries=39/∞ schema=8/∞ chars=34024/120000 elapsed=63.5s calls=7 input=84421 output=17067 maxInput=17439 stop=visual
-2026-10-23T17:08:15.441Z knowledge pack: none (manifest.json 不存在)
-2026-10-23T17:08:15.452Z report variant template=weekly; candidates=dashboard/comparison/narrative; picked=narrative(叙事分析); elements=hero-kpi,comparison-matrix,risk-matrix,so-what,report-appendix style=深色驾驶舱 elements=hero-kpi,comparison-matrix,risk-matrix,so-what,report-appendix
-2026-10-23T17:08:15.671Z table retrieval candidates=2
-2026-10-23T17:08:15.675Z turn start model=deepseek-chat
-2026-10-23T17:08:18.775Z table profile ok table=public."WMS_PickTasks" rows=8679 columns=6 top=0 elapsed=1828ms
-2026-10-23T17:08:18.775Z tool get_table_schema profile table=public."WMS_PickTasks" rows=8679 cols=6 chars=676
-2026-10-23T17:08:19.082Z table profile ok table=public."WMS_StockOutDetails" rows=9246 columns=6 top=0 elapsed=2112ms
-2026-10-23T17:08:19.082Z tool get_table_schema profile table=public."WMS_StockOutDetails" rows=9246 cols=6 chars=700
-2026-10-23T17:08:21.541Z tool run_sql ok queries=4 rows=10 chars=1499 elapsed=1049ms
-2026-10-23T17:08:25.463Z tool run_sql ok queries=10 rows=43 chars=3495 elapsed=202ms
-2026-10-23T17:08:57.777Z tool render_html_report ok chars=11143 css=8963 warnings=9 elements=report-cover,hero-kpi,so-what,heat-table,finding-list,comparison-matrix,risk-matrix,action-list,report-appendix data=4(hero-kpi,heat-table,comparison-matrix,risk-matrix) narrative=5(report-cover,so-what,finding-list,action-list,report-appendix) sections=6 tables=1 charts=line,pie 库内数据最新仅到 2026-09-21，当前系统日期 2026-10-23，本周（10-19~10-25）无任何业务数据，故以数据最新完整周 09-05~09-11 作为本周口径 | 09-11 起拣货任务与出库明细量骤降至个位数，疑似数据采集/同步中断，环比对比不具备业务含义 | 拣货任务 1376 条（15.9%）缺少 PickTaskNo，主键类字段存在空值 | 无库存、人员工时、货主、承运商等表，人效/库存周转/履约时效类指标无法计算 | 对比周（09-12~09-18）指标：口径待确认（对比周仅 6 单任务、8 行明细，为数据中断期，环比数值不具业务含义，仅作数据质量证据） | 人效/工时/拣货员维度：无法计算（库内无人员、工时相关表） | 库存周转/库容：无法计算（库内无库存快照表） | 货主/客户维度拆分：无法计算（出库明细无货主字段） | 本周（10-19~10-25）真实
-2026-10-23T17:08:57.785Z turn end queries=16/∞ schema=0/∞ chars=6370/120000 elapsed=42.1s calls=4 input=26732 output=10870 maxInput=8637 stop=visual
+2026-10-26T02:16:57.083Z knowledge pack: none (manifest.json 不存在)
+2026-10-26T02:16:57.565Z column index tables=70/70 truncated=false columns=689
+2026-10-26T02:16:57.570Z turn start model=deepseek-v4.1-flash
+2026-10-26T02:17:04.737Z tool list_tables ok keyword=- tables=70/70 chars=1619 hint=1
+2026-10-26T02:17:04.738Z tool search_tables query=仓库 库存 出入库 作业 hits=0
+2026-10-26T02:17:10.979Z tool get_table_schema ok tables=6 ok=6 chars=2396
+2026-10-26T02:17:19.486Z tool read_skill name=wms-operations-analysis chars=1740
+2026-10-26T02:17:20.230Z tool run_sql ok queries=5 rows=23 chars=1219 elapsed=743ms
+2026-10-26T02:17:26.561Z tool run_sql ok queries=8 rows=23 chars=1871 elapsed=830ms
+2026-10-26T02:17:35.380Z tool list_tables cached-duplicate tables=70
+2026-10-26T02:17:35.796Z tool run_sql ok queries=3 rows=24 chars=1155 elapsed=416ms
+2026-10-26T02:18:34.020Z turn end queries=16/16 schema=8/12 chars=10411/120000 calls=8 tokens=69602+6478 cache=63% cost=0.0171 elapsed=96.5s calls=8 input=69602 output=6478 maxInput=12703 cache=44032 cost=0.0171 exceeded=1
+2026-10-26T02:18:36.496Z suggest usage input=464 output=38 cache=0 cost=0.0002

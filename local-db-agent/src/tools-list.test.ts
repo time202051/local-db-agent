@@ -217,11 +217,13 @@ describe('报告轮优化', () => {
         'get_table_schema',
         'run_sql',
         'render_html_report',
+        'list_skills',
+        'read_skill',
+        'read_skill_file',
       ]),
     );
     expect(names).not.toContain('render_report');
     expect(names).not.toContain('render_chart');
-    expect(names).not.toContain('read_skill');
   });
 
   it('同一批重复 SQL 只执行一次', async () => {
@@ -242,8 +244,13 @@ describe('报告轮优化', () => {
       ),
     );
     expect(vi.mocked(runQuery)).toHaveBeenCalledTimes(2);
-    const parsed = JSON.parse(output) as { results: unknown[] };
+    const parsed = JSON.parse(output) as {
+      results: Array<{ columns: string[]; rows: unknown[][] }>;
+    };
     expect(parsed.results).toHaveLength(2);
+    // rows 与 columns 顺序对齐，不再逐行重复列名
+    expect(parsed.results[0].columns).toEqual(['v']);
+    expect(parsed.results[0].rows).toEqual([[1]]);
   });
 
   it('报告轮 12 条 SQL 后只软提示一次', () => {

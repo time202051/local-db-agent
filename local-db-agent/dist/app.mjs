@@ -4258,10 +4258,10 @@ var require_content_type = __commonJS({
         this.#subtype = subtype;
         this.#valid = true;
         this.#empty = false;
-        let matches = keyValuePairsReg.exec(paramsList);
-        while (matches) {
-          const key = matches[1].toLowerCase();
-          let value = matches[2];
+        let matches2 = keyValuePairsReg.exec(paramsList);
+        while (matches2) {
+          const key = matches2[1].toLowerCase();
+          let value = matches2[2];
           if (value.charCodeAt(0) === 34) {
             value = value.slice(1, -1);
             if (value.indexOf("\\") !== -1) {
@@ -4269,7 +4269,7 @@ var require_content_type = __commonJS({
             }
           }
           this.#parameters.set(key, value);
-          matches = keyValuePairsReg.exec(paramsList);
+          matches2 = keyValuePairsReg.exec(paramsList);
         }
       }
       get [Symbol.toStringTag]() {
@@ -13534,11 +13534,11 @@ var require_request = __commonJS({
       port: {
         get() {
           const portReg = /(?<port>:\d+)$/;
-          const matches = portReg.exec(this.host);
-          if (matches === null || matches[1] === void 0) {
+          const matches2 = portReg.exec(this.host);
+          if (matches2 === null || matches2[1] === void 0) {
             return null;
           }
-          return parseInt(matches.groups.port.slice(1), 10);
+          return parseInt(matches2.groups.port.slice(1), 10);
         }
       },
       protocol: {
@@ -16949,11 +16949,11 @@ var require_validate = __commonJS({
         jsonPointer = $data;
         data = names_1.default.rootData;
       } else {
-        const matches = RELATIVE_JSON_POINTER2.exec($data);
-        if (!matches)
+        const matches2 = RELATIVE_JSON_POINTER2.exec($data);
+        if (!matches2)
           throw new Error(`Invalid JSON-pointer: ${$data}`);
-        const up = +matches[1];
-        jsonPointer = matches[2];
+        const up = +matches2[1];
+        jsonPointer = matches2[2];
         if (jsonPointer === "#") {
           if (up >= dataLevel)
             throw new Error(errorMsg("property/index", up));
@@ -17840,11 +17840,11 @@ var require_schemes = __commonJS({
         urnComponent.error = "URN can not be parsed";
         return urnComponent;
       }
-      const matches = urnComponent.path.match(URN_REG);
-      if (matches && matches[0] === urnComponent.path) {
+      const matches2 = urnComponent.path.match(URN_REG);
+      if (matches2 && matches2[0] === urnComponent.path) {
         const scheme = options.scheme || urnComponent.scheme || "urn";
-        urnComponent.nid = matches[1].toLowerCase();
-        urnComponent.nss = matches[2];
+        urnComponent.nid = matches2[1].toLowerCase();
+        urnComponent.nss = matches2[2];
         const urnScheme = `${scheme}:${options.nid || urnComponent.nid}`;
         const schemeHandler = getSchemeHandler(urnScheme);
         urnComponent.path = void 0;
@@ -18158,8 +18158,8 @@ var require_fast_uri = __commonJS({
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
     var AUTHORITY_PREFIX = /^(?:[^#/:?]+:)?\/\/([^/?#]*)/;
     var AUTHORITY_INTRODUCER_REGION = /^(?:[^#/:?]+:)?([/\\\t\n\r]*)/;
-    function getParseError(parsed, matches) {
-      if (matches[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
+    function getParseError(parsed, matches2) {
+      if (matches2[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
         return 'URI path must start with "/" when authority is present.';
       }
       if (typeof parsed.port === "number" && (parsed.port < 0 || parsed.port > 65535)) {
@@ -18181,9 +18181,9 @@ var require_fast_uri = __commonJS({
     function isIPLiteral(host) {
       return host[0] === "[" && host[host.length - 1] === "]";
     }
-    function hasMalformedComponentPercentEncoding(matches) {
-      const host = matches[4];
-      return hasMalformedPercentEncoding(matches[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches[6]) || hasMalformedPercentEncoding(matches[7]) || hasMalformedPercentEncoding(matches[8]);
+    function hasMalformedComponentPercentEncoding(matches2) {
+      const host = matches2[4];
+      return hasMalformedPercentEncoding(matches2[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches2[6]) || hasMalformedPercentEncoding(matches2[7]) || hasMalformedPercentEncoding(matches2[8]);
     }
     function canonicalizeHost(parsed, options, schemeHandler, isIP2) {
       if (!options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport) && parsed.host && !isIPLiteral(parsed.host) && (options.domainHost || schemeHandler && schemeHandler.domainHost) && isIP2 === false && nonSimpleDomain(parsed.host)) {
@@ -18240,15 +18240,15 @@ var require_fast_uri = __commonJS({
           }
         }
       }
-      const matches = uri2.match(URI_PARSE);
-      if (matches) {
-        parsed.scheme = matches[1];
-        parsed.userinfo = matches[3];
-        parsed.host = matches[4];
-        parsed.port = parseInt(matches[5], 10);
-        parsed.path = matches[6] || "";
-        parsed.query = matches[7];
-        parsed.fragment = matches[8];
+      const matches2 = uri2.match(URI_PARSE);
+      if (matches2) {
+        parsed.scheme = matches2[1];
+        parsed.userinfo = matches2[3];
+        parsed.host = matches2[4];
+        parsed.port = parseInt(matches2[5], 10);
+        parsed.path = matches2[6] || "";
+        parsed.query = matches2[7];
+        parsed.fragment = matches2[8];
         if (parsed.scheme !== void 0) {
           const decodedScheme = unescape(parsed.scheme);
           if (VALID_SCHEME.test(decodedScheme)) {
@@ -18258,14 +18258,14 @@ var require_fast_uri = __commonJS({
             malformedScheme = true;
           }
         }
-        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches);
+        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches2);
         if (malformedPercentEncoding) {
           parsed.error = parsed.error || "URI contains malformed percent-encoding.";
         }
         if (isNaN(parsed.port)) {
-          parsed.port = matches[5];
+          parsed.port = matches2[5];
         }
-        const parseError = getParseError(parsed, matches);
+        const parseError = getParseError(parsed, matches2);
         if (parseError !== void 0) {
           parsed.error = parsed.error || parseError;
           malformedAuthorityOrPort = true;
@@ -21153,24 +21153,24 @@ var require_timestamp = __commonJS({
     }
     exports.default = validTimestamp;
     function validDate(str2) {
-      const matches = DATE2.exec(str2);
-      if (!matches)
+      const matches2 = DATE2.exec(str2);
+      if (!matches2)
         return false;
-      const y = +matches[1];
-      const m = +matches[2];
-      const d = +matches[3];
+      const y = +matches2[1];
+      const m = +matches2[2];
+      const d = +matches2[3];
       return m >= 1 && m <= 12 && d >= 1 && (d <= DAYS2[m] || // leap year: https://tools.ietf.org/html/rfc3339#appendix-C
       m === 2 && d === 29 && (y % 100 === 0 ? y % 400 === 0 : y % 4 === 0));
     }
     function validTime(str2) {
-      const matches = TIME2.exec(str2);
-      if (!matches)
+      const matches2 = TIME2.exec(str2);
+      if (!matches2)
         return false;
-      const hr = +matches[1];
-      const min = +matches[2];
-      const sec = +matches[3];
-      const tzH = +(matches[4] || 0);
-      const tzM = +(matches[5] || 0);
+      const hr = +matches2[1];
+      const min = +matches2[2];
+      const sec = +matches2[3];
+      const tzH = +(matches2[4] || 0);
+      const tzM = +(matches2[5] || 0);
       return hr <= 23 && min <= 59 && sec <= 59 || // leap second
       hr - tzH === 23 && min - tzM === 59 && sec === 60;
     }
@@ -22124,19 +22124,19 @@ var require_parseJson = __commonJS({
     function parseJson(s, pos) {
       let endPos;
       parseJson.message = void 0;
-      let matches;
+      let matches2;
       if (pos)
         s = s.slice(pos);
       try {
         parseJson.position = pos + s.length;
         return JSON.parse(s);
       } catch (e) {
-        matches = rxParseJson.exec(e.message);
-        if (!matches) {
+        matches2 = rxParseJson.exec(e.message);
+        if (!matches2) {
           parseJson.message = "unexpected end";
           return void 0;
         }
-        endPos = +matches[1];
+        endPos = +matches2[1];
         const c = s[endPos];
         s = s.slice(0, endPos);
         parseJson.position = pos + endPos;
@@ -23362,11 +23362,11 @@ var require_schemes2 = __commonJS({
         urnComponent.error = "URN can not be parsed";
         return urnComponent;
       }
-      const matches = urnComponent.path.match(URN_REG);
-      if (matches && matches[0] === urnComponent.path) {
+      const matches2 = urnComponent.path.match(URN_REG);
+      if (matches2 && matches2[0] === urnComponent.path) {
         const scheme = options.scheme || urnComponent.scheme || "urn";
-        urnComponent.nid = matches[1].toLowerCase();
-        urnComponent.nss = matches[2];
+        urnComponent.nid = matches2[1].toLowerCase();
+        urnComponent.nss = matches2[2];
         const urnScheme = `${scheme}:${options.nid || urnComponent.nid}`;
         const schemeHandler = getSchemeHandler(urnScheme);
         urnComponent.path = void 0;
@@ -23951,8 +23951,8 @@ var require_fast_uri2 = __commonJS({
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
     var AUTHORITY_PREFIX = /^(?:[^#/:?]+:)?\/\/([^/?#]*)/;
     var AUTHORITY_INTRODUCER_REGION = /^(?:[^#/:?]+:)?([/\\\t\n\r]*)/;
-    function getParseError(parsed, matches) {
-      if (matches[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
+    function getParseError(parsed, matches2) {
+      if (matches2[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
         return 'URI path must start with "/" when authority is present.';
       }
       if (typeof parsed.port === "number" && (parsed.port < 0 || parsed.port > 65535)) {
@@ -23974,9 +23974,9 @@ var require_fast_uri2 = __commonJS({
     function isIPLiteral(host) {
       return host[0] === "[" && host[host.length - 1] === "]";
     }
-    function hasMalformedComponentPercentEncoding(matches) {
-      const host = matches[4];
-      return hasMalformedPercentEncoding(matches[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches[6]) || hasMalformedPercentEncoding(matches[7]) || hasMalformedPercentEncoding(matches[8]);
+    function hasMalformedComponentPercentEncoding(matches2) {
+      const host = matches2[4];
+      return hasMalformedPercentEncoding(matches2[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches2[6]) || hasMalformedPercentEncoding(matches2[7]) || hasMalformedPercentEncoding(matches2[8]);
     }
     function canonicalizeHost(parsed, options, schemeHandler, isIP2) {
       const bracketedIPLiteral = parsed.host && parsed.host[0] === "[" && parsed.host[parsed.host.length - 1] === "]";
@@ -24038,15 +24038,15 @@ var require_fast_uri2 = __commonJS({
       if (malformedReferenceEdge) {
         parsed.error = parsed.error || "URI must not contain leading or trailing C0 controls or spaces.";
       }
-      const matches = uri2.match(URI_PARSE);
-      if (matches) {
-        parsed.scheme = matches[1];
-        parsed.userinfo = matches[3];
-        parsed.host = matches[4];
-        parsed.port = parseInt(matches[5], 10);
-        parsed.path = matches[6] || "";
-        parsed.query = matches[7];
-        parsed.fragment = matches[8];
+      const matches2 = uri2.match(URI_PARSE);
+      if (matches2) {
+        parsed.scheme = matches2[1];
+        parsed.userinfo = matches2[3];
+        parsed.host = matches2[4];
+        parsed.port = parseInt(matches2[5], 10);
+        parsed.path = matches2[6] || "";
+        parsed.query = matches2[7];
+        parsed.fragment = matches2[8];
         if (parsed.scheme !== void 0) {
           const decodedScheme = unescape(parsed.scheme);
           if (VALID_SCHEME.test(decodedScheme)) {
@@ -24056,14 +24056,14 @@ var require_fast_uri2 = __commonJS({
             malformedScheme = true;
           }
         }
-        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches);
+        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches2);
         if (malformedPercentEncoding) {
           parsed.error = parsed.error || "URI contains malformed percent-encoding.";
         }
         if (isNaN(parsed.port)) {
-          parsed.port = matches[5];
+          parsed.port = matches2[5];
         }
-        const parseError = getParseError(parsed, matches);
+        const parseError = getParseError(parsed, matches2);
         if (parseError !== void 0) {
           parsed.error = parsed.error || parseError;
           malformedAuthorityOrPort = true;
@@ -24281,12 +24281,12 @@ var require_formats = __commonJS({
     var DATE2 = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
     var DAYS2 = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     function date6(str2) {
-      const matches = DATE2.exec(str2);
-      if (!matches)
+      const matches2 = DATE2.exec(str2);
+      if (!matches2)
         return false;
-      const year = +matches[1];
-      const month = +matches[2];
-      const day = +matches[3];
+      const year = +matches2[1];
+      const month = +matches2[2];
+      const day = +matches2[3];
       return month >= 1 && month <= 12 && day >= 1 && day <= (month === 2 && isLeapYear2(year) ? 29 : DAYS2[month]);
     }
     function compareDate(d1, d2) {
@@ -24301,16 +24301,16 @@ var require_formats = __commonJS({
     var TIME2 = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
     function getTime(strictTimeZone) {
       return function time4(str2) {
-        const matches = TIME2.exec(str2);
-        if (!matches)
+        const matches2 = TIME2.exec(str2);
+        if (!matches2)
           return false;
-        const hr = +matches[1];
-        const min = +matches[2];
-        const sec = +matches[3];
-        const tz = matches[4];
-        const tzSign = matches[5] === "-" ? -1 : 1;
-        const tzH = +(matches[6] || 0);
-        const tzM = +(matches[7] || 0);
+        const hr = +matches2[1];
+        const min = +matches2[2];
+        const sec = +matches2[3];
+        const tz = matches2[4];
+        const tzSign = matches2[5] === "-" ? -1 : 1;
+        const tzH = +(matches2[6] || 0);
+        const tzM = +(matches2[7] || 0);
         if (tzH > 23 || tzM > 59 || strictTimeZone && !tz)
           return false;
         if (hr <= 23 && min <= 59 && sec < 60)
@@ -63374,16 +63374,16 @@ function handleUnionResults(results, final2, inst, ctx) {
   return final2;
 }
 function handleExclusiveUnionResults(results, final2, inst, ctx) {
-  const matches = [];
+  const matches2 = [];
   for (let i = 0; i < results.length; i++) {
     if (results[i].issues.length === 0)
-      matches.push(i);
+      matches2.push(i);
   }
-  if (matches.length === 1) {
-    final2.value = results[matches[0]].value;
+  if (matches2.length === 1) {
+    final2.value = results[matches2[0]].value;
     return final2;
   }
-  if (matches.length === 0) {
+  if (matches2.length === 0) {
     final2.issues.push({
       code: "invalid_union",
       input: final2.value,
@@ -63397,7 +63397,7 @@ function handleExclusiveUnionResults(results, final2, inst, ctx) {
       inst,
       errors: [],
       inclusive: false,
-      matches
+      matches: matches2
     });
   }
   return final2;
@@ -84324,22 +84324,22 @@ function isLeapYear(year) {
   return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 }
 function date2(str2) {
-  const matches = str2.match(DATE);
-  if (!matches)
+  const matches2 = str2.match(DATE);
+  if (!matches2)
     return false;
-  const year = +matches[1];
-  const month = +matches[2];
-  const day = +matches[3];
+  const year = +matches2[1];
+  const month = +matches2[2];
+  const day = +matches2[3];
   return month >= 1 && month <= 12 && day >= 1 && day <= (month == 2 && isLeapYear(year) ? 29 : DAYS[month]);
 }
 function time2(full, str2) {
-  const matches = str2.match(TIME);
-  if (!matches)
+  const matches2 = str2.match(TIME);
+  if (!matches2)
     return false;
-  const hour = +matches[1];
-  const minute = +matches[2];
-  const second = +matches[3];
-  const timeZone = !!matches[5];
+  const hour = +matches2[1];
+  const minute = +matches2[2];
+  const second = +matches2[3];
+  const timeZone = !!matches2[5];
   return (hour <= 23 && minute <= 59 && second <= 59 || hour == 23 && minute == 59 && second == 60) && (!full || timeZone);
 }
 function date_time(str2) {
@@ -84670,7 +84670,7 @@ Known schemas:
   if ($oneOf !== void 0) {
     const keywordLocation = `${schemaLocation}/oneOf`;
     const errorsLength = errors.length;
-    const matches = $oneOf.filter((subSchema, i) => {
+    const matches2 = $oneOf.filter((subSchema, i) => {
       const subEvaluated = Object.create(evaluated);
       const result = validate6(instance, subSchema, draft, lookup2, shortCircuit, $recursiveAnchor === true ? recursiveAnchor : null, instanceLocation, `${keywordLocation}/${i}`, subEvaluated);
       errors.push(...result.errors);
@@ -84679,14 +84679,14 @@ Known schemas:
       }
       return result.valid;
     }).length;
-    if (matches === 1) {
+    if (matches2 === 1) {
       errors.length = errorsLength;
     } else {
       errors.splice(errorsLength, 0, {
         instanceLocation,
         keyword: "oneOf",
         keywordLocation,
-        error: `Instance does not match exactly one subschema (${matches} matches).`
+        error: `Instance does not match exactly one subschema (${matches2} matches).`
       });
     }
   }
@@ -90174,10 +90174,10 @@ var init_list = __esm({
               buffer = parts[parts.length - 1];
             }
           } else {
-            const matches = [...buffer.matchAll(this.re)];
-            if (matches.length > 1) {
+            const matches2 = [...buffer.matchAll(this.re)];
+            if (matches2.length > 1) {
               let doneIdx = 0;
-              for (const match of matches.slice(0, -1)) {
+              for (const match of matches2.slice(0, -1)) {
                 yield [match[1]];
                 doneIdx += (match.index ?? 0) + match[0].length;
               }
@@ -99585,20 +99585,20 @@ function checkArrayGuards(arraySchema, guards) {
     if (guards.containsSchema) {
       const minContains = guards.minContains ?? 1;
       const ceiling = guards.maxContains !== void 0 ? guards.maxContains + 1 : Number.POSITIVE_INFINITY;
-      let matches = 0;
+      let matches2 = 0;
       for (const item of items) {
-        if (guards.containsSchema.safeParse(item).success && ++matches >= ceiling)
+        if (guards.containsSchema.safeParse(item).success && ++matches2 >= ceiling)
           break;
       }
-      if (matches < minContains) {
+      if (matches2 < minContains) {
         payload.issues.push({
           code: "custom",
-          message: `Array must contain at least ${minContains} matching ${plural(minContains)}; found ${matches}`,
+          message: `Array must contain at least ${minContains} matching ${plural(minContains)}; found ${matches2}`,
           input: items,
           continue: true
         });
       }
-      if (guards.maxContains !== void 0 && matches > guards.maxContains) {
+      if (guards.maxContains !== void 0 && matches2 > guards.maxContains) {
         payload.issues.push({
           code: "custom",
           message: `Array must contain at most ${guards.maxContains} matching ${plural(guards.maxContains)}`,
@@ -114639,21 +114639,21 @@ var require_postgres_date = __commonJS({
       if (INFINITY2.test(isoDate)) {
         return Number(isoDate.replace("i", "I"));
       }
-      var matches = DATE_TIME.exec(isoDate);
-      if (!matches) {
+      var matches2 = DATE_TIME.exec(isoDate);
+      if (!matches2) {
         return getDate(isoDate) || null;
       }
-      var isBC = !!matches[8];
-      var year = parseInt(matches[1], 10);
+      var isBC = !!matches2[8];
+      var year = parseInt(matches2[1], 10);
       if (isBC) {
         year = bcYearToNegativeYear(year);
       }
-      var month = parseInt(matches[2], 10) - 1;
-      var day = matches[3];
-      var hour = parseInt(matches[4], 10);
-      var minute = parseInt(matches[5], 10);
-      var second = parseInt(matches[6], 10);
-      var ms = matches[7];
+      var month = parseInt(matches2[2], 10) - 1;
+      var day = matches2[3];
+      var hour = parseInt(matches2[4], 10);
+      var minute = parseInt(matches2[5], 10);
+      var second = parseInt(matches2[6], 10);
+      var ms = matches2[7];
       ms = ms ? 1e3 * parseFloat(ms) : 0;
       var date6;
       var offset = timeZoneOffset(isoDate);
@@ -114674,17 +114674,17 @@ var require_postgres_date = __commonJS({
       return date6;
     };
     function getDate(isoDate) {
-      var matches = DATE2.exec(isoDate);
-      if (!matches) {
+      var matches2 = DATE2.exec(isoDate);
+      if (!matches2) {
         return;
       }
-      var year = parseInt(matches[1], 10);
-      var isBC = !!matches[4];
+      var year = parseInt(matches2[1], 10);
+      var isBC = !!matches2[4];
       if (isBC) {
         year = bcYearToNegativeYear(year);
       }
-      var month = parseInt(matches[2], 10) - 1;
-      var day = matches[3];
+      var month = parseInt(matches2[2], 10) - 1;
+      var day = matches2[3];
       var date6 = new Date(year, month, day);
       if (is0To99(year)) {
         date6.setFullYear(year);
@@ -114806,11 +114806,11 @@ var require_postgres_interval = __commonJS({
     }
     function parse8(interval) {
       if (!interval) return {};
-      var matches = INTERVAL.exec(interval);
-      var isNegative = matches[8] === "-";
+      var matches2 = INTERVAL.exec(interval);
+      var isNegative = matches2[8] === "-";
       return Object.keys(positions).reduce(function(parsed, property) {
         var position = positions[property];
-        var value = matches[position];
+        var value = matches2[position];
         if (!value) return parsed;
         value = property === "milliseconds" ? parseMilliseconds(value) : parseInt(value, 10);
         if (!value) return parsed;
@@ -129535,8 +129535,8 @@ function summarizationMiddleware(options) {
       const trimTokensToSummarize = runtime.context?.trimTokensToSummarize !== void 0 ? runtime.context.trimTokensToSummarize : userOptions.trimTokensToSummarize ?? DEFAULT_TRIM_TOKEN_LIMIT;
       ensureMessageIds(state2.messages);
       const tokenCounter = runtime.context?.tokenCounter !== void 0 ? runtime.context.tokenCounter : userOptions.tokenCounter ?? countTokensApproximately;
-      const totalTokens = await tokenCounter(state2.messages);
-      if (!await shouldSummarize(state2.messages, totalTokens, triggerConditions, model)) return;
+      const totalTokens2 = await tokenCounter(state2.messages);
+      if (!await shouldSummarize(state2.messages, totalTokens2, triggerConditions, model)) return;
       const { systemPrompt, conversationMessages } = splitSystemMessage(state2.messages);
       const cutoffIndex = await determineCutoffIndex(conversationMessages, validatedKeep, tokenCounter, model);
       if (cutoffIndex <= 0) return;
@@ -129576,7 +129576,7 @@ function partitionMessages(systemPrompt, conversationMessages, cutoffIndex) {
     preservedMessages
   };
 }
-async function shouldSummarize(messages, totalTokens, triggerConditions, model) {
+async function shouldSummarize(messages, totalTokens2, triggerConditions, model) {
   if (triggerConditions.length === 0) return false;
   for (const trigger of triggerConditions) {
     let conditionMet = true;
@@ -129587,13 +129587,13 @@ async function shouldSummarize(messages, totalTokens, triggerConditions, model) 
     }
     if (trigger.tokens !== void 0) {
       hasAnyProperty = true;
-      if (totalTokens < trigger.tokens) conditionMet = false;
+      if (totalTokens2 < trigger.tokens) conditionMet = false;
     }
     if (trigger.fraction !== void 0) {
       hasAnyProperty = true;
       const maxInputTokens = getProfileLimits(model);
       if (typeof maxInputTokens === "number") {
-        if (totalTokens < Math.floor(maxInputTokens * trigger.fraction)) conditionMet = false;
+        if (totalTokens2 < Math.floor(maxInputTokens * trigger.fraction)) conditionMet = false;
       } else
         conditionMet = false;
     }
@@ -129932,7 +129932,7 @@ var ClearToolUsesEdit = class {
   /**
   * Determine whether editing should run for the current token usage
   */
-  #shouldEdit(messages, totalTokens, model) {
+  #shouldEdit(messages, totalTokens2, model) {
     for (const trigger of this.#triggerConditions) {
       let conditionMet = true;
       let hasAnyProperty = false;
@@ -129942,7 +129942,7 @@ var ClearToolUsesEdit = class {
       }
       if (trigger.tokens !== void 0) {
         hasAnyProperty = true;
-        if (totalTokens < trigger.tokens) conditionMet = false;
+        if (totalTokens2 < trigger.tokens) conditionMet = false;
       }
       if (trigger.fraction !== void 0) {
         hasAnyProperty = true;
@@ -129951,7 +129951,7 @@ var ClearToolUsesEdit = class {
         if (typeof maxInputTokens === "number") {
           const threshold = Math.floor(maxInputTokens * trigger.fraction);
           if (threshold <= 0) continue;
-          if (totalTokens < threshold) conditionMet = false;
+          if (totalTokens2 < threshold) conditionMet = false;
         } else
           continue;
       }
@@ -130284,6 +130284,136 @@ import { createHash } from "node:crypto";
 import { readFileSync as readFileSync3 } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+// dist/usage.js
+var DEFAULT_TOKEN_PRICES = {
+  inputMissPerMillion: 0.27,
+  inputHitPerMillion: 0.07,
+  outputPerMillion: 1.1
+};
+function toNumber(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+function pickNumber(source, keys) {
+  if (!source || typeof source !== "object")
+    return 0;
+  const record2 = source;
+  for (const key of keys) {
+    const value = record2[key];
+    if (typeof value === "number" && Number.isFinite(value))
+      return value;
+  }
+  return 0;
+}
+function extractUsage(usageMetadata, responseMetadata) {
+  const usage = usageMetadata || {};
+  const details = usage.input_token_details || {};
+  const meta3 = responseMetadata || {};
+  const inputTokens = toNumber(usage.input_tokens);
+  const outputTokens = toNumber(usage.output_tokens);
+  let cacheReadTokens = toNumber(details.cache_read) || toNumber(details.cached_tokens);
+  let cacheCreationTokens = toNumber(details.cache_creation);
+  if (!cacheReadTokens) {
+    cacheReadTokens = toNumber(meta3.prompt_cache_hit_tokens) || pickNumber(meta3.tokenUsage, ["prompt_cache_hit_tokens", "cache_read_input_tokens"]) || pickNumber(meta3.usage, ["prompt_cache_hit_tokens", "cache_read_input_tokens"]);
+  }
+  if (!cacheCreationTokens) {
+    cacheCreationTokens = pickNumber(meta3.tokenUsage, ["cache_creation_input_tokens"]);
+  }
+  return {
+    inputTokens,
+    outputTokens,
+    cacheReadTokens: Math.min(cacheReadTokens, inputTokens || cacheReadTokens),
+    cacheCreationTokens
+  };
+}
+function estimateCost(usage, prices = DEFAULT_TOKEN_PRICES) {
+  const input2 = Math.max(0, usage.inputTokens);
+  const cacheRead = Math.min(Math.max(0, usage.cacheReadTokens), input2);
+  const miss = Math.max(0, input2 - cacheRead);
+  const output2 = Math.max(0, usage.outputTokens);
+  const cost = (miss * prices.inputMissPerMillion + cacheRead * prices.inputHitPerMillion + output2 * prices.outputPerMillion) / 1e6;
+  return Math.round(cost * 1e6) / 1e6;
+}
+function totalTokens(usage) {
+  return usage.inputTokens + usage.outputTokens;
+}
+var DAY_MS = 24 * 60 * 60 * 1e3;
+var MAX_LEDGER_ENTRIES = 500;
+function today() {
+  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+}
+var UsageLedger = class {
+  entries = /* @__PURE__ */ new Map();
+  cleanup() {
+    const now = Date.now();
+    for (const [key, entry] of this.entries) {
+      if (now - entry.updatedAt > 7 * DAY_MS)
+        this.entries.delete(key);
+    }
+    if (this.entries.size > MAX_LEDGER_ENTRIES) {
+      const sorted = [...this.entries.entries()].sort((a, b) => a[1].updatedAt - b[1].updatedAt);
+      for (const [key] of sorted.slice(0, this.entries.size - MAX_LEDGER_ENTRIES)) {
+        this.entries.delete(key);
+      }
+    }
+  }
+  entry(key) {
+    this.cleanup();
+    const day = today();
+    const existing = this.entries.get(key);
+    if (existing && existing.date === day)
+      return existing;
+    const fresh2 = {
+      date: day,
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheCreationTokens: 0,
+      cost: 0,
+      updatedAt: Date.now()
+    };
+    this.entries.set(key, fresh2);
+    return fresh2;
+  }
+  /** 检查今日额度；返回 null 表示放行，否则返回给用户看的提示。 */
+  check(key, limit3) {
+    if (!Number.isFinite(limit3) || limit3 <= 0)
+      return null;
+    const entry = this.entry(key);
+    const used = entry.inputTokens + entry.outputTokens;
+    if (used < limit3)
+      return null;
+    return `\u4ECA\u65E5\u5206\u6790\u989D\u5EA6\u5DF2\u7528\u5B8C\uFF08${used}/${limit3} tokens\uFF09\u3002\u8BF7\u660E\u5929\u518D\u8BD5\uFF0C\u6216\u8BA9\u7BA1\u7406\u5458\u5728 limits \u91CC\u8C03\u9AD8 maxDailyTokens\u3002`;
+  }
+  record(key, usage, cost) {
+    const entry = this.entry(key);
+    entry.inputTokens += usage.inputTokens;
+    entry.outputTokens += usage.outputTokens;
+    entry.cacheReadTokens += usage.cacheReadTokens;
+    entry.cacheCreationTokens += usage.cacheCreationTokens;
+    entry.cost += cost;
+    entry.updatedAt = Date.now();
+  }
+  summary(key) {
+    const entry = this.entry(key);
+    return {
+      usedTokens: entry.inputTokens + entry.outputTokens,
+      cost: Math.round(entry.cost * 1e6) / 1e6,
+      date: entry.date
+    };
+  }
+  reset() {
+    this.entries.clear();
+  }
+};
+var ledger;
+function getUsageLedger() {
+  if (!ledger)
+    ledger = new UsageLedger();
+  return ledger;
+}
+
+// dist/config.js
 var currentDir = dirname(fileURLToPath(import.meta.url));
 function loadDotEnv(path4) {
   let content;
@@ -130334,6 +130464,15 @@ var DEFAULTS = {
   maxResultChars: 8e3,
   maxTotalToolChars: 24e3,
   maxOutputTokens: 2e4,
+  // 成本兜底：默认值足够跑完一次完整报告（实测约 12 万），异常时自动收尾。
+  maxTurnTokens: 15e4,
+  maxReportTurnTokens: 2e5,
+  maxDailyTokens: 2e6,
+  maxModelCalls: 12,
+  maxReportModelCalls: 16,
+  enableSuggestions: true,
+  enableClarify: true,
+  strictNumberCheck: false,
   requireSqlApproval: false
 };
 var ConfigError = class extends Error {
@@ -130343,6 +130482,14 @@ function num(value, fallback) {
 }
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+function normalizePrices(input2) {
+  const pick2 = (value, fallback) => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : fallback;
+  return {
+    inputMissPerMillion: pick2(input2?.inputMissPerMillion, DEFAULT_TOKEN_PRICES.inputMissPerMillion),
+    inputHitPerMillion: pick2(input2?.inputHitPerMillion, DEFAULT_TOKEN_PRICES.inputHitPerMillion),
+    outputPerMillion: pick2(input2?.outputPerMillion, DEFAULT_TOKEN_PRICES.outputPerMillion)
+  };
 }
 function odbcValue(value) {
   return "{" + value.replace(/\}/g, "}}") + "}";
@@ -130494,6 +130641,15 @@ function resolveRequestConfig(raw) {
   const maxResultChars = Math.max(1e3, num(lim.maxResultChars, DEFAULTS.maxResultChars));
   const maxTotalToolChars = Math.max(2e3, num(lim.maxTotalToolChars, DEFAULTS.maxTotalToolChars));
   const maxOutputTokens = Math.max(500, num(lim.maxOutputTokens, DEFAULTS.maxOutputTokens));
+  const maxTurnTokens = Math.max(1e3, num(lim.maxTurnTokens, DEFAULTS.maxTurnTokens));
+  const maxReportTurnTokens = Math.max(maxTurnTokens, num(lim.maxReportTurnTokens, DEFAULTS.maxReportTurnTokens));
+  const maxDailyTokens = Math.max(0, num(lim.maxDailyTokens, DEFAULTS.maxDailyTokens));
+  const maxModelCalls = Math.max(1, num(lim.maxModelCalls, DEFAULTS.maxModelCalls));
+  const maxReportModelCalls = Math.max(maxModelCalls, num(lim.maxReportModelCalls, DEFAULTS.maxReportModelCalls));
+  const enableSuggestions = lim.enableSuggestions !== false;
+  const enableClarify = lim.enableClarify !== false;
+  const strictNumberCheck = lim.strictNumberCheck === true;
+  const tokenPrices = normalizePrices(lim.tokenPrices);
   const requireSqlApproval = lim.requireSqlApproval === true;
   const key = hashKey(JSON.stringify({
     db,
@@ -130506,6 +130662,14 @@ function resolveRequestConfig(raw) {
     maxResultChars,
     maxTotalToolChars,
     maxOutputTokens,
+    maxTurnTokens,
+    maxReportTurnTokens,
+    maxDailyTokens,
+    maxModelCalls,
+    maxReportModelCalls,
+    enableSuggestions,
+    enableClarify,
+    strictNumberCheck,
     requireSqlApproval
   }));
   return {
@@ -130521,6 +130685,15 @@ function resolveRequestConfig(raw) {
     maxResultChars,
     maxTotalToolChars,
     maxOutputTokens,
+    maxTurnTokens,
+    maxReportTurnTokens,
+    maxDailyTokens,
+    maxModelCalls,
+    maxReportModelCalls,
+    enableSuggestions,
+    enableClarify,
+    strictNumberCheck,
+    tokenPrices,
     requireSqlApproval,
     key
   };
@@ -159228,10 +159401,10 @@ var ChatOpenAICompletions = class extends BaseChatOpenAI {
         maxRetries: options?.maxRetries,
         ...options?.options
       });
-      const { completion_tokens: completionTokens, prompt_tokens: promptTokens, total_tokens: totalTokens, prompt_tokens_details: promptTokensDetails, completion_tokens_details: completionTokensDetails } = data?.usage ?? {};
+      const { completion_tokens: completionTokens, prompt_tokens: promptTokens, total_tokens: totalTokens2, prompt_tokens_details: promptTokensDetails, completion_tokens_details: completionTokensDetails } = data?.usage ?? {};
       if (completionTokens) usageMetadata.output_tokens = (usageMetadata.output_tokens ?? 0) + completionTokens;
       if (promptTokens) usageMetadata.input_tokens = (usageMetadata.input_tokens ?? 0) + promptTokens;
-      if (totalTokens) usageMetadata.total_tokens = (usageMetadata.total_tokens ?? 0) + totalTokens;
+      if (totalTokens2) usageMetadata.total_tokens = (usageMetadata.total_tokens ?? 0) + totalTokens2;
       if (promptTokensDetails?.audio_tokens !== null || promptTokensDetails?.cached_tokens !== null || promptTokensDetails?.cache_write_tokens != null) usageMetadata.input_token_details = {
         ...promptTokensDetails?.audio_tokens !== null && { audio: promptTokensDetails?.audio_tokens },
         ...promptTokensDetails?.cached_tokens !== null && { cache_read: promptTokensDetails?.cached_tokens },
@@ -160997,6 +161170,186 @@ init_singletons();
 // dist/runtime.js
 init_dist4();
 init_messages2();
+
+// dist/cost-guard.js
+init_messages2();
+
+// dist/budget.js
+import { AsyncLocalStorage as AsyncLocalStorage2 } from "node:async_hooks";
+var TurnBudget = class {
+  limits;
+  usage = {
+    sqlQueries: 0,
+    schemaCalls: 0,
+    totalChars: 0,
+    exceeded: [],
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheCreationTokens: 0,
+    cost: 0,
+    modelCalls: 0
+  };
+  startedAt = Date.now();
+  /** 本轮 SQL 结果，供报告数值对账使用。key 为 queryId（多查询带 #序号）。 */
+  queryResults = /* @__PURE__ */ new Map();
+  /** 同一轮内 list_tables 结果缓存：模型重复调用时直接复用，不再花一次模型往返去重查。 */
+  schemaCache = /* @__PURE__ */ new Map();
+  /** 同一轮内是否已经返回过“全量表清单”，用于去掉重复的大 JSON。 */
+  fullListServed = false;
+  /** 同一轮内 get_table_schema 结果缓存（按表名）。 */
+  tableSchemaCache = /* @__PURE__ */ new Map();
+  /** 报告轮已经给过一次“优先出报告”的软提示。 */
+  reportNudgeServed = false;
+  /** 报告轮不按 SQL/Schema 条数限制，只靠 120 秒超时和覆盖率门禁。 */
+  unlimitedQueries;
+  constructor(limits, options = {}) {
+    this.limits = limits;
+    this.unlimitedQueries = options.unlimitedQueries === true;
+  }
+  /** 给模型看的剩余预算；无限模式不返回剩余，避免模型误以为要按条数收尾。 */
+  remaining() {
+    if (this.unlimitedQueries)
+      return {};
+    return {
+      remainingSql: Math.max(0, this.limits.maxSqlQueries - this.usage.sqlQueries),
+      remainingSchema: Math.max(0, this.limits.maxSchemaCalls - this.usage.schemaCalls)
+    };
+  }
+  /** 记录一次模型调用的用量；由 cost-guard 中间件调用。 */
+  recordModelUsage(usage, prices) {
+    this.usage.inputTokens += usage.inputTokens;
+    this.usage.outputTokens += usage.outputTokens;
+    this.usage.cacheReadTokens += usage.cacheReadTokens;
+    this.usage.cacheCreationTokens += usage.cacheCreationTokens;
+    this.usage.cost += estimateCost(usage, prices);
+    this.usage.modelCalls += 1;
+  }
+  /** 本轮 token 总量。 */
+  tokenTotal() {
+    return this.usage.inputTokens + this.usage.outputTokens;
+  }
+  /**
+   * 模型调用前检查成本预算；返回 null 表示放行，否则返回给模型/用户的收尾提示。
+   * 默认值足够跑完一次报告，只有异常循环才会触发。
+   */
+  checkModelBudget() {
+    const maxCalls = this.limits.maxModelCalls;
+    if (typeof maxCalls === "number" && this.usage.modelCalls >= maxCalls) {
+      const reason = `\u672C\u8F6E\u6A21\u578B\u8C03\u7528\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${maxCalls} \u6B21\uFF09\u3002\u8BF7\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u76F4\u63A5\u56DE\u7B54\uFF1B\u5982\u679C\u8FD8\u6CA1\u5B8C\u6210\uFF0C\u8BF7\u7F29\u5C0F\u8303\u56F4\u540E\u91CD\u8BD5\u3002`;
+      this.deny(reason);
+      return reason;
+    }
+    const maxTokens = this.limits.maxTurnTokens;
+    if (typeof maxTokens === "number" && this.tokenTotal() >= maxTokens) {
+      const reason = `\u672C\u8F6E\u5206\u6790\u5DF2\u8FBE\u5230\u6210\u672C\u4E0A\u9650\uFF08${totalTokens(this.usage)} tokens\uFF09\u3002\u8BF7\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u76F4\u63A5\u56DE\u7B54\uFF1B\u672A\u5B8C\u6210\u7684\u90E8\u5206\u8BF7\u7F29\u5C0F\u8303\u56F4\u540E\u91CD\u8BD5\u3002`;
+      this.deny(reason);
+      return reason;
+    }
+    return null;
+  }
+  /** 记录一条 SQL 结果，供报告数值对账。 */
+  recordQueryResult(queryId, columns, rows) {
+    if (!queryId)
+      return;
+    this.queryResults.set(queryId, { columns, rows });
+    if (this.queryResults.size > 30) {
+      const oldest = this.queryResults.keys().next().value;
+      if (oldest)
+        this.queryResults.delete(oldest);
+    }
+  }
+  /** 申请一次 SQL 查询；返回 null 表示放行，否则返回给模型看的提示。 */
+  takeSqlQuery() {
+    if (!this.unlimitedQueries && this.usage.sqlQueries >= this.limits.maxSqlQueries) {
+      return this.deny(`\u672C\u6B21\u5206\u6790\u7684 SQL \u67E5\u8BE2\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${this.limits.maxSqlQueries} \u6B21\uFF09\u3002\u8BF7\u57FA\u4E8E\u5DF2\u6709\u67E5\u8BE2\u7ED3\u679C\u7EE7\u7EED\uFF0C\u5E76\u5728\u62A5\u544A coverage \u4E2D\u5982\u5B9E\u6807\u6CE8\u672A\u53D6\u5230\u7684\u6570\u636E\u3002`);
+    }
+    this.usage.sqlQueries += 1;
+    return null;
+  }
+  /** 申请一次表结构查询（list_tables / get_table_schema）。 */
+  takeSchemaCall() {
+    if (!this.unlimitedQueries && this.usage.schemaCalls >= this.limits.maxSchemaCalls) {
+      return this.deny(`\u672C\u6B21\u5206\u6790\u7684\u8868\u7ED3\u6784\u67E5\u8BE2\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${this.limits.maxSchemaCalls} \u6B21\uFF09\u3002\u8BF7\u7528\u5DF2\u7ECF\u4E86\u89E3\u5230\u7684\u5B57\u6BB5\u7EE7\u7EED\uFF0C\u6216\u8005\u76F4\u63A5\u5411\u7528\u6237\u8BF4\u660E\u65E0\u6CD5\u7EE7\u7EED\u67E5\u8BE2\u3002`);
+    }
+    this.usage.schemaCalls += 1;
+    return null;
+  }
+  /** 申请输出 chars 个字符；返回 null 表示放行，否则返回提示。 */
+  takeChars(chars) {
+    if (chars <= 0)
+      return null;
+    if (this.usage.totalChars + chars > this.limits.maxTotalToolChars) {
+      return this.deny("\u672C\u6B21\u5206\u6790\u7684\u5DE5\u5177\u8FD4\u56DE\u5185\u5BB9\u603B\u91CF\u5DF2\u8FBE\u4E0A\u9650\u3002\u8BF7\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u4FE1\u606F\u56DE\u7B54\u6216\u751F\u6210\u62A5\u544A\uFF1B\u5982\u679C\u9700\u8981\u66F4\u7EC6\u7684\u6570\u636E\uFF0C\u8BF7\u7528 SQL \u805A\u5408\uFF08GROUP BY / SUM / COUNT\uFF09\u800C\u4E0D\u662F\u7EE7\u7EED\u62C9\u660E\u7EC6\u3002");
+    }
+    this.usage.totalChars += chars;
+    return null;
+  }
+  /** 报告轮达到建议查询量后，只提示一次“优先出报告”，不拦截。 */
+  takeReportNudge() {
+    if (!this.unlimitedQueries || this.reportNudgeServed)
+      return null;
+    if (this.usage.sqlQueries < 12)
+      return null;
+    this.reportNudgeServed = true;
+    return "\u62A5\u544A\u8F6E\u5DF2\u6267\u884C 12 \u6761 SQL\u3002\u6570\u636E\u8DB3\u591F\u65F6\u8BF7\u4F18\u5148\u51FA\u62A5\u544A\uFF1B\u672A\u53D6\u5230\u7684\u9879\u5728 coverage \u6807 missing/needs_review\uFF0C\u4E0D\u8981\u4E3A\u4E86\u8865\u5168\u53CD\u590D\u63A2\u7D22\u3002";
+  }
+  deny(reason) {
+    if (!this.usage.exceeded.includes(reason))
+      this.usage.exceeded.push(reason);
+    return reason;
+  }
+  summary() {
+    const elapsed2 = ((Date.now() - this.startedAt) / 1e3).toFixed(1);
+    const sqlLimit = this.unlimitedQueries ? "\u221E" : String(this.limits.maxSqlQueries);
+    const schemaLimit = this.unlimitedQueries ? "\u221E" : String(this.limits.maxSchemaCalls);
+    const cacheRate = this.usage.inputTokens > 0 ? `${Math.round(this.usage.cacheReadTokens / this.usage.inputTokens * 100)}%` : "0%";
+    return `queries=${this.usage.sqlQueries}/${sqlLimit} schema=${this.usage.schemaCalls}/${schemaLimit} chars=${this.usage.totalChars}/${this.limits.maxTotalToolChars} calls=${this.usage.modelCalls} tokens=${this.usage.inputTokens}+${this.usage.outputTokens} cache=${cacheRate} cost=${this.usage.cost.toFixed(4)} elapsed=${elapsed2}s`;
+  }
+};
+var storage = new AsyncLocalStorage2();
+function runWithBudget(budget, fn) {
+  return storage.run(budget, fn);
+}
+function currentBudget() {
+  return storage.getStore();
+}
+function budgetMessage(kind, reason) {
+  const budget = storage.getStore();
+  return JSON.stringify({
+    success: false,
+    budget: kind,
+    error: reason,
+    hint: "\u4E0D\u8981\u91CD\u590D\u8C03\u7528\u5DE5\u5177\uFF0C\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u7EE7\u7EED\u3002",
+    ...budget ? budget.remaining() : {}
+  });
+}
+
+// dist/cost-guard.js
+var BudgetExceededError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "BudgetExceededError";
+  }
+};
+function costGuardMiddleware(prices) {
+  return createMiddleware({
+    name: "CostGuardMiddleware",
+    wrapModelCall: async (request, handler) => {
+      const budget = currentBudget();
+      if (budget) {
+        const deny = budget.checkModelBudget();
+        if (deny)
+          throw new BudgetExceededError(deny);
+      }
+      const response = await handler(request);
+      if (budget && AIMessage.isInstance(response)) {
+        budget.recordModelUsage(extractUsage(response.usage_metadata, response.response_metadata), prices);
+      }
+      return response;
+    }
+  });
+}
 
 // dist/knowledge.js
 import { existsSync as existsSync3, readFileSync as readFileSync4, readdirSync, statSync as statSync2 } from "node:fs";
@@ -165035,7 +165388,17 @@ var KEY_REPORT_ELEMENTS = /* @__PURE__ */ new Set([
   "hero-kpi",
   "heat-table"
 ]);
-var elementCatalog = REPORT_ELEMENT_KIT.filter((item) => KEY_REPORT_ELEMENTS.has(item.key)).map((item) => `- ${item.key}\uFF08${item.label}\uFF09\uFF1A${item.html}`).join("\n");
+var ELEMENT_CLASS_HINTS = {
+  "report-cover": ".report-cover > .cover-kicker + .cover-title + .cover-sub + .cover-meta > .meta-chip + .cover-metric",
+  "finding-list": ".finding-list > .finding > .finding-no + .finding-body(.finding-title / .finding-text / .finding-impact)",
+  "so-what": ".so-what > .so-what__label + p",
+  timeline: ".timeline > .timeline-item > .timeline-date + .timeline-card",
+  "action-list": ".action-list > .action-item > .action-priority.is-high + .action-title + .action-meta(.action-owner / .action-due / .action-status)",
+  "risk-matrix": ".risk-matrix > .risk-matrix__axis--x/--y + .risk-cell > .risk-dot.is-danger",
+  "hero-kpi": ".hero-kpi > .hero-kpi__label + .hero-kpi__value(.unit) + .hero-kpi__target + .hero-kpi__spark",
+  "heat-table": "table.heat-table > thead th + tbody td.heat-1..heat-4"
+};
+var elementCatalog = REPORT_ELEMENT_KIT.filter((item) => KEY_REPORT_ELEMENTS.has(item.key)).map((item) => `- ${item.key}\uFF1A${ELEMENT_CLASS_HINTS[item.key] || item.label}`).join("\n");
 var CHART_RECIPE_PROMPT = `\u3010\u56FE\u8868\u914D\u65B9\uFF08\u6309\u6570\u636E\u5F62\u6001\u9009\uFF0C\u4E0D\u8981\u9ED8\u8BA4\u53EA\u7528\u6298\u7EBF/\u67F1\u72B6/\u997C\u56FE\uFF09\u3011
 - \u8D8B\u52BF\uFF1Aline/area\uFF08smooth + \u6E10\u53D8 areaStyle + symbol:'none'\uFF0C\u5173\u952E\u70B9 markPoint\uFF09\u3002
 - \u7ED3\u6784\uFF1Atreemap/sunburst/\u5806\u53E0\u67F1\uFF1B\u73AF\u5F62\u56FE\u4E2D\u5FC3\u653E\u603B\u6570\u3002
@@ -165045,158 +165408,57 @@ var CHART_RECIPE_PROMPT = `\u3010\u56FE\u8868\u914D\u65B9\uFF08\u6309\u6570\u636
 - \u591A\u5BF9\u8C61\u540C\u6307\u6807\uFF1Asmall multiples\uFF0C\u591A\u4E2A .ol-chart \u5171\u7528\u523B\u5EA6\u3002
 \u7EDF\u4E00\u8981\u6C42\uFF1A\u6570\u636E\u5185\u5D4C\u3001\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\u3001\u989C\u8272\u4ECE --rp-primary/--rp-success/--rp-danger \u6D3E\u751F\uFF1B\u56FE\u8868\u6570\u91CF\u7531\u6570\u636E\u7EF4\u5EA6\u51B3\u5B9A\uFF0C\u4E0D\u8981\u4E3A\u51D1\u7C7B\u578B\u62C6\u6570\u636E\u3002`;
 var htmlReportSchema = external_exports2.object({
-  title: external_exports2.string().describe("\u62A5\u544A\u6807\u9898\uFF0C\u4E2D\u6587"),
-  subtitle: external_exports2.string().optional().describe("\u53EF\u9009\u526F\u6807\u9898/\u65F6\u95F4\u8303\u56F4"),
-  height: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe('\u9884\u89C8\u9AD8\u5EA6\uFF08px\uFF09\uFF0C\u4F20 320 \u6216 "320px" \u90FD\u53EF\u4EE5'),
-  template: external_exports2.string().optional().describe("\u6A21\u677F key\uFF1A\u6765\u81EA\u77E5\u8BC6\u5305 reports/*.md\uFF1B\u6CA1\u6709\u5C31 auto\u3002\u4E0D\u8981\u786C\u5957\u4E0D\u5B58\u5728\u7684\u6A21\u677F"),
-  layout: external_exports2.enum(["auto", ...REPORT_LAYOUT_KEYS]).optional().describe("\u7ED3\u6784\uFF1Aexecutive/dashboard/narrative/comparison/timeline\uFF1B\u4E0D\u786E\u5B9A\u7528 auto"),
-  visualStyle: external_exports2.string().optional().describe("\u89C6\u89C9\u98CE\u683C brief\uFF08\u5982\u300C\u6DF1\u8272\u9A7E\u9A76\u8231\u300D\u300C\u6781\u7B80\u9ED1\u767D\u300D\uFF09\uFF0C\u5C3D\u91CF\u4E0E\u4E0A\u4E00\u4EFD\u4E0D\u540C"),
-  period: external_exports2.string().optional().describe("\u7EDF\u8BA1\u671F\u95F4\uFF0C\u5982 2025-08-01 ~ 2025-08-31"),
-  scope: external_exports2.string().optional().describe("\u7EDF\u8BA1\u53E3\u5F84\uFF0C\u5982 \u5168\u4ED3\u5408\u8BA1 / \u534E\u4E1C\u4ED3 / \u67D0\u8D27\u4E3B / \u542B\u51BB\u7ED3\u5E93\u5B58"),
-  sources: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u6765\u6E90\u4E0E\u53E3\u5F84\u8BF4\u660E\uFF0C\u6570\u7EC4\u6216\u201C\u987F\u53F7/\u9017\u53F7\u5206\u9694\u7684\u5B57\u7B26\u4E32\u201D\u90FD\u53EF\u4EE5"),
-  warnings: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u8D28\u91CF\u95EE\u9898\uFF08\u7A7A\u503C/\u622A\u65AD/\u8D1F\u5E93\u5B58\u7B49\uFF09\uFF0C\u6570\u7EC4\u6216\u5206\u9694\u5B57\u7B26\u4E32\u90FD\u53EF\u4EE5"),
-  html: external_exports2.string().describe('\u62A5\u544A\u6B63\u6587 HTML \u7247\u6BB5\uFF08\u4E0D\u8981 html/head/body\uFF09\u3002\u56FE\u8868\u5BB9\u5668\uFF1A<div class="ol-chart" data-id="c1" style="height:320px"></div>\uFF0Coption \u653E charts.c1\uFF1B\u7981\u6B62\u5916\u94FE\u3002'),
-  css: external_exports2.string().optional().describe("\u53EF\u9009 CSS \u7247\u6BB5\uFF0C\u53EA\u5199\u5DEE\u5F02\u5316\u6837\u5F0F\uFF0C\u5EFA\u8BAE 8~20KB\uFF08\u6700\u591A 60KB\uFF09\uFF1B\u7981\u6B62 @import/\u5916\u94FE/expression\u3002"),
-  charts: external_exports2.union([external_exports2.record(external_exports2.string(), external_exports2.record(external_exports2.string(), external_exports2.any())), external_exports2.string()]).optional().describe("\u56FE\u8868\uFF1Akey \u5BF9\u5E94 .ol-chart \u7684 data-id\uFF0Cvalue \u4E3A ECharts option\uFF08\u6570\u636E\u5185\u5D4C\uFF09"),
+  title: external_exports2.string().describe("\u62A5\u544A\u6807\u9898\uFF08\u4E2D\u6587\uFF09"),
+  subtitle: external_exports2.string().optional().describe("\u526F\u6807\u9898/\u65F6\u95F4\u8303\u56F4"),
+  height: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional().describe("\u9884\u89C8\u9AD8\u5EA6 px"),
+  template: external_exports2.string().optional().describe("\u77E5\u8BC6\u5305\u6A21\u677F key\uFF0C\u6CA1\u6709\u7528 auto"),
+  layout: external_exports2.enum(["auto", ...REPORT_LAYOUT_KEYS]).optional().describe("\u7ED3\u6784\uFF0C\u4E0D\u786E\u5B9A\u7528 auto"),
+  visualStyle: external_exports2.string().optional().describe("\u89C6\u89C9\u98CE\u683C\uFF0C\u5C3D\u91CF\u4E0E\u4E0A\u4E00\u4EFD\u4E0D\u540C"),
+  period: external_exports2.string().optional().describe("\u7EDF\u8BA1\u671F\u95F4"),
+  scope: external_exports2.string().optional().describe("\u7EDF\u8BA1\u53E3\u5F84"),
+  sources: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u6765\u6E90/\u53E3\u5F84\u8BF4\u660E"),
+  warnings: external_exports2.union([external_exports2.array(external_exports2.string()).max(8), external_exports2.string()]).optional().describe("\u6570\u636E\u8D28\u91CF\u63D0\u793A"),
+  html: external_exports2.string().describe("\u6B63\u6587 HTML \u7247\u6BB5\uFF08\u4E0D\u542B html/head/body\uFF09\uFF1B\u56FE\u8868\u5BB9\u5668\u5199\u6CD5\u89C1\u5DE5\u5177\u63CF\u8FF0"),
+  css: external_exports2.string().optional().describe("\u5DEE\u5F02\u5316 CSS\uFF0C\u5EFA\u8BAE 3~8KB\uFF08\u6700\u591A 40KB\uFF09\uFF1B\u7981\u6B62 @import/\u5916\u94FE/expression"),
+  charts: external_exports2.union([external_exports2.record(external_exports2.string(), external_exports2.record(external_exports2.string(), external_exports2.any())), external_exports2.string()]).optional().describe("key \u5BF9\u5E94 .ol-chart \u7684 data-id\uFF0Cvalue \u4E3A ECharts option"),
   coverage: external_exports2.array(external_exports2.object({
-    item: external_exports2.string().describe("\u6307\u6807/\u7AE0\u8282\u540D\u79F0"),
-    status: external_exports2.enum(["ok", "missing", "needs_review", "pending"]).describe("ok=\u5DF2\u53D6\u5230\uFF1Bmissing=\u6570\u636E/\u5B57\u6BB5\u7F3A\u5931\uFF1Bneeds_review=\u53E3\u5F84\u5F85\u786E\u8BA4\uFF1Bpending=\u8FD8\u6CA1\u67E5"),
-    source: external_exports2.union([external_exports2.string(), external_exports2.array(external_exports2.string())]).optional().describe("ok \u65F6\u5FC5\u987B\u7ED9\u6570\u636E\u6765\u6E90\uFF1ASQL/queryId/\u8868\u540D"),
-    note: external_exports2.string().optional().describe("missing/needs_review \u65F6\u5FC5\u987B\u5199\u539F\u56E0"),
+    item: external_exports2.string().describe("\u6307\u6807/\u7AE0\u8282\u540D"),
+    status: external_exports2.enum(["ok", "missing", "needs_review", "pending"]).describe("ok/missing/needs_review/pending"),
+    source: external_exports2.union([external_exports2.string(), external_exports2.array(external_exports2.string())]).optional().describe("ok \u5FC5\u586B\uFF1ASQL/queryId/\u8868\u540D"),
+    note: external_exports2.string().optional().describe("missing/needs_review \u5FC5\u586B\uFF1A\u539F\u56E0"),
     value: external_exports2.union([external_exports2.number(), external_exports2.string()]).optional(),
     unit: external_exports2.string().optional()
-  })).optional().describe("\u8986\u76D6\u7387\u6E05\u5355\uFF08\u5FC5\u987B\u63D0\u4F9B\uFF09\uFF1A\u62A5\u544A\u91CC\u6BCF\u4E2A\u6307\u6807/\u6570\u5B57\u90FD\u8981\u6807\u6CE8\u72B6\u6001\u3002\u6709 pending \u65F6\u670D\u52A1\u7AEF\u4F1A\u62D2\u7EDD\u51FA\u62A5\u544A\u3002")
+  })).optional().describe("\u8986\u76D6\u7387\u6E05\u5355\uFF08\u5FC5\u987B\u63D0\u4F9B\uFF09\uFF1B\u6709 pending \u65F6\u62D2\u7EDD\u751F\u6210")
 });
-var HTML_REPORT_TOOL_DESCRIPTION = `\u7528\u6237\u8981\u201C\u5B8C\u6574\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u5E74\u62A5 / \u6C47\u62A5\u5927\u5C4F\u201D\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u76F4\u63A5\u4EA7\u51FA HTML \u62A5\u544A\u3002
-\u3010\u7B2C\u4E00\u539F\u5219\u3011\u7ED3\u6784\u670D\u52A1\u5185\u5BB9\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u5957\u540C\u4E00\u6A21\u677F\u3002
-1) layout\uFF1Aexecutive/dashboard/narrative/comparison/timeline\uFF1B\u4F18\u5148\u7528\u7CFB\u7EDF\u63D0\u793A\u3010\u672C\u8F6E\u62A5\u544A\u7248\u5F0F\u8981\u6C42\u3011\u3002
-2) visualStyle\uFF1A\u6742\u5FD7\u7F16\u8F91\u98CE / \u6DF1\u8272\u9A7E\u9A76\u8231 / \u6781\u7B80\u9ED1\u767D / \u8463\u4E8B\u4F1A\u7B80\u62A5 / \u6570\u636E\u6545\u4E8B\uFF1B\u5C3D\u91CF\u548C\u4E0A\u4E00\u4EFD\u4E0D\u540C\u3002
-3) css \u53EA\u5199\u5DEE\u5F02\u5316\u6837\u5F0F\uFF0C\u4F18\u5148\u8986\u76D6\u53D8\u91CF\uFF1A--rp-primary/--rp-bg/--rp-surface/--rp-surface-2/--rp-border/--rp-t1/--rp-radius/--rp-gap\uFF1B\u4E0D\u8981\u7ED9 body/.report \u5199\u6B7B\u6D45\u8272\u80CC\u666F\uFF1B\u5B57\u4F53\u53EA\u7528\u7CFB\u7EDF\u5B57\u4F53\u6808\uFF1B\u7981\u6B62 @import\u3001url(http)\u3001expression/behavior\uFF1B\u81F3\u5C11\u5904\u7406 @media(max-width:820px)\uFF1B\u5EFA\u8BAE 8~20KB\uFF0C\u8D85\u8FC7 60KB \u4F1A\u622A\u65AD\u3002
-4) \u57FA\u7840\u7EC4\u4EF6\uFF1A.report > .report-header(.report-title/.report-sub/.report-meta > .meta-chip)\uFF1B<section class="section"> + .section-head(.section-no/.section-title/.section-sub)\uFF1B.card + .grid.grid-2/grid-3\uFF1B.callout / .notice.is-warning|is-danger|is-success|is-info\uFF1B.stat-grid > .stat(.stat-label/.stat-value/.stat-foot)\uFF1B.compare-grid > .compare\uFF1B.ring-grid > .ring(style="--v:83")\uFF1B.rank-list > .rank-row\uFF1B.chips > .chip\uFF1B.bar-row > .bar-fill\uFF1B.progress-row\uFF1B.dist-bar + .dist-legend\uFF1B.risk-list > .risk-item.is-danger|is-warning|is-success\uFF1B\u8868\u683C <table>\u3002
-5) \u62A5\u544A\u5143\u7D20\uFF08\u6570\u636E\u578B\u81F3\u5C11 2 \u4E2A\u3001\u53D9\u4E8B\u578B\u81F3\u5C11 2 \u4E2A\uFF09\uFF1A\u6570\u636E\u578B hero-kpi / bullet-row / small-multiples / heat-table / top-bottom / comparison-matrix / risk-matrix\uFF1B\u53D9\u4E8B\u578B report-cover / finding-list / so-what / pull-quote / timeline / action-list / report-appendix\u3002\u7B2C\u4E00\u4E2A section \u5FC5\u987B\u662F\u6570\u636E\u5C4F\uFF082~4 \u4E2A KPI + 1 \u5F20\u4E3B\u56FE/\u70ED\u529B\u8868\uFF09\uFF1B\u6BCF\u4E2A\u5206\u6790 section \u81F3\u5C11 1 \u4E2A\u6570\u636E\u5757\uFF0C\u7EAF\u6587\u5B57 section \u6700\u591A 1 \u4E2A\u3002
-\u5173\u952E\u5143\u7D20\u9AA8\u67B6\uFF08\u53EF\u76F4\u63A5\u590D\u7528\u5E76\u6539\u6587\u6848\uFF09\uFF1A
+var HTML_REPORT_TOOL_DESCRIPTION = `\u7528\u6237\u8981\u201C\u5B8C\u6574\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u5E74\u62A5 / \u6C47\u62A5\u5927\u5C4F\u201D\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u76F4\u63A5\u4EA7\u51FA HTML \u62A5\u544A\uFF1B\u7ED3\u6784\u670D\u52A1\u5185\u5BB9\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u5957\u540C\u4E00\u6A21\u677F\u3002
+\u3010\u7248\u5F0F\u4E0E\u6837\u5F0F\u3011\u4F18\u5148\u7528\u7CFB\u7EDF\u63D0\u793A\u3010\u672C\u8F6E\u62A5\u544A\u7248\u5F0F\u8981\u6C42\u3011\u7684 layout / visualStyle\uFF1Bcss \u53EA\u5199\u5DEE\u5F02\u5316\u6837\u5F0F\uFF0C\u4F18\u5148\u8986\u76D6\u53D8\u91CF\uFF1A--rp-primary/--rp-bg/--rp-surface/--rp-surface-2/--rp-border/--rp-t1/--rp-radius/--rp-gap\uFF1B\u5B57\u4F53\u53EA\u7528\u7CFB\u7EDF\u5B57\u4F53\u6808\uFF1B\u7981\u6B62 @import\u3001url(http)\u3001expression/behavior\uFF1B\u5FC5\u987B\u5904\u7406 @media(max-width:820px)\uFF1B\u5EFA\u8BAE 3~8KB\uFF08\u6700\u591A 40KB\uFF09\u3002
+\u3010\u57FA\u7840\u7EC4\u4EF6\u3011.report > .report-header(.report-title/.report-sub/.report-meta > .meta-chip)\uFF1B<section class="section"> + .section-head(.section-no/.section-title/.section-sub)\uFF1B.card + .grid.grid-2/grid-3\uFF1B.callout / .notice.is-warning|is-danger|is-success|is-info\uFF1B.stat-grid > .stat(.stat-label/.stat-value/.stat-foot)\uFF1B.compare-grid > .compare\uFF1B.ring-grid > .ring(style="--v:83")\uFF1B.rank-list > .rank-row\uFF1B.chips > .chip\uFF1B.bar-row > .bar-fill\uFF1B.progress-row\uFF1B.dist-bar + .dist-legend\uFF1B.risk-list > .risk-item.is-danger|is-warning|is-success\uFF1B\u8868\u683C <table>\u3002
+\u3010\u5173\u952E\u5143\u7D20 class \u9AA8\u67B6\u3011\uFF08\u6570\u636E\u578B\u81F3\u5C11 2 \u4E2A\u3001\u53D9\u4E8B\u578B\u81F3\u5C11 2 \u4E2A\uFF09
 ${elementCatalog}
-5.1) section-no \u53EA\u653E 1~2 \u4F4D\u6570\u5B57\uFF0801/02\uFF09\uFF0C\u7981\u6B62\u5199\u82F1\u6587\u6216\u8BF4\u660E\uFF1B\u82F1\u6587\u526F\u6807\u9898\u653E section-sub \u4E14 \u22648 \u4E2A\u5B57\u7B26\uFF1Bsection-head \u7528 flex/grid\uFF0C\u7981\u6B62 position:absolute/fixed \u8986\u76D6\u6807\u9898\u3001\u6570\u5B57\u6216\u8868\u683C\u3002
-6) \u56FE\u8868\uFF1A<div class="ol-chart" data-id="c1" style="height:320px"></div>\uFF0Coption \u653E charts.c1\uFF1B\u9AD8\u5EA6\u5199\u6B7B\u3001\u6570\u636E\u5185\u5D4C\u3001\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF1B\u7C7B\u578B\u6309\u6570\u636E\u9009\uFF0C\u5177\u4F53\u89C1\u7CFB\u7EDF\u63D0\u793A\u3010\u56FE\u8868\u914D\u65B9\u3011\u3002
-7) \u8868\u683C\uFF1A\u6B63\u6587\u6700\u591A 10 \u884C\uFF0C\u8D85\u51FA\u7528 Top 10 + \u201C\u5176\u4F59 N \u9879\u5408\u8BA1\u201D\uFF1B\u6BCF\u884C <td> \u6570\u91CF\u5FC5\u987B\u4E0E <th> \u4E00\u81F4\uFF0C\u7A7A\u503C\u5199 <td>\u2014</td>\uFF1B\u6570\u5B57\u5217 class="num"\u3002
-8) \u6570\u5B57\uFF1A\u5343\u5206\u4F4D\uFF1B\u22651 \u4EBF\u5199\u300C\u4EBF\u300D\u3001\u22651 \u4E07\u5199\u300C\u4E07\u300D\uFF1B\u767E\u5206\u6BD4 1 \u4F4D\u5C0F\u6570\uFF1B\u6DA8\u8DCC\u7528 <span class="delta up|down|flat">\u3002
-9) \u76EE\u5F55/\u9875\u811A/\u6C34\u5370\u81EA\u52A8\u751F\u6210\uFF0C\u4E0D\u8981\u81EA\u5DF1\u5199\uFF1B<script> \u4E0E\u5916\u94FE\u4F1A\u88AB\u5265\u79BB\u3002
-10) \u6240\u6709\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u4E0D\u8981\u8C03\u7528\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199\u4E00\u53E5\u201C\u62A5\u544A\u5DF2\u751F\u6210\u201D\u3002
-11) \u5FC5\u987B\u586B coverage\uFF1A\u62A5\u544A\u91CC\u6BCF\u4E2A\u6307\u6807/\u6570\u5B57\u6807\u6CE8 ok / missing / needs_review / pending\u3002ok \u8981\u6709 SQL/queryId \u6765\u6E90\uFF1Bmissing/needs_review \u8981\u5199\u539F\u56E0\uFF1B\u6709 pending \u65F6\u670D\u52A1\u7AEF\u62D2\u7EDD\u751F\u6210\u62A5\u544A\u3002
-12) \u8FD8\u8981\u586B template/layout/visualStyle/period/scope/sources/warnings\uFF0C\u7528\u4E8E\u9875\u811A\u548C\u6570\u636E\u8D28\u91CF\u63D0\u793A\u3002
-13) \u683C\u5F0F\u95EE\u9898\u4E0D\u4F1A\u5931\u8D25\uFF08\u524D\u7AEF\u4F1A\u515C\u5E95\uFF09\uFF0C\u4E0D\u8981\u91CD\u8BD5\u6216\u91CD\u65B0\u751F\u6210\u6574\u4EFD\u62A5\u544A\u3002`;
-var REPORT_TOOL_DESCRIPTION = `\u5F53\u7528\u6237\u7684\u95EE\u9898\u5C5E\u4E8E\u6570\u636E\u5206\u6790\uFF08\u8D8B\u52BF\u3001\u5206\u5E03\u3001\u5BF9\u6BD4\u3001\u5360\u6BD4\u3001\u6392\u884C\u3001\u6C47\u603B\u3001\u7ED3\u6784\u53D8\u5316\u7B49\uFF09\u6216\u8981\u6C42\u770B\u62A5\u8868/\u65E5\u62A5/\u56FE\u8868\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u524D\u7AEF\u4F1A\u6E32\u67D3\u6210\u4E00\u4EFD\u53EF\u89C6\u5316\u62A5\u8868\uFF08\u7C7B\u4F3C\u4EEA\u8868\u76D8 / \u6C47\u62A5\u5927\u5C4F\uFF09\u3002
-\u6392\u7248\u5EFA\u8BAE\uFF08blocks \u987A\u5E8F\uFF09\uFF1A
-- \u7528 section \u5206\u8282\uFF1A\u6BCF\u4E2A\u4E3B\u9898\u7528 section \u5F00\u5934\uFF08\u7ED9 no \u7F16\u53F7 + title\uFF0C\u53EF\u5E26\u82F1\u6587 subtitle\uFF09\uFF0C\u524D\u7AEF\u4F1A\u636E\u6B64\u751F\u6210\u76EE\u5F55\u5BFC\u822A\uFF1B
-- section \u540E\u63A5 summary\uFF08\u6838\u5FC3\u7ED3\u8BBA\uFF09\u6216 notice\uFF08\u9884\u8B66/\u63D0\u793A\uFF09\uFF1B
-- \u5173\u952E\u6307\u6807\u7528 kpi\uFF082~4 \u4E2A\u4E00\u6392\uFF0C\u8865 note \u8BF4\u660E\u53E3\u5F84\uFF09\uFF1B
-- \u5B8C\u6210\u7387/\u5360\u6BD4\u5BF9\u6BD4\u7528 hbar\uFF1B\u8FBE\u6210\u60C5\u51B5\u7528 progress\uFF1B\u4E00\u6392\u5C0F\u6307\u6807\u7528 chips\uFF1B\u6784\u6210\u5206\u5E03\u7528 dist\uFF1B
-- \u8D8B\u52BF/\u5BF9\u6BD4\u56FE\u7528 chart\uFF08\u6807\u51C6 ECharts option\uFF0C\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\uFF1B
-- \u660E\u7EC6\u7528 table\uFF1B\u98CE\u9669\u4E0E\u603B\u7ED3\u7528 risk\uFF08danger/warning/success \u914D\u8272\uFF09\uFF1B\u6700\u540E\u53EF\u7528 insights \u6536\u5C3E\u3002
-\u89C4\u5219\uFF1A\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u540C\u4E00\u7EF4\u5EA6\u53EA\u653E\u4E00\u5F20\u6700\u5408\u9002\u7684\u56FE\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\uFF0C\u4E0D\u91CD\u590D\u62A5\u8868\u91CC\u7684\u6570\u5B57\u3002
+\u3010\u56FE\u8868\u3011<div class="ol-chart" data-id="c1" style="height:320px"></div>\uFF0Coption \u653E charts.c1\uFF1B\u9AD8\u5EA6\u5199\u6B7B\u3001\u6570\u636E\u5185\u5D4C\u3001\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF1B\u7C7B\u578B\u89C1\u7CFB\u7EDF\u63D0\u793A\u3010\u56FE\u8868\u914D\u65B9\u3011\u3002
+\u3010\u6570\u5B57\u3011\u5343\u5206\u4F4D\uFF1B\u22651 \u4E07\u5199\u300C\u4E07\u300D\u3001\u22651 \u4EBF\u5199\u300C\u4EBF\u300D\uFF1B\u767E\u5206\u6BD4 1 \u4F4D\u5C0F\u6570\uFF1B\u6DA8\u8DCC\u7528 .delta.up|down|flat\u3002
+\u3010\u5FC5\u586B\u3011coverage\uFF1A\u6BCF\u4E2A\u6307\u6807/\u6570\u5B57\u6807 ok/missing/needs_review/pending\uFF1Bok \u7ED9 SQL/queryId \u6765\u6E90\uFF0Cmissing/needs_review \u5199\u539F\u56E0\uFF1B\u540C\u65F6\u586B template/layout/visualStyle/period/scope/sources/warnings\u3002\u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u4E0D\u8981\u8C03\u7528\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199\u4E00\u53E5\u201C\u62A5\u544A\u5DF2\u751F\u6210\u201D\u3002`;
+var REPORT_TOOL_DESCRIPTION = `\u5F53\u7528\u6237\u7684\u95EE\u9898\u5C5E\u4E8E\u6570\u636E\u5206\u6790\uFF08\u8D8B\u52BF\u3001\u5206\u5E03\u3001\u5BF9\u6BD4\u3001\u5360\u6BD4\u3001\u6392\u884C\u3001\u6C47\u603B\u3001\u7ED3\u6784\u53D8\u5316\u7B49\uFF09\u6216\u8981\u6C42\u770B\u62A5\u8868/\u65E5\u62A5/\u56FE\u8868\u65F6\u8C03\u7528\u672C\u5DE5\u5177\uFF0C\u524D\u7AEF\u4F1A\u6309\u4F60\u7ED9\u51FA\u7684 blocks \u6E32\u67D3\u6210\u53EF\u89C6\u5316\u5361\u7247\u3002
+\u3010\u7EC4\u4EF6\u76EE\u5F55\uFF08\u81EA\u7531\u7EC4\u5408\uFF09\u3011
+- section\uFF1A\u5206\u8282\u6807\u9898\uFF08no/title/subtitle\uFF09\uFF0C\u53EF\u9009\uFF0C\u4E0D\u5FC5\u6BCF\u4EFD\u90FD\u6709\uFF1B
+- summary\uFF1A\u7ED3\u8BBA\u6BB5\uFF1Bnotice\uFF1A\u63D0\u793A\u6761\uFF1Binsights\uFF1A\u7ED3\u8BBA\u8981\u70B9\uFF1Brisk\uFF1A\u98CE\u9669\u8272\u5757\uFF1B
+- kpi\uFF1A2~4 \u4E2A\u6307\u6807\u5361\uFF1Bchips\uFF1A\u4E00\u6392\u5C0F\u6307\u6807\uFF1Bhbar\uFF1A\u6A2A\u6761\u5BF9\u6BD4\uFF1Bprogress\uFF1A\u8FBE\u6210\u7387\uFF1Bdist\uFF1A\u6784\u6210\u5206\u5E03\uFF1B
+- chart\uFF1A\u6807\u51C6 ECharts option\uFF08\u6570\u636E\u5185\u5D4C\uFF0C\u4E2D\u6587\u6807\u9898/\u5750\u6807/\u56FE\u4F8B\uFF09\uFF1Btable\uFF1A\u660E\u7EC6\u8868\uFF08\u6700\u591A 30 \u884C\uFF09\u3002
+\u3010\u5E03\u5C40\uFF08\u81EA\u7531\u6392\u7248\uFF09\u3011
+- \u6BCF\u4E2A block \u53EF\u5E26 span\uFF081~12 \u6805\u683C\uFF1A\u6574\u884C 12\u3001\u534A\u5BBD 6\u3001\u4E09\u5206\u4E4B\u4E00 4\u3001\u56DB\u5206\u4E4B\u4E00 3\uFF09\uFF1B\u9ED8\u8BA4\u6574\u884C\uFF1B
+- \u9700\u8981\u5DE6\u53F3\u5206\u680F\u65F6\u7528 row\uFF1A{"type":"row","columns":[{"span":8,"blocks":[...]},{"span":4,"blocks":[...]}]}\uFF1B
+- row \u6700\u591A 4 \u5217\uFF0C\u5217\u5185\u6309\u987A\u5E8F\u7EB5\u5411\u5806\u53E0\uFF1B\u53EF\u4EE5\u505A\u300C\u4E3B\u56FE + \u4FA7\u680F KPI\u300D\u300C\u5DE6\u8868 + \u53F3\u7ED3\u8BBA\u300D\u300C\u4E09\u680F\u5C0F\u5361\u300D\u7B49\uFF1B
+- section \u4E00\u822C\u5360\u6574\u884C\uFF0C\u4F5C\u4E3A\u7AE0\u8282\u5206\u9694\uFF1B
+- \u4E0D\u8981\u6BCF\u4EFD\u90FD\u5957\u300C\u6982\u89C8\u2192\u7ED3\u8BBA\u2192KPI\u2192\u8D8B\u52BF\u56FE\u2192\u660E\u7EC6\u300D\u7684\u56FA\u5B9A\u987A\u5E8F\uFF1B\u5148\u60F3\u8FD9\u4EFD\u6570\u636E\u6700\u9002\u5408\u600E\u4E48\u8BFB\uFF0C\u518D\u9009\u7EC4\u4EF6\u548C\u5206\u680F\u3002
+\u3010\u8BBE\u8BA1\u539F\u5219\u3011
+- \u7EC4\u4EF6\u6570\u91CF\u7531\u6570\u636E\u51B3\u5B9A\uFF1A\u6570\u636E\u5C11\u5C31\u53EA\u653E 1~2 \u4E2A\u7EC4\u4EF6\uFF0C\u4E0D\u8981\u786C\u51D1\uFF1B\u540C\u4E00\u6307\u6807\u53EA\u51FA\u73B0\u4E00\u6B21\uFF1B
+- \u56FE\u8868\u7C7B\u578B\u6309\u6570\u636E\u5F62\u6001\u9009\uFF0C\u4E0D\u8981\u9ED8\u8BA4\u53EA\u7528\u6298\u7EBF/\u67F1\u72B6/\u997C\u56FE\uFF1B
+- \u8FDE\u7EED\u5BF9\u8BDD\u4E2D\uFF0C\u5982\u679C\u4E0A\u4E00\u4EFD\u7528\u4E86\u540C\u7C7B\u7ED3\u6784\uFF0C\u672C\u6B21\u6362\u4E00\u79CD\u7EC4\u7EC7\u65B9\u5F0F\uFF1B
+- \u6570\u503C\u5FC5\u987B\u6765\u81EA\u771F\u5B9E\u67E5\u8BE2\uFF0C\u4E0D\u5F97\u7F16\u9020\uFF1B\u67E5\u8BE2\u4E3A\u7A7A\u65F6\u4E0D\u8981\u8C03\u7528\u672C\u5DE5\u5177\uFF1B\u8C03\u7528\u540E\u6B63\u6587\u53EA\u5199 1~2 \u53E5\u8BDD\u3002
 component \u56FA\u5B9A\u586B ${REPORT_COMPONENT}\u3002`;
 
 // dist/tools.js
 init_tools2();
-
-// dist/budget.js
-import { AsyncLocalStorage as AsyncLocalStorage2 } from "node:async_hooks";
-var TurnBudget = class {
-  limits;
-  usage = {
-    sqlQueries: 0,
-    schemaCalls: 0,
-    totalChars: 0,
-    exceeded: []
-  };
-  startedAt = Date.now();
-  /** 同一轮内 list_tables 结果缓存：模型重复调用时直接复用，不再花一次模型往返去重查。 */
-  schemaCache = /* @__PURE__ */ new Map();
-  /** 同一轮内是否已经返回过“全量表清单”，用于去掉重复的大 JSON。 */
-  fullListServed = false;
-  /** 同一轮内 get_table_schema 结果缓存（按表名）。 */
-  tableSchemaCache = /* @__PURE__ */ new Map();
-  /** 报告轮已经给过一次“优先出报告”的软提示。 */
-  reportNudgeServed = false;
-  /** 报告轮不按 SQL/Schema 条数限制，只靠 120 秒超时和覆盖率门禁。 */
-  unlimitedQueries;
-  constructor(limits, options = {}) {
-    this.limits = limits;
-    this.unlimitedQueries = options.unlimitedQueries === true;
-  }
-  /** 给模型看的剩余预算；无限模式不返回剩余，避免模型误以为要按条数收尾。 */
-  remaining() {
-    if (this.unlimitedQueries)
-      return {};
-    return {
-      remainingSql: Math.max(0, this.limits.maxSqlQueries - this.usage.sqlQueries),
-      remainingSchema: Math.max(0, this.limits.maxSchemaCalls - this.usage.schemaCalls)
-    };
-  }
-  /** 申请一次 SQL 查询；返回 null 表示放行，否则返回给模型看的提示。 */
-  takeSqlQuery() {
-    if (!this.unlimitedQueries && this.usage.sqlQueries >= this.limits.maxSqlQueries) {
-      return this.deny(`\u672C\u6B21\u5206\u6790\u7684 SQL \u67E5\u8BE2\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${this.limits.maxSqlQueries} \u6B21\uFF09\u3002\u8BF7\u57FA\u4E8E\u5DF2\u6709\u67E5\u8BE2\u7ED3\u679C\u7EE7\u7EED\uFF0C\u5E76\u5728\u62A5\u544A coverage \u4E2D\u5982\u5B9E\u6807\u6CE8\u672A\u53D6\u5230\u7684\u6570\u636E\u3002`);
-    }
-    this.usage.sqlQueries += 1;
-    return null;
-  }
-  /** 申请一次表结构查询（list_tables / get_table_schema）。 */
-  takeSchemaCall() {
-    if (!this.unlimitedQueries && this.usage.schemaCalls >= this.limits.maxSchemaCalls) {
-      return this.deny(`\u672C\u6B21\u5206\u6790\u7684\u8868\u7ED3\u6784\u67E5\u8BE2\u6B21\u6570\u5DF2\u8FBE\u4E0A\u9650\uFF08${this.limits.maxSchemaCalls} \u6B21\uFF09\u3002\u8BF7\u7528\u5DF2\u7ECF\u4E86\u89E3\u5230\u7684\u5B57\u6BB5\u7EE7\u7EED\uFF0C\u6216\u8005\u76F4\u63A5\u5411\u7528\u6237\u8BF4\u660E\u65E0\u6CD5\u7EE7\u7EED\u67E5\u8BE2\u3002`);
-    }
-    this.usage.schemaCalls += 1;
-    return null;
-  }
-  /** 申请输出 chars 个字符；返回 null 表示放行，否则返回提示。 */
-  takeChars(chars) {
-    if (chars <= 0)
-      return null;
-    if (this.usage.totalChars + chars > this.limits.maxTotalToolChars) {
-      return this.deny("\u672C\u6B21\u5206\u6790\u7684\u5DE5\u5177\u8FD4\u56DE\u5185\u5BB9\u603B\u91CF\u5DF2\u8FBE\u4E0A\u9650\u3002\u8BF7\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u4FE1\u606F\u56DE\u7B54\u6216\u751F\u6210\u62A5\u544A\uFF1B\u5982\u679C\u9700\u8981\u66F4\u7EC6\u7684\u6570\u636E\uFF0C\u8BF7\u7528 SQL \u805A\u5408\uFF08GROUP BY / SUM / COUNT\uFF09\u800C\u4E0D\u662F\u7EE7\u7EED\u62C9\u660E\u7EC6\u3002");
-    }
-    this.usage.totalChars += chars;
-    return null;
-  }
-  /** 报告轮达到建议查询量后，只提示一次“优先出报告”，不拦截。 */
-  takeReportNudge() {
-    if (!this.unlimitedQueries || this.reportNudgeServed)
-      return null;
-    if (this.usage.sqlQueries < 12)
-      return null;
-    this.reportNudgeServed = true;
-    return "\u62A5\u544A\u8F6E\u5DF2\u6267\u884C 12 \u6761 SQL\u3002\u6570\u636E\u8DB3\u591F\u65F6\u8BF7\u4F18\u5148\u51FA\u62A5\u544A\uFF1B\u672A\u53D6\u5230\u7684\u9879\u5728 coverage \u6807 missing/needs_review\uFF0C\u4E0D\u8981\u4E3A\u4E86\u8865\u5168\u53CD\u590D\u63A2\u7D22\u3002";
-  }
-  deny(reason) {
-    if (!this.usage.exceeded.includes(reason))
-      this.usage.exceeded.push(reason);
-    return reason;
-  }
-  summary() {
-    const elapsed2 = ((Date.now() - this.startedAt) / 1e3).toFixed(1);
-    const sqlLimit = this.unlimitedQueries ? "\u221E" : String(this.limits.maxSqlQueries);
-    const schemaLimit = this.unlimitedQueries ? "\u221E" : String(this.limits.maxSchemaCalls);
-    return `queries=${this.usage.sqlQueries}/${sqlLimit} schema=${this.usage.schemaCalls}/${schemaLimit} chars=${this.usage.totalChars}/${this.limits.maxTotalToolChars} elapsed=${elapsed2}s`;
-  }
-};
-var storage = new AsyncLocalStorage2();
-function runWithBudget(budget, fn) {
-  return storage.run(budget, fn);
-}
-function currentBudget() {
-  return storage.getStore();
-}
-function budgetMessage(kind, reason) {
-  const budget = storage.getStore();
-  return JSON.stringify({
-    success: false,
-    budget: kind,
-    error: reason,
-    hint: "\u4E0D\u8981\u91CD\u590D\u8C03\u7528\u5DE5\u5177\uFF0C\u76F4\u63A5\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u7EE7\u7EED\u3002",
-    ...budget ? budget.remaining() : {}
-  });
-}
 
 // dist/db/kingbase.js
 import { createHash as createHash2 } from "node:crypto";
@@ -165971,14 +166233,14 @@ async function getSchema2(db, options = {}) {
   }
   const allowed = all.filter((item) => !isHiddenTable(item.name, item.schema ?? "", db.hiddenTables) && !isHiddenTable(item.name, item.schema ?? "", db.blockedTables));
   const inSchema = allowed.filter((item) => !db.schemas.length || db.schemas.includes(item.schema ?? ""));
-  const matches = (item) => {
+  const matches2 = (item) => {
     const haystack = `${item.schema ?? ""}.${item.name} ${item.comment ?? ""}`.toLowerCase();
     return haystack.includes(keyword);
   };
   let tables = inSchema;
   let hint;
   if (keyword) {
-    const matched = inSchema.filter(matches);
+    const matched = inSchema.filter(matches2);
     if (matched.length) {
       tables = matched;
     } else {
@@ -166228,6 +166490,146 @@ async function closeAllPools3() {
   await Promise.all([closeAllPools(), closeAllPools2()]);
 }
 
+// dist/report-check.js
+function round(value) {
+  return Math.round(value * 1e6) / 1e6;
+}
+function normalizeNumber(value, unit) {
+  const unitText = String(unit || "");
+  if (unitText.includes("%"))
+    return null;
+  let text = "";
+  let multiplier = 1;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value))
+      return null;
+    text = String(value);
+  } else if (typeof value === "string") {
+    text = value.trim();
+    if (!text || text.includes("%"))
+      return null;
+    if (text.includes("\u4EBF"))
+      multiplier *= 1e8;
+    else if (text.includes("\u4E07"))
+      multiplier *= 1e4;
+    else if (text.includes("\u5343"))
+      multiplier *= 1e3;
+  } else {
+    return null;
+  }
+  if (unitText.includes("\u4EBF"))
+    multiplier *= 1e8;
+  else if (unitText.includes("\u4E07"))
+    multiplier *= 1e4;
+  else if (unitText.includes("\u5343"))
+    multiplier *= 1e3;
+  const cleaned = text.replace(/[,，\s]/g, "").replace(/[^\d.+-]/g, "");
+  const parsed = Number.parseFloat(cleaned);
+  if (!Number.isFinite(parsed))
+    return null;
+  return round(parsed * multiplier);
+}
+function addNumber(index2, value) {
+  if (!Number.isFinite(value))
+    return;
+  index2.add(round(value));
+  index2.add(round(Math.abs(value)));
+}
+function collectFromCell(index2, cell) {
+  if (typeof cell === "number") {
+    addNumber(index2, cell);
+    return;
+  }
+  if (typeof cell === "string") {
+    const normalized = normalizeNumber(cell);
+    if (normalized !== null)
+      addNumber(index2, normalized);
+    return;
+  }
+  if (Array.isArray(cell)) {
+    for (const item of cell)
+      collectFromCell(index2, item);
+    return;
+  }
+  if (cell && typeof cell === "object") {
+    for (const item of Object.values(cell)) {
+      collectFromCell(index2, item);
+    }
+  }
+}
+function buildNumberIndex(budget) {
+  const index2 = /* @__PURE__ */ new Set();
+  for (const result of budget.queryResults.values()) {
+    for (const row of result.rows) {
+      if (Array.isArray(row)) {
+        for (const cell of row)
+          collectFromCell(index2, cell);
+      } else {
+        collectFromCell(index2, row);
+      }
+    }
+  }
+  return index2;
+}
+function matches(index2, value) {
+  const tolerance = Math.max(0.01, Math.abs(value) * 1e-3);
+  for (const candidate of index2) {
+    if (Math.abs(candidate - value) <= tolerance)
+      return true;
+  }
+  return false;
+}
+function sourceText(source) {
+  if (Array.isArray(source))
+    return source.join(" ");
+  return source || "";
+}
+function validateCoverageNumbers(coverage, budget, strict = false) {
+  const result = {
+    checked: 0,
+    matched: 0,
+    skipped: 0,
+    mismatches: [],
+    warnings: []
+  };
+  if (!coverage?.length)
+    return result;
+  const index2 = buildNumberIndex(budget);
+  for (const entry of coverage) {
+    if (entry.status !== "ok")
+      continue;
+    const source = sourceText(entry.source);
+    if (!source) {
+      result.warnings.push(`${entry.item || "\u672A\u547D\u540D\u6307\u6807"} \u7F3A\u5C11\u6570\u636E\u6765\u6E90`);
+    } else if (!/(q-|saved-|WMS_|SAP_|SRM_|MES_|public\.)/i.test(source)) {
+      result.warnings.push(`${entry.item || "\u672A\u547D\u540D\u6307\u6807"} \u7684\u6765\u6E90\u672A\u5305\u542B queryId \u6216\u8868\u540D`);
+    }
+    if (entry.value === void 0 || entry.value === null)
+      continue;
+    if (String(entry.unit || "").includes("%") || String(entry.value).includes("%")) {
+      result.skipped += 1;
+      continue;
+    }
+    const normalized = normalizeNumber(entry.value, entry.unit);
+    if (normalized === null) {
+      result.skipped += 1;
+      continue;
+    }
+    result.checked += 1;
+    if (matches(index2, normalized)) {
+      result.matched += 1;
+    } else {
+      result.mismatches.push(`${entry.item || "\u672A\u547D\u540D\u6307\u6807"}\uFF1A${String(entry.value)}${entry.unit || ""} \u672A\u5728\u672C\u8F6E\u67E5\u8BE2\u7ED3\u679C\u4E2D\u627E\u5230`);
+    }
+  }
+  if (strict && result.mismatches.length) {
+  }
+  return result;
+}
+function formatNumberCheck(result) {
+  return `numberCheck checked=${result.checked} matched=${result.matched} skipped=${result.skipped} mismatches=${result.mismatches.length}`;
+}
+
 // dist/log.js
 import { appendFile, mkdir as mkdir3, rename as rename2, stat as stat3 } from "node:fs/promises";
 import { join as join3 } from "node:path";
@@ -166250,6 +166652,17 @@ function logLine(line) {
     } catch {
     }
   });
+}
+function logFeedback(payload) {
+  const text = JSON.stringify(payload) + "\n";
+  queue2 = queue2.then(async () => {
+    try {
+      await mkdir3(dir, { recursive: true });
+      await appendFile(join3(dir, "feedback.jsonl"), text, "utf8");
+    } catch {
+    }
+  });
+  return queue2;
 }
 
 // dist/schema-cache.js
@@ -166955,7 +167368,7 @@ var LAYOUT_ALIASES = {
   auto: "auto",
   \u81EA\u52A8: "auto"
 };
-var MAX_CSS_CHARS = 60 * 1e3;
+var MAX_CSS_CHARS = 40 * 1e3;
 function normalizeTemplate(value) {
   if (typeof value !== "string")
     return "auto";
@@ -167168,18 +167581,27 @@ function fitJson(build, total, maxChars) {
   }
   return best;
 }
+function compactQueryResult(result) {
+  const columns = Array.isArray(result.columns) && result.columns.length ? result.columns : result.rows.length ? Object.keys(result.rows[0]) : [];
+  return {
+    ...result,
+    columns,
+    rows: result.rows.map((row) => columns.map((name) => row[name]))
+  };
+}
 function trimQueryResult(result, maxChars, limitWord = "TOP") {
-  const json3 = JSON.stringify(result);
+  const compact = compactQueryResult(result);
+  const json3 = JSON.stringify(compact);
   if (json3.length <= maxChars)
     return { json: json3, trimmed: false };
-  const hint = `\u7ED3\u679C\u8FC7\u5927\u5DF2\u622A\u65AD\uFF0C\u8BF7\u6539\u7528\u805A\u5408 SQL\uFF08GROUP BY / SUM / COUNT\uFF09\u6216\u52A0 ${limitWord} \u540E\u518D\u67E5\u8BE2`;
+  const hint = `\u7ED3\u679C\u592A\u5927\u5DF2\u622A\u65AD\uFF0C\u8BF7\u6539\u7528\u805A\u5408 SQL\uFF08GROUP BY / SUM / COUNT\uFF09\u6216 ${limitWord} \u51CF\u5C11\u67E5\u8BE2`;
   const text = fitJson((keep) => ({
-    ...result,
-    rows: result.rows.slice(0, keep),
+    ...compact,
+    rows: compact.rows.slice(0, keep),
     rowCount: keep,
     truncated: true,
     hint
-  }), result.rows.length, maxChars);
+  }), compact.rows.length, maxChars);
   return { json: text, trimmed: true };
 }
 var NUMERIC_TYPE_RE = /int|decimal|numeric|float|real|double|money|number/i;
@@ -167309,6 +167731,7 @@ async function runTableProfile(db, tableName2, requested) {
 }
 function createTools(db, options = {}) {
   const batchQueries = options.batchQueries !== false;
+  const clarifyEnabled = options.clarify !== false;
   const isKingbase = db.type === "kingbase";
   const limitWord = isKingbase ? "LIMIT" : "TOP";
   const dialectTip = isKingbase ? '\u91D1\u4ED3\u662F PostgreSQL \u65B9\u8A00\uFF1A\u8868\u540D/\u5217\u540D\u8BF7\u4F7F\u7528\u53CC\u5F15\u53F7\uFF08\u5982 public."WMS_Stocks"\uFF09\uFF0C\u884C\u6570\u9650\u5236\u7528 LIMIT\u3002' : "";
@@ -167598,6 +168021,15 @@ function createTools(db, options = {}) {
       };
       json3 = JSON.stringify(payload);
     }
+    if (budget) {
+      results.forEach((item, index2) => {
+        const parsed = parseJsonObject(item.json) || {};
+        const columns = Array.isArray(parsed.columns) ? parsed.columns.map((column) => String(column)) : [];
+        const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+        const id = runnable.length === 1 && !rawQueries.length ? queryId : `${queryId}#${index2 + 1}`;
+        budget.recordQueryResult(id, columns, rows);
+      });
+    }
     const deny = budget ? budget.takeChars(json3.length) : null;
     if (deny) {
       logLine(`tool run_sql budget blocked: ${deny}`);
@@ -167609,10 +168041,43 @@ function createTools(db, options = {}) {
     return json3;
   }, {
     name: "run_sql",
-    description: batchQueries ? `\u6267\u884C\u53EA\u8BFB\u67E5\u8BE2\u5E76\u8FD4\u56DE JSON \u7ED3\u679C\uFF08columns/rows/rowCount/truncated\uFF09\u3002\u80FD\u4E00\u6B21\u53D6\u56DE\u7684\u53E3\u5F84\u8BF7\u5408\u5E76\u5230 queries \u6570\u7EC4\uFF082~10 \u6761\u72EC\u7ACB SQL \u5E76\u884C\u6267\u884C\uFF09\uFF0C\u5C11\u8D70\u6A21\u578B\u5F80\u8FD4\uFF1B\u5DE5\u5177\u7ED3\u679C\u91CC\u7684 remainingSql \u4E3A 0 \u65F6\u4E0D\u8981\u518D\u67E5\u8BE2\uFF0C\u76F4\u63A5\u51FA\u62A5\u544A/\u6536\u5C3E\uFF1B\u6570\u636E\u91CF\u5927\u65F6\u8BF7\u7528 GROUP BY / ${limitWord} \u805A\u5408\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\u3002` + (dialectTip ? ` ${dialectTip}` : "") : `\u6267\u884C\u4E00\u6761\u53EA\u8BFB\u67E5\u8BE2\u5E76\u8FD4\u56DE JSON \u7ED3\u679C\uFF08columns/rows/rowCount/truncated\uFF09\u3002\u5DE5\u5177\u7ED3\u679C\u91CC\u7684 remainingSql \u4E3A 0 \u65F6\u4E0D\u8981\u518D\u67E5\u8BE2\uFF0C\u76F4\u63A5\u51FA\u62A5\u544A/\u6536\u5C3E\uFF1B\u6570\u636E\u91CF\u5927\u65F6\u8BF7\u7528 GROUP BY / ${limitWord} \u805A\u5408\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\u3002` + (dialectTip ? ` ${dialectTip}` : ""),
+    description: batchQueries ? `\u6267\u884C\u53EA\u8BFB\u67E5\u8BE2\u5E76\u8FD4\u56DE JSON \u7ED3\u679C\uFF08columns/rows/rowCount/truncated\uFF1Brows \u4E3A\u4E8C\u7EF4\u6570\u7EC4\uFF0C\u6309 columns \u987A\u5E8F\u5BF9\u9F50\uFF09\u3002\u80FD\u4E00\u6B21\u53D6\u56DE\u7684\u53E3\u5F84\u8BF7\u5408\u5E76\u5230 queries \u6570\u7EC4\uFF082~10 \u6761\u72EC\u7ACB SQL \u5E76\u884C\u6267\u884C\uFF09\uFF0C\u5C11\u8D70\u6A21\u578B\u5F80\u8FD4\uFF1B\u5DE5\u5177\u7ED3\u679C\u91CC\u7684 remainingSql \u4E3A 0 \u65F6\u4E0D\u8981\u518D\u67E5\u8BE2\uFF0C\u76F4\u63A5\u51FA\u62A5\u544A/\u6536\u5C3E\uFF1B\u6570\u636E\u91CF\u5927\u65F6\u8BF7\u7528 GROUP BY / ${limitWord} \u805A\u5408\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\u3002` + (dialectTip ? ` ${dialectTip}` : "") : `\u6267\u884C\u4E00\u6761\u53EA\u8BFB\u67E5\u8BE2\u5E76\u8FD4\u56DE JSON \u7ED3\u679C\uFF08columns/rows/rowCount/truncated\uFF1Brows \u4E3A\u4E8C\u7EF4\u6570\u7EC4\uFF0C\u6309 columns \u987A\u5E8F\u5BF9\u9F50\uFF09\u3002\u5DE5\u5177\u7ED3\u679C\u91CC\u7684 remainingSql \u4E3A 0 \u65F6\u4E0D\u8981\u518D\u67E5\u8BE2\uFF0C\u76F4\u63A5\u51FA\u62A5\u544A/\u6536\u5C3E\uFF1B\u6570\u636E\u91CF\u5927\u65F6\u8BF7\u7528 GROUP BY / ${limitWord} \u805A\u5408\uFF0C\u4E0D\u8981\u62C9\u5168\u91CF\u660E\u7EC6\u3002` + (dialectTip ? ` ${dialectTip}` : ""),
     schema: external_exports2.object({
       sql: external_exports2.string().optional().describe("\u5355\u6761\u53EA\u8BFB SQL\uFF1B\u4E0E queries \u4E8C\u9009\u4E00"),
       queries: external_exports2.array(external_exports2.string()).max(10).optional().describe("2~10 \u6761\u4E92\u76F8\u72EC\u7ACB\u7684\u53EA\u8BFB SQL\uFF0C\u4E00\u6B21\u8C03\u7528\u5E76\u884C\u6267\u884C\uFF08\u63A8\u8350\uFF09")
+    })
+  });
+  const askClarificationTool = tool(async ({ question, fields, allow_skip }) => {
+    return JSON.stringify({
+      success: true,
+      clarify: true,
+      question: String(question || "").slice(0, 300),
+      fields: Array.isArray(fields) ? fields.slice(0, 5) : [],
+      allow_skip: allow_skip !== false
+    });
+  }, {
+    name: "ask_clarification",
+    description: "\u5F53\u7528\u6237\u95EE\u9898\u7F3A\u5C11\u5173\u952E\u6761\u4EF6\uFF08\u5982\u65F6\u95F4\u8303\u56F4\u3001\u4ED3\u5E93/\u7EC4\u7EC7\u3001\u6307\u6807\u53E3\u5F84\u3001\u7EDF\u8BA1\u7EF4\u5EA6\uFF09\u4E14\u65E0\u6CD5\u4ECE\u4E0A\u4E0B\u6587\u63A8\u65AD\u65F6\u8C03\u7528\u3002\u4E00\u6B21\u6700\u591A\u95EE 5 \u4E2A\u5B57\u6BB5\uFF0C\u53EA\u95EE\u771F\u6B63\u5F71\u54CD\u7ED3\u679C\u7684\u6761\u4EF6\uFF1B\u80FD\u4ECE\u4E0A\u4E0B\u6587\u63A8\u65AD\u7684\u4E0D\u8981\u95EE\u3002\u8C03\u7528\u540E\u672C\u8F6E\u4F1A\u6682\u505C\uFF0C\u524D\u7AEF\u5C55\u793A\u8868\u5355\uFF0C\u7528\u6237\u8865\u5145\u540E\u518D\u7EE7\u7EED\u5206\u6790\u3002",
+    schema: external_exports2.object({
+      question: external_exports2.string().describe("\u7ED9\u7528\u6237\u770B\u7684\u8BF4\u660E\uFF0C\u4F8B\u5982\uFF1A\u4E3A\u4E86\u51C6\u786E\u7EDF\u8BA1\u5E93\u5B58\uFF0C\u8BF7\u8865\u5145\u4EE5\u4E0B\u6761\u4EF6"),
+      fields: external_exports2.array(external_exports2.object({
+        key: external_exports2.string().describe("\u5B57\u6BB5 key\uFF0C\u4F7F\u7528\u82F1\u6587/\u62FC\u97F3\uFF0C\u907F\u514D\u4E2D\u6587"),
+        label: external_exports2.string().describe("\u5B57\u6BB5\u540D\uFF0C\u4F8B\u5982\uFF1A\u65F6\u95F4\u8303\u56F4 / \u4ED3\u5E93 / \u6307\u6807"),
+        type: external_exports2.enum(["select", "multiselect", "date", "daterange", "number", "text"]).describe("\u63A7\u4EF6\u7C7B\u578B\uFF1B\u6709\u56FA\u5B9A\u9009\u9879\u7528 select\uFF0C\u53EF\u591A\u9009\u7528 multiselect"),
+        required: external_exports2.boolean().optional().describe("\u662F\u5426\u5FC5\u586B\uFF0C\u9ED8\u8BA4 false"),
+        options: external_exports2.array(external_exports2.object({
+          label: external_exports2.string(),
+          value: external_exports2.union([external_exports2.string(), external_exports2.number()])
+        })).max(30).optional().describe("select/multiselect \u7684\u5019\u9009\u9879"),
+        placeholder: external_exports2.string().optional(),
+        default: external_exports2.union([
+          external_exports2.string(),
+          external_exports2.number(),
+          external_exports2.boolean(),
+          external_exports2.array(external_exports2.union([external_exports2.string(), external_exports2.number()]))
+        ]).optional()
+      })).min(1).max(5),
+      allow_skip: external_exports2.boolean().optional().describe("\u662F\u5426\u5141\u8BB8\u7528\u6237\u8DF3\u8FC7\u8865\u5145\uFF0C\u9ED8\u8BA4 true")
     })
   });
   const renderChartTool = tool(async (input2) => {
@@ -167657,7 +168122,7 @@ function createTools(db, options = {}) {
       title: external_exports2.string().describe("\u62A5\u8868\u6807\u9898\uFF0C\u4E2D\u6587"),
       subtitle: external_exports2.string().optional(),
       meta: external_exports2.array(external_exports2.string()).max(5).optional(),
-      blocks: external_exports2.array(external_exports2.record(external_exports2.string(), external_exports2.any())).min(1).max(40).describe("\u533A\u5757\u6570\u7EC4\uFF0C\u6309\u987A\u5E8F\u6392\u5217\uFF1Btype \u53D6 section/summary/notice/kpi/hbar/progress/chips/dist/chart/table/risk/insights\uFF0C\u5B57\u6BB5\u89C1\u5DE5\u5177\u63CF\u8FF0")
+      blocks: external_exports2.array(external_exports2.record(external_exports2.string(), external_exports2.any())).min(1).max(40).describe('\u81EA\u7531\u7EC4\u5408\u7684\u533A\u5757\u6570\u7EC4\uFF1B\u666E\u901A\u533A\u5757 type \u53D6 section/summary/notice/kpi/hbar/progress/chips/dist/chart/table/risk/insights\uFF0C\u4EFB\u610F\u533A\u5757\u90FD\u53EF\u5E26 span(1~12)\uFF1B\u9700\u8981\u5206\u680F\u65F6\u7528 {type:"row", columns:[{span:8, blocks:[...]}, {span:4, blocks:[...]}]}\uFF1B\u5B57\u6BB5\u89C1\u5DE5\u5177\u63CF\u8FF0')
     }),
     responseFormat: "content_and_artifact"
   });
@@ -167680,6 +168145,19 @@ function createTools(db, options = {}) {
     if (noNote.length) {
       return fail("missing/needs_review \u6307\u6807\u5FC5\u987B\u5199\u6E05\u539F\u56E0\uFF08note\uFF09\u3002", noNote.map((entry) => entry.item));
     }
+    const budget = currentBudget();
+    const strictNumberCheck = budget?.limits.strictNumberCheck === true;
+    const numberCheck = budget ? validateCoverageNumbers(coverage, budget, strictNumberCheck) : null;
+    if (numberCheck && strictNumberCheck && numberCheck.mismatches.length) {
+      return fail("\u62A5\u544A\u4E2D\u7684\u6570\u503C\u65E0\u6CD5\u5728\u672C\u8F6E\u67E5\u8BE2\u7ED3\u679C\u4E2D\u627E\u5230\uFF0C\u8BF7\u6838\u5BF9\u6570\u5B57\uFF0C\u6216\u628A\u5BF9\u5E94\u6307\u6807\u6539\u6807 needs_review / missing\u3002", numberCheck.mismatches);
+    }
+    if (numberCheck?.mismatches.length) {
+      for (const mismatch of numberCheck.mismatches) {
+        normalized.warnings.push(`\u6570\u503C\u6838\u5BF9\uFF1A${mismatch}`);
+      }
+    }
+    if (numberCheck)
+      logLine(formatNumberCheck(numberCheck));
     const elementInfo = normalized.elements.length ? normalized.elements.join(",") : "-";
     const richness = analyzeReportRichness(normalized.html, normalized.charts);
     const richnessInfo = `data=${richness.dataElements.length}(${richness.dataElements.join(",") || "-"}) narrative=${richness.narrativeElements.length}(${richness.narrativeElements.join(",") || "-"}) sections=${richness.sections} tables=${richness.tables} charts=${richness.chartTypes.join(",") || "-"}`;
@@ -167701,6 +168179,14 @@ function createTools(db, options = {}) {
           missing: coverage.filter((entry) => entry.status === "missing").length,
           needs_review: coverage.filter((entry) => entry.status === "needs_review").length
         },
+        ...numberCheck ? {
+          numberCheck: {
+            checked: numberCheck.checked,
+            matched: numberCheck.matched,
+            skipped: numberCheck.skipped,
+            mismatches: numberCheck.mismatches
+          }
+        } : {},
         hint: "\u62A5\u544A\u5DF2\u6E32\u67D3\u3002\u6570\u636E\u8D28\u91CF\u63D0\u793A\u7531\u524D\u7AEF\u5C55\u793A\uFF0C\u6B63\u6587\u53EA\u5199\u4E00\u53E5\u201C\u62A5\u544A\u5DF2\u751F\u6210\u201D\uFF0C\u4E0D\u8981\u91CD\u8BD5\u3002"
       }),
       normalized
@@ -167766,7 +168252,7 @@ function createTools(db, options = {}) {
       name: "read_skill",
       description: "\u8BFB\u53D6\u6280\u80FD\u5B8C\u6574\u6B65\u9AA4\uFF08SKILL.md \u6B63\u6587\uFF0C\u4E0D\u542B frontmatter\uFF09\uFF0C\u5355\u6B21\u6700\u591A 12000 \u5B57\u7B26\u3002\u7528\u6237\u4EFB\u52A1\u4E0E\u6280\u80FD\u76EE\u5F55\u4E2D\u7684\u63CF\u8FF0\u5339\u914D\u65F6\u5148\u8BFB\u53D6\uFF0C\u518D\u6309\u6B65\u9AA4\u6267\u884C\uFF1B\u4E0D\u8981\u51ED\u6807\u9898\u731C\u6D41\u7A0B\u3002",
       schema: external_exports2.object({
-        name: external_exports2.string().describe("\u6280\u80FD\u540D\uFF0C\u4F8B\u5982 weekly-report")
+        name: external_exports2.string().describe("\u6280\u80FD\u540D\uFF0C\u4F8B\u5982 report-authoring")
       })
     }), tool(async ({ name, path: path4 }) => {
       const budget = currentBudget();
@@ -167901,12 +168387,18 @@ function createTools(db, options = {}) {
       const maxChars = budget ? budget.limits.maxResultChars : 8e3;
       const { json: resultJson, trimmed } = trimQueryResult(result, maxChars, limitWord);
       const parsed = parseJsonObject(resultJson) || {};
+      const queryId = `saved-${saved.key}-${Date.now().toString(36)}`;
       const json3 = JSON.stringify({
         ...parsed,
-        queryId: `saved-${saved.key}-${Date.now().toString(36)}`,
+        queryId,
         savedQuery: saved.key,
         complete: result.success && !trimmed && !result.truncated
       });
+      if (budget) {
+        const columns = Array.isArray(parsed.columns) ? parsed.columns.map((column) => String(column)) : [];
+        const rows = Array.isArray(parsed.rows) ? parsed.rows : [];
+        budget.recordQueryResult(queryId, columns, rows);
+      }
       const deny = budget ? budget.takeChars(json3.length) : null;
       if (deny)
         return budgetMessage("chars", deny);
@@ -167926,6 +168418,7 @@ function createTools(db, options = {}) {
     getTableSchemaTool,
     ...extraTools,
     runQueryTool,
+    ...clarifyEnabled ? [askClarificationTool] : [],
     renderReportTool,
     renderHtmlReportTool,
     renderChartTool
@@ -167937,7 +168430,11 @@ function createTools(db, options = {}) {
       "search_tables",
       "get_table_schema",
       "run_sql",
+      "ask_clarification",
       "render_html_report",
+      "list_skills",
+      "read_skill",
+      "read_skill_file",
       "search_knowledge",
       "read_knowledge",
       "run_saved_query"
@@ -167963,6 +168460,8 @@ var BASE_SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u901A\u7528\u6570\u636E\u5E93
 6. \u4E0D\u8981\u7F16\u9020\u6570\u636E\uFF0C\u4E00\u5207\u7ED3\u8BBA\u5FC5\u987B\u57FA\u4E8E\u5DE5\u5177\u8FD4\u56DE\u7684\u771F\u5B9E\u7ED3\u679C\uFF1B\u7ED3\u679C\u4E3A\u7A7A\u65F6\u660E\u786E\u8BF4\u660E\u3002
 7. \u5DE5\u5177\u8FD4\u56DE complete=false / truncated=true \u65F6\uFF0C\u4E0D\u80FD\u5F53\u4F5C\u5B8C\u6574\u6570\u636E\uFF1B\u5E94\u6539\u7528\u805A\u5408\u6216\u8865\u5145\u67E5\u8BE2\uFF0C\u5E76\u5728\u62A5\u544A\u4E2D\u8BF4\u660E\u6570\u636E\u7F3A\u53E3\u3002
 8. \u95EE\u9898\u542B\u7CCA\u65F6\u5148\u63D0\u51FA\u6F84\u6E05\uFF1B\u5DE5\u5177\u8FD4\u56DE\u6743\u9650/\u8BED\u6CD5\u9519\u8BEF\u65F6\u7528\u4E00\u53E5\u4EBA\u8BDD\u8BF4\u660E\uFF0C\u4E0D\u8981\u53CD\u590D\u91CD\u8BD5\u3002
+9. \u5982\u67D0\u6761\u7ED3\u8BBA\u76F4\u63A5\u6765\u81EA\u672C\u8F6E\u67D0\u6B21 run_sql \u7ED3\u679C\uFF0C\u53EF\u5728\u53E5\u672B\u7528 [n] \u6807\u6CE8\u6765\u6E90\uFF0Cn \u4E3A\u672C\u8F6E run_sql \u8C03\u7528\u987A\u5E8F\uFF08\u4ECE 1 \u5F00\u59CB\uFF0C\u6700\u591A 9\uFF09\uFF1B\u6CA1\u6709\u5BF9\u5E94\u67E5\u8BE2\u65F6\u4E0D\u8981\u7F16\u53F7\u3002
+10. \u7528\u6237\u4E0A\u4F20\u56FE\u7247\u65F6\uFF0C\u5148\u8BC6\u522B\u56FE\u7247\u4E2D\u7684\u8868\u683C/\u622A\u56FE/\u62A5\u9519\u4FE1\u606F\uFF0C\u518D\u7ED3\u5408\u6570\u636E\u5E93\u56DE\u7B54\uFF1B\u8BC6\u522B\u4E0D\u6E05\u65F6\u76F4\u63A5\u8BF4\u660E\uFF0C\u4E0D\u8981\u731C\u6D4B\u56FE\u7247\u5185\u5BB9\u3002
 
 \u62A5\u544A\u89C4\u5219\uFF1A
 - \u7528\u6237\u63D0\u5230"\u62A5\u544A / \u65E5\u62A5 / \u5468\u62A5 / \u6708\u62A5 / \u5E74\u62A5 / \u6C47\u62A5 / \u5927\u5C4F / \u5B8C\u6574\u5206\u6790 / \u5206\u6790\u62A5\u544A"\u7B49\uFF0C\u4F7F\u7528 render_html_report\uFF1B\u8F7B\u91CF\u5361\u7247\u573A\u666F\u7528 render_report\uFF1B\u5355\u56FE\u7528 render_chart\u3002
@@ -167972,11 +168471,16 @@ var BASE_SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u901A\u7528\u6570\u636E\u5E93
   \xB7 ok\uFF1A\u5FC5\u987B\u6709\u6570\u636E\u6765\u6E90\uFF1B
   \xB7 missing\uFF1A\u5B57\u6BB5/\u6570\u636E\u786E\u5B9E\u7F3A\u5931\uFF0C\u5199\u6E05\u539F\u56E0\uFF1B
   \xB7 needs_review\uFF1A\u53E3\u5F84\u5F85\u786E\u8BA4\uFF0C\u4E0D\u8F93\u51FA\u6570\u503C\uFF0C\u53EA\u5199\u8BF4\u660E\u3002
-- \u7ED3\u6784\u53C2\u8003\uFF1Asection 4~8 \u4E2A\uFF1B\u6570\u636E\u578B\u5143\u7D20\u81F3\u5C11 2 \u4E2A\u3001\u53D9\u4E8B\u578B\u81F3\u5C11 2 \u4E2A\uFF1B\u7B2C\u4E00\u4E2A section \u653E 2~4 \u4E2A KPI + 1 \u5F20\u4E3B\u56FE/\u70ED\u529B\u8868\u3002
-- CSS \u5EFA\u8BAE 8~20KB\uFF08\u6700\u591A 60KB\uFF09\uFF1B\u7AE0\u8282\u7F16\u53F7 .section-no \u53EA\u653E 1~2 \u4F4D\u6570\u5B57\uFF1B\u7981\u6B62 position:fixed \u6216\u7528 absolute \u8986\u76D6\u6807\u9898/\u6570\u5B57/\u8868\u683C\u3002
+- \u7ED3\u6784\u7531\u5185\u5BB9\u51B3\u5B9A\uFF0C\u4E0D\u8981\u6BCF\u4EFD\u90FD\u5957\u56FA\u5B9A\u7AE0\u8282\u987A\u5E8F\uFF1B\u5B8C\u6574\u62A5\u544A\u7684\u6570\u636E\u578B\u5143\u7D20\u81F3\u5C11 2 \u4E2A\u3001\u53D9\u4E8B\u578B\u81F3\u5C11 2 \u4E2A\uFF0C\u8F7B\u91CF\u5206\u6790\u4E0D\u8981\u786C\u51D1\u3002
+- CSS \u5EFA\u8BAE 3~8KB\uFF08\u6700\u591A 40KB\uFF09\uFF1B\u7AE0\u8282\u7F16\u53F7 .section-no \u53EA\u653E 1~2 \u4F4D\u6570\u5B57\uFF1B\u7981\u6B62 position:fixed \u6216\u7528 absolute \u8986\u76D6\u6807\u9898/\u6570\u5B57/\u8868\u683C\u3002
 - \u660E\u7EC6\u8868\u6700\u591A 10 \u884C\uFF1B\u6B63\u6587\u53EA\u56DE\u4E00\u53E5"\u62A5\u544A\u5DF2\u751F\u6210"\u3002
 - HTML / CSS / ECharts \u6E90\u7801\u53EA\u80FD\u653E\u5728\u5DE5\u5177\u53C2\u6570\u91CC\uFF0C\u4E25\u7981\u8F93\u51FA\u5230\u804A\u5929\u6B63\u6587\u6216\u8BA9\u7528\u6237\u81EA\u5DF1\u4FDD\u5B58\u8FD0\u884C\u3002
-- \u7ED3\u679C\u53EA\u6709\u4E00\u884C\u6C47\u603B\u503C\u4E14\u7528\u6237\u53EA\u95EE\u4E00\u4E2A\u6570\u65F6\uFF0C\u53EF\u4EE5\u76F4\u63A5\u7528\u7B80\u77ED\u6587\u5B57\u56DE\u7B54\u3002`;
+- \u7ED3\u679C\u53EA\u6709\u4E00\u884C\u6C47\u603B\u503C\u4E14\u7528\u6237\u53EA\u95EE\u4E00\u4E2A\u6570\u65F6\uFF0C\u53EF\u4EE5\u76F4\u63A5\u7528\u7B80\u77ED\u6587\u5B57\u56DE\u7B54\u3002
+
+\u53EF\u89C6\u5316\u81EA\u7531\u7EC4\u5408\uFF1A
+- render_report \u53EA\u662F\u7EC4\u4EF6\u753B\u5E03\uFF1A\u6309\u6570\u636E\u9009\u62E9 kpi / chart / table / insights / risk / notice \u7B49\u7EC4\u4EF6\uFF0C\u53EF\u91CD\u590D\u3001\u53EF\u7701\u7565\u3001\u53EF\u8C03\u6574\u987A\u5E8F\u3002
+- \u9700\u8981\u5E76\u6392\u65F6\u7528 row + columns(span) \u505A\u5206\u680F\uFF1B\u4E0D\u8981\u6BCF\u4EFD\u90FD\u6392\u6210\u5355\u5217\u957F\u62A5\u8868\uFF0C\u4E5F\u4E0D\u8981\u628A\u6240\u6709\u7EC4\u4EF6\u90FD\u5806\u4E0A\u53BB\u3002
+- \u8F7B\u91CF\u5206\u6790\u4F18\u5148 1~3 \u4E2A\u6700\u6709\u6548\u7684\u7EC4\u4EF6\uFF0C\u5E03\u5C40\u968F\u6570\u636E\u51B3\u5B9A\uFF1B\u8FDE\u7EED\u5BF9\u8BDD\u4E2D\u4E3B\u52A8\u6362\u4E00\u79CD\u7EC4\u7EC7\u65B9\u5F0F\u3002`;
 var KINGBASE_PROMPT = `\u3010\u5F53\u524D\u6570\u636E\u5E93\uFF1AKingbaseES\uFF08PostgreSQL \u517C\u5BB9\u6A21\u5F0F\uFF0C\u53EA\u8BFB\uFF09\u3011
 - \u53EA\u5141\u8BB8 SELECT / WITH \u67E5\u8BE2\uFF0C\u7981\u6B62\u4EFB\u4F55\u5199\u64CD\u4F5C\u3001DDL\u3001\u5B58\u50A8\u8FC7\u7A0B\u8C03\u7528\u3002
 - \u6807\u8BC6\u7B26\u533A\u5206\u5927\u5C0F\u5199\uFF1A\u8868\u540D\u3001\u5217\u540D\u5FC5\u987B\u4F7F\u7528\u53CC\u5F15\u53F7\uFF0C\u5E76\u539F\u6837\u4F7F\u7528\u5DE5\u5177\u8FD4\u56DE\u7684\u5E26\u5F15\u53F7\u540D\u79F0\uFF0C\u4F8B\u5982 public."YourTable"\u3001"YourColumn"\u3002
@@ -167987,6 +168491,10 @@ var NO_KNOWLEDGE_PROMPT = `\u3010\u5F53\u524D\u6CA1\u6709\u4E1A\u52A1\u77E5\u8BC
 - \u5148\u7528 search_tables / list_tables / get_table_schema \u4E86\u89E3\u6709\u54EA\u4E9B\u8868\u548C\u5B57\u6BB5\uFF1B
 - \u4E1A\u52A1\u53E3\u5F84\u4E0D\u660E\u786E\u65F6\u5411\u7528\u6237\u6F84\u6E05\uFF0C\u6216\u628A\u6307\u6807\u6807\u4E3A needs_review / missing\uFF1B
 - \u4E0D\u8981\u731C\u4E1A\u52A1\u89C4\u5219\u3001\u4E0D\u8981\u7F16\u9020\u6307\u6807\u53E3\u5F84\u3002`;
+var CLARIFY_PROMPT = `\u3010\u6F84\u6E05\u89C4\u5219\u3011
+- \u7528\u6237\u95EE\u9898\u7F3A\u5C11\u5173\u952E\u6761\u4EF6\uFF08\u65F6\u95F4\u8303\u56F4\u3001\u4ED3\u5E93/\u7EC4\u7EC7\u3001\u6307\u6807\u53E3\u5F84\u3001\u7EDF\u8BA1\u7EF4\u5EA6\u7B49\uFF09\u4E14\u65E0\u6CD5\u4ECE\u4E0A\u4E0B\u6587\u63A8\u65AD\u65F6\uFF0C\u5148\u8C03\u7528 ask_clarification \u8BA9\u7528\u6237\u8865\u5145\uFF1B
+- \u4E00\u6B21\u6700\u591A\u95EE 5 \u4E2A\u5B57\u6BB5\uFF0C\u53EA\u95EE\u771F\u6B63\u5F71\u54CD\u7ED3\u679C\u7684\u6761\u4EF6\uFF1B\u80FD\u4ECE\u4E0A\u4E0B\u6587\u63A8\u65AD\u7684\u4E0D\u8981\u95EE\uFF1B
+- \u7528\u6237\u8865\u5145\u540E\u518D\u7EE7\u7EED\u67E5\u8BE2\u6216\u51FA\u62A5\u544A\u3002`;
 var SKILL_RULES_PROMPT = `\u3010\u6280\u80FD\u4F7F\u7528\u89C4\u5219\u3011
 - \u7528\u6237\u4EFB\u52A1\u4E0E\u6280\u80FD\u76EE\u5F55\u4E2D\u7684\u63CF\u8FF0\u5339\u914D\u65F6\uFF0C\u5148 read_skill(name) \u8BFB\u53D6\u5B8C\u6574\u6B65\u9AA4\uFF0C\u518D\u6309\u6B65\u9AA4\u6267\u884C\u3002
 - \u4E0D\u8981\u51ED\u6280\u80FD\u6807\u9898\u731C\u6D41\u7A0B\uFF1B\u6280\u80FD\u91CC\u7684 SQL/\u8868\u540D\u53EA\u662F\u793A\u4F8B\uFF0C\u6267\u884C\u524D\u786E\u8BA4\u5F53\u524D\u5E93\u7684\u8868\u548C\u5B57\u6BB5\u3002
@@ -167996,8 +168504,11 @@ var REPORT_PLAN_PROMPT = `\u3010\u62A5\u544A\u8F6E\u6267\u884C\u8BA1\u5212\u3011
 - SQL \u6309 KPI\u3001\u8D8B\u52BF/\u6392\u540D\u3001\u8D28\u91CF/\u5F02\u5E38\u4E09\u7EC4\u7EC4\u7EC7\uFF0C\u5C3D\u91CF\u4E00\u6B21 8~10 \u6761\uFF0C\u4E0D\u8981\u9010\u8868\u91CD\u590D\u67E5\u8BE2\uFF1B
 - \u6570\u636E\u4E0D\u8DB3\u65F6\u7528 coverage \u6807 missing/needs_review\uFF0C\u4E0D\u8981\u4E3A\u4E86\u8865\u5168\u53CD\u590D\u63A2\u7D22\uFF1B
 - \u6700\u540E\u5FC5\u987B\u8C03\u7528 render_html_report\uFF1B\u7981\u6B62\u53EA\u8F93\u51FA\u201C\u73B0\u5728\u751F\u6210\u62A5\u544A\u201D\u8FD9\u7C7B\u6587\u5B57\u3002`;
+var REPORT_SKILL_HINT = "- \u547D\u4E2D\u62A5\u544A\u7C7B\u6216\u4E1A\u52A1\u7C7B\u6280\u80FD\u65F6\uFF0C\u5148 read_skill(name)\uFF0C\u7AE0\u8282\u7ED3\u6784\u3001\u6307\u6807\u548C\u67E5\u8BE2\u987A\u5E8F\u4EE5\u6280\u80FD\u4E3A\u51C6\uFF1B\u4E0B\u9762\u7684\u9ED8\u8BA4\u8BA1\u5212\u4EC5\u4F5C\u515C\u5E95\uFF1B";
 function buildSystemPrompt(cfg, reportMode = false) {
   const parts = [BASE_SYSTEM_PROMPT];
+  if (cfg.enableClarify)
+    parts.push(CLARIFY_PROMPT);
   if (cfg.db.type === "kingbase")
     parts.push(KINGBASE_PROMPT);
   const knowledge = getKnowledgePack();
@@ -168017,12 +168528,15 @@ ${rules.join("\n")}`);
     parts.push(NO_KNOWLEDGE_PROMPT);
   }
   const skills = getSkillPack();
-  if (!reportMode && skills && skills.skills.length) {
+  const hasSkills = Boolean(skills && skills.skills.length);
+  if (hasSkills && skills) {
     parts.push(skills.catalogText);
     parts.push(SKILL_RULES_PROMPT);
   }
-  if (reportMode)
-    parts.push(REPORT_PLAN_PROMPT);
+  if (reportMode) {
+    parts.push(hasSkills ? REPORT_PLAN_PROMPT.replace("\u3010\u62A5\u544A\u8F6E\u6267\u884C\u8BA1\u5212\u3011", `\u3010\u62A5\u544A\u8F6E\u6267\u884C\u8BA1\u5212\u3011
+${REPORT_SKILL_HINT}`) : REPORT_PLAN_PROMPT);
+  }
   parts.push(CHART_RECIPE_PROMPT);
   return parts.join("\n\n");
 }
@@ -168136,9 +168650,12 @@ function buildRuntime(cfg, reportMode) {
   });
   const tools2 = createTools(cfg.db, {
     batchQueries: !cfg.requireSqlApproval,
-    reportMode
+    reportMode,
+    clarify: cfg.enableClarify
   });
   const middleware = [
+    // 成本兜底：每次模型调用前检查本轮预算，调用后记录真实 token/缓存用量。
+    costGuardMiddleware(cfg.tokenPrices),
     contextEditingMiddleware({
       edits: [
         compactMetadataEdit,
@@ -168451,9 +168968,6 @@ function buildVariantHint(variant, previous) {
 
 // dist/suggest.js
 init_messages2();
-var suggestionSchema = external_exports2.object({
-  suggestions: external_exports2.array(external_exports2.string()).max(3).describe("\u7528\u6237\u53EF\u4EE5\u7EE7\u7EED\u8FFD\u95EE\u7684\u77ED\u95EE\u9898\uFF0C\u6700\u591A 3 \u6761\uFF0C\u4E2D\u6587\uFF0C\u6BCF\u6761 4~18 \u4E2A\u5B57")
-});
 var SYSTEM_PROMPT = `\u4F60\u662F\u6570\u636E\u5E93\u5206\u6790\u52A9\u624B\u3002\u8BF7\u6839\u636E\u672C\u8F6E\u7528\u6237\u95EE\u9898\u548C\u6700\u7EC8\u56DE\u7B54\uFF0C\u7ED9\u51FA\u7528\u6237\u53EF\u4EE5\u7EE7\u7EED\u8FFD\u95EE\u7684 3 \u4E2A\u77ED\u95EE\u9898\u3002
 
 \u8981\u6C42\uFF1A
@@ -168461,7 +168975,8 @@ var SYSTEM_PROMPT = `\u4F60\u662F\u6570\u636E\u5E93\u5206\u6790\u52A9\u624B\u300
 - \u5FC5\u987B\u5177\u4F53\u5230\u6570\u636E\u3001\u6307\u6807\u3001\u65F6\u95F4\u8303\u56F4\u3001\u4E1A\u52A1\u5BF9\u8C61\u3001\u5F02\u5E38\u6216\u4E0B\u4E00\u6B65\u52A8\u4F5C\u3002
 - \u4E0D\u8981\u91CD\u590D\u672C\u8F6E\u95EE\u9898\u3002
 - \u4E0D\u8981\u8F93\u51FA\u7F16\u53F7\u3001\u5F15\u53F7\u3001\u89E3\u91CA\u6216\u524D\u540E\u7F00\u3002
-- \u5982\u679C\u672C\u8F6E\u6CA1\u6709\u6570\u636E\u3001\u53EA\u662F\u95EE\u5019/\u6F84\u6E05/\u9519\u8BEF\u8BF4\u660E\uFF0Csuggestions \u8FD4\u56DE\u7A7A\u6570\u7EC4\u3002`;
+- \u5982\u679C\u672C\u8F6E\u6CA1\u6709\u6570\u636E\u3001\u53EA\u662F\u95EE\u5019/\u6F84\u6E05/\u9519\u8BEF\u8BF4\u660E\uFF0Csuggestions \u8FD4\u56DE\u7A7A\u6570\u7EC4\u3002
+- \u53EA\u8F93\u51FA\u4E00\u4E2A JSON \u5BF9\u8C61\uFF0C\u683C\u5F0F\uFF1A{"suggestions":["\u95EE\u98981","\u95EE\u98982","\u95EE\u98983"]}\uFF0C\u4E0D\u8981\u4EE3\u7801\u5757\u3002`;
 function formatMeta(meta3) {
   if (!meta3)
     return "\u65E0";
@@ -168474,6 +168989,35 @@ function formatMeta(meta3) {
     `\u62A5\u544A\u7C7B\u578B\uFF1A${report.template || "\u65E0"} / \u7ED3\u6784\uFF1A${report.layout || "\u65E0"} / \u6807\u9898\uFF1A${report.title || "\u65E0"} / \u671F\u95F4\uFF1A${report.period || "\u65E0"} / \u53E3\u5F84\uFF1A${report.scope || "\u65E0"}`
   ];
   return parts.join("\n");
+}
+function contentToText(content) {
+  if (typeof content === "string")
+    return content;
+  if (Array.isArray(content)) {
+    return content.map((item) => {
+      if (typeof item === "string")
+        return item;
+      if (item && typeof item === "object" && "text" in item) {
+        return String(item.text || "");
+      }
+      return "";
+    }).join("");
+  }
+  return "";
+}
+function parseSuggestionOutput(text) {
+  const cleaned = String(text || "").replace(/```(?:json)?/gi, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start >= 0 && end > start) {
+    try {
+      const parsed = JSON.parse(cleaned.slice(start, end + 1));
+      if (Array.isArray(parsed.suggestions))
+        return parsed.suggestions;
+    } catch {
+    }
+  }
+  return cleaned.split(/\r?\n/).map((line) => line.replace(/^[\s\-*•]+/, "").trim()).filter((line) => line && !/^[{}[\],]+$/.test(line));
 }
 function normalizeSuggestions(raw, question = "") {
   const list = Array.isArray(raw) ? raw : [];
@@ -168500,10 +169044,16 @@ function normalizeSuggestions(raw, question = "") {
   return result;
 }
 async function generateSuggestions(llm, input2) {
+  const emptyUsage = {
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    cacheCreationTokens: 0
+  };
   const question = String(input2.question || "").trim();
   const answer = String(input2.answer || "").trim();
   if (!question || !answer)
-    return [];
+    return { items: [], usage: emptyUsage };
   const model = new ChatOpenAI({
     model: llm.model,
     apiKey: llm.apiKey,
@@ -168516,8 +169066,7 @@ async function generateSuggestions(llm, input2) {
       baseURL: llm.baseUrl
     }
   });
-  const structured = model.withStructuredOutput(suggestionSchema);
-  const result = await structured.invoke([
+  const response = await model.invoke([
     new SystemMessage(SYSTEM_PROMPT),
     new HumanMessage([
       `\u672C\u8F6E\u95EE\u9898\uFF1A${question}`,
@@ -168526,11 +169075,15 @@ async function generateSuggestions(llm, input2) {
 ${formatMeta(input2.meta)}`
     ].join("\n\n"))
   ]);
-  return normalizeSuggestions(result && result.suggestions, question);
+  const usage = extractUsage(response.usage_metadata, response.response_metadata);
+  return {
+    items: normalizeSuggestions(parseSuggestionOutput(contentToText(response.content)), question),
+    usage
+  };
 }
 
 // dist/index.js
-var app = (0, import_fastify.default)({ logger: true });
+var app = (0, import_fastify.default)({ logger: true, bodyLimit: 20 * 1024 * 1024 });
 app.addHook("onRequest", async (_request, reply) => {
   reply.header("Access-Control-Allow-Origin", "*");
   reply.header("Access-Control-Allow-Headers", "Content-Type");
@@ -168547,12 +169100,58 @@ app.get("/health", async () => ({
   uptimeSec: Math.round(process.uptime())
 }));
 app.get("/handshake", async () => handshake);
+function shortText(value, max) {
+  return String(value == null ? "" : value).replace(/\s+/g, " ").trim().slice(0, max);
+}
+app.post("/chat/feedback", async (request, reply) => {
+  const body = request.body;
+  const rating = body?.rating === "up" || body?.rating === "down" ? body.rating : "";
+  if (!rating) {
+    reply.code(400);
+    return { ok: false, error: "rating \u5FC5\u987B\u662F up \u6216 down" };
+  }
+  const reasons = Array.isArray(body?.reasons) ? body.reasons.map((item) => shortText(item, 40)).filter(Boolean).slice(0, 10) : [];
+  let metaText = "";
+  try {
+    metaText = JSON.stringify(body?.meta || null);
+  } catch {
+    metaText = "";
+  }
+  await logFeedback({
+    ts: (/* @__PURE__ */ new Date()).toISOString(),
+    conversationId: shortText(body?.conversationId, 120),
+    messageId: shortText(body?.messageId, 160),
+    rating,
+    reasons,
+    comment: shortText(body?.comment, 500),
+    question: shortText(body?.question, 1e3),
+    answer: shortText(body?.answer, 4e3),
+    model: shortText(body?.model, 120),
+    meta: metaText.length <= 8e3 ? metaText : metaText.slice(0, 8e3)
+  });
+  return { ok: true };
+});
+var MAX_MESSAGE_IMAGES = 3;
+var MAX_IMAGE_DATA_URL_CHARS = 8 * 1024 * 1024;
+function sanitizeImageUrls(input2) {
+  if (!Array.isArray(input2))
+    return [];
+  return input2.map((item) => String(item || "")).filter((url2) => /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(url2)).filter((url2) => url2.length <= MAX_IMAGE_DATA_URL_CHARS).slice(0, MAX_MESSAGE_IMAGES);
+}
 function toMessage(message) {
   if (message.role === "assistant")
     return new AIMessage(message.content);
   if (message.role === "system")
     return new SystemMessage(message.content);
-  return new HumanMessage(message.content);
+  const images = sanitizeImageUrls(message.images);
+  if (!images.length)
+    return new HumanMessage(message.content);
+  const text = String(message.content || "").trim() || "\u8BF7\u5206\u6790\u8FD9\u5F20\u56FE\u7247\uFF0C\u63D0\u53D6\u5173\u952E\u4FE1\u606F\u5E76\u7ED9\u51FA\u7ED3\u8BBA\u3002";
+  const content = [
+    { type: "text", text },
+    ...images.map((url2) => ({ type: "image_url", image_url: { url: url2 } }))
+  ];
+  return new HumanMessage({ content });
 }
 function resolveOrThrow(input2) {
   return resolveRequestConfig(input2);
@@ -168621,6 +169220,13 @@ app.post("/chat/stream", async (request, reply) => {
     fail("\u5F53\u524D\u4F1A\u8BDD\u8FC7\u591A\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5");
     return;
   }
+  const conversationKey = body.conversationId || "anonymous";
+  const ledger2 = getUsageLedger();
+  const dailyDeny = ledger2.check(conversationKey, resolved.maxDailyTokens);
+  if (dailyDeny) {
+    fail(dailyDeny);
+    return;
+  }
   const knowledgeStatus = getKnowledgeStatus();
   if (!knowledgeStatus.loaded) {
     const key = body.conversationId || "";
@@ -168667,6 +169273,17 @@ app.post("/chat/stream", async (request, reply) => {
     }, "report variant");
     logLine(`report variant ${variant.reason} style=${variant.visualStyle} elements=${variant.featureElements.join(",")}`);
   }
+  if (!wantsReport) {
+    const lastStructure = Array.isArray(body.lastStructure) ? body.lastStructure.map((item) => String(item || "").trim().slice(0, 40)).filter(Boolean).slice(0, 20) : [];
+    if (lastStructure.length) {
+      const hint = `\u3010\u7248\u5F0F\u53BB\u91CD\u3011\u4E0A\u4E00\u4EFD\u53EF\u89C6\u5316\u7ED3\u6784\uFF1A${lastStructure.join(" \u2192 ")}\u3002\u672C\u6B21\u8BF7\u6309\u6570\u636E\u91CD\u65B0\u8BBE\u8BA1\u7EC4\u4EF6\u987A\u5E8F\u4E0E\u5206\u680F\uFF0C\u4E0D\u8981\u590D\u7528\u540C\u4E00\u5957\u9AA8\u67B6\uFF1B\u9664\u975E\u7528\u6237\u660E\u786E\u8981\u6C42\u6CBF\u7528\u3002`;
+      const lastUserIndex = messages.reduce((index2, message, i) => message._getType() === "human" ? i : index2, -1);
+      if (lastUserIndex >= 0) {
+        messages.splice(lastUserIndex, 0, new SystemMessage(hint));
+      }
+      logLine(`visual structure dedupe=${lastStructure.join(",")}`);
+    }
+  }
   try {
     const candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8), 12e3, "\u76F8\u5173\u8868\u68C0\u7D22\u8D85\u65F6");
     const block = formatTableCandidates(candidates);
@@ -168699,7 +169316,10 @@ app.post("/chat/stream", async (request, reply) => {
     maxSchemaCalls: resolved.maxSchemaCalls,
     // 报告需要完整聚合结果；普通问答保持原值
     maxResultChars: wantsReport ? Math.max(resolved.maxResultChars, 2e4) : resolved.maxResultChars,
-    maxTotalToolChars: wantsReport ? Math.max(resolved.maxTotalToolChars, 12e4) : resolved.maxTotalToolChars
+    maxTotalToolChars: wantsReport ? Math.max(resolved.maxTotalToolChars, 12e4) : resolved.maxTotalToolChars,
+    maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : resolved.maxTurnTokens,
+    maxModelCalls: wantsReport ? resolved.maxReportModelCalls : resolved.maxModelCalls,
+    strictNumberCheck: resolved.strictNumberCheck
   }, { unlimitedQueries: wantsReport });
   let turnError = "";
   const turnStartedAt = Date.now();
@@ -168722,7 +169342,8 @@ app.post("/chat/stream", async (request, reply) => {
       agent = getRuntime(resolved, wantsReport);
       const approxTokens = countTokensApproximately([new SystemMessage(buildSystemPrompt(resolved, wantsReport)), ...messages], createTools(resolved.db, {
         batchQueries: !resolved.requireSqlApproval,
-        reportMode: wantsReport
+        reportMode: wantsReport,
+        clarify: resolved.enableClarify
       }));
       if (approxTokens >= resolved.summaryTriggerTokens) {
         logLine(`context summary expected tokens~${approxTokens}`);
@@ -168745,6 +169366,11 @@ app.post("/chat/stream", async (request, reply) => {
           break;
         }
       }
+      if (bridge.clarifyPending()) {
+        bridge.sendEnrichment();
+        send({ type: "done" });
+        return;
+      }
       if (bridge.shouldStop()) {
         send({ type: "token", content: "\u62A5\u544A\u5DF2\u751F\u6210\u3002" });
         bridge.sendEnrichment();
@@ -168762,6 +169388,11 @@ app.post("/chat/stream", async (request, reply) => {
       bridge.sendEnrichment();
       send({ type: "done" });
     } catch (error62) {
+      if (bridge.clarifyPending()) {
+        bridge.sendEnrichment();
+        send({ type: "done" });
+        return;
+      }
       if (bridge.shouldStop()) {
         send({ type: "token", content: "\u62A5\u544A\u5DF2\u751F\u6210\u3002" });
         bridge.sendEnrichment();
@@ -168777,7 +169408,7 @@ app.post("/chat/stream", async (request, reply) => {
         }
       }
       const rawMessage = error62 instanceof Error ? error62.message : String(error62);
-      const message = timedOut ? "\u5904\u7406\u8D85\u65F6\uFF0C\u5DF2\u4E2D\u65AD" : /recursion limit/i.test(rawMessage) ? "\u672C\u6B21\u5206\u6790\u6B65\u9AA4\u8FC7\u591A\u5DF2\u4E2D\u65AD\u3002\u8BF7\u7F29\u5C0F\u65F6\u95F4\u8303\u56F4\u3001\u51CF\u5C11\u6307\u6807\uFF0C\u6216\u628A\u95EE\u9898\u62C6\u6210\u51E0\u6B65\u518D\u95EE\u3002" : rawMessage;
+      const message = timedOut ? "\u5904\u7406\u8D85\u65F6\uFF0C\u5DF2\u4E2D\u65AD" : error62 instanceof BudgetExceededError ? rawMessage : /recursion limit/i.test(rawMessage) ? "\u672C\u6B21\u5206\u6790\u6B65\u9AA4\u8FC7\u591A\u5DF2\u4E2D\u65AD\u3002\u8BF7\u7F29\u5C0F\u65F6\u95F4\u8303\u56F4\u3001\u51CF\u5C11\u6307\u6807\uFF0C\u6216\u628A\u95EE\u9898\u62C6\u6210\u51E0\u6B65\u518D\u95EE\u3002" : rawMessage;
       turnError = rawMessage;
       request.log.error({ err: error62 }, "agent stream failed");
       logLine(`turn error ${rawMessage}`);
@@ -168789,7 +169420,13 @@ app.post("/chat/stream", async (request, reply) => {
       clearInterval(heartbeat);
       raw.off("close", onClientClose);
       activeStreams -= 1;
-      logLine(`turn end ${budget.summary()} ${bridge.stats()}${bridge.shouldStop() ? " stop=visual" : ""}${turnError ? " error=1" : ""}${budget.usage.exceeded.length ? " exceeded=1" : ""}`);
+      ledger2.record(conversationKey, {
+        inputTokens: budget.usage.inputTokens,
+        outputTokens: budget.usage.outputTokens,
+        cacheReadTokens: budget.usage.cacheReadTokens,
+        cacheCreationTokens: budget.usage.cacheCreationTokens
+      }, budget.usage.cost);
+      logLine(`turn end ${budget.summary()} ${bridge.stats()}${bridge.clarifyPending() ? " stop=clarify" : bridge.shouldStop() ? " stop=visual" : ""}${turnError ? " error=1" : ""}${budget.usage.exceeded.length ? " exceeded=1" : ""}`);
       raw.end();
     }
   });
@@ -168833,6 +169470,13 @@ app.post("/chat/resume", async (request, reply) => {
     fail("\u5F53\u524D\u4F1A\u8BDD\u8FC7\u591A\uFF0C\u8BF7\u7A0D\u540E\u518D\u8BD5");
     return;
   }
+  const resumeKey = body.threadId;
+  const resumeLedger = getUsageLedger();
+  const resumeDeny = resumeLedger.check(resumeKey, resolved.maxDailyTokens);
+  if (resumeDeny) {
+    fail(resumeDeny);
+    return;
+  }
   const controller = new AbortController();
   let timedOut = false;
   let finished = false;
@@ -168850,7 +169494,10 @@ app.post("/chat/resume", async (request, reply) => {
     maxSqlQueries: resolved.maxSqlQueries,
     maxSchemaCalls: resolved.maxSchemaCalls,
     maxResultChars: Math.max(resolved.maxResultChars, 2e4),
-    maxTotalToolChars: Math.max(resolved.maxTotalToolChars, 12e4)
+    maxTotalToolChars: Math.max(resolved.maxTotalToolChars, 12e4),
+    maxTurnTokens: resolved.maxReportTurnTokens,
+    maxModelCalls: resolved.maxReportModelCalls,
+    strictNumberCheck: resolved.strictNumberCheck
   }, { unlimitedQueries: true });
   const bridge = createTurnBridge({
     send,
@@ -168880,6 +169527,11 @@ app.post("/chat/resume", async (request, reply) => {
           break;
         }
       }
+      if (bridge.clarifyPending()) {
+        bridge.sendEnrichment();
+        send({ type: "done" });
+        return;
+      }
       if (bridge.shouldStop()) {
         send({ type: "token", content: "\u62A5\u544A\u5DF2\u751F\u6210\u3002" });
         bridge.sendEnrichment();
@@ -168894,6 +169546,11 @@ app.post("/chat/resume", async (request, reply) => {
         send({ type: "done" });
       }
     } catch (error62) {
+      if (bridge.clarifyPending()) {
+        bridge.sendEnrichment();
+        send({ type: "done" });
+        return;
+      }
       if (bridge.shouldStop()) {
         send({ type: "token", content: "\u62A5\u544A\u5DF2\u751F\u6210\u3002" });
         bridge.sendEnrichment();
@@ -168907,7 +169564,7 @@ app.post("/chat/resume", async (request, reply) => {
         return;
       }
       const rawMessage = error62 instanceof Error ? error62.message : String(error62);
-      const message = timedOut ? "\u5904\u7406\u8D85\u65F6\uFF0C\u5DF2\u4E2D\u65AD" : /recursion limit/i.test(rawMessage) ? "\u672C\u6B21\u5206\u6790\u6B65\u9AA4\u8FC7\u591A\u5DF2\u4E2D\u65AD\u3002\u8BF7\u7F29\u5C0F\u65F6\u95F4\u8303\u56F4\u3001\u51CF\u5C11\u6307\u6807\uFF0C\u6216\u628A\u95EE\u9898\u62C6\u6210\u51E0\u6B65\u518D\u95EE\u3002" : rawMessage;
+      const message = timedOut ? "\u5904\u7406\u8D85\u65F6\uFF0C\u5DF2\u4E2D\u65AD" : error62 instanceof BudgetExceededError ? rawMessage : /recursion limit/i.test(rawMessage) ? "\u672C\u6B21\u5206\u6790\u6B65\u9AA4\u8FC7\u591A\u5DF2\u4E2D\u65AD\u3002\u8BF7\u7F29\u5C0F\u65F6\u95F4\u8303\u56F4\u3001\u51CF\u5C11\u6307\u6807\uFF0C\u6216\u628A\u95EE\u9898\u62C6\u6210\u51E0\u6B65\u518D\u95EE\u3002" : rawMessage;
       turnError = rawMessage;
       request.log.error({ err: error62 }, "agent resume failed");
       logLine(`resume error ${rawMessage}`);
@@ -168919,7 +169576,13 @@ app.post("/chat/resume", async (request, reply) => {
       clearInterval(heartbeat);
       raw.off("close", onClientClose);
       activeStreams = Math.max(0, activeStreams - 1);
-      logLine(`resume end ${budget.summary()} ${bridge.stats()}${bridge.shouldStop() ? " stop=visual" : ""}${turnError ? " error=1" : ""}`);
+      resumeLedger.record(resumeKey, {
+        inputTokens: budget.usage.inputTokens,
+        outputTokens: budget.usage.outputTokens,
+        cacheReadTokens: budget.usage.cacheReadTokens,
+        cacheCreationTokens: budget.usage.cacheCreationTokens
+      }, budget.usage.cost);
+      logLine(`resume end ${budget.summary()} ${bridge.stats()}${bridge.clarifyPending() ? " stop=clarify" : bridge.shouldStop() ? " stop=visual" : ""}${turnError ? " error=1" : ""}`);
       raw.end();
     }
   });
@@ -168946,9 +169609,34 @@ app.post("/chat/suggest", async (request, reply) => {
     reply.send({ items: [] });
     return;
   }
+  if (!resolved.enableSuggestions) {
+    reply.send({ items: [] });
+    return;
+  }
+  const suggestKey = body?.conversationId || "anonymous";
+  const ledger2 = getUsageLedger();
+  if (ledger2.check(suggestKey, resolved.maxDailyTokens)) {
+    reply.send({ items: [] });
+    return;
+  }
   try {
-    const items = await generateSuggestions(resolved.llm, { question, answer, meta: meta3 });
-    reply.send({ items });
+    const { items, usage } = await generateSuggestions(resolved.llm, {
+      question,
+      answer,
+      meta: meta3
+    });
+    const cost = estimateCost(usage, resolved.tokenPrices);
+    ledger2.record(suggestKey, usage, cost);
+    logLine(`suggest usage input=${usage.inputTokens} output=${usage.outputTokens} cache=${usage.cacheReadTokens} cost=${cost.toFixed(4)}`);
+    reply.send({
+      items,
+      usage: {
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        cacheReadTokens: usage.cacheReadTokens,
+        estimatedCost: cost
+      }
+    });
   } catch (e) {
     request.log.warn({ err: e }, "chat/suggest failed");
     reply.send({ items: [] });
@@ -169029,6 +169717,7 @@ var TOOL_LABELS = {
   list_tables: "\u6D4F\u89C8\u6570\u636E\u8868",
   get_table_schema: "\u67E5\u770B\u8868\u7ED3\u6784",
   run_sql: "\u6267\u884C\u67E5\u8BE2",
+  ask_clarification: "\u8BF7\u6C42\u8865\u5145\u4FE1\u606F",
   render_report: "\u751F\u6210\u5206\u6790\u62A5\u8868",
   render_html_report: "\u751F\u6210 HTML \u62A5\u544A",
   render_chart: "\u751F\u6210\u56FE\u8868",
@@ -169042,6 +169731,24 @@ var TOOL_LABELS = {
 };
 function toolLabel(name) {
   return TOOL_LABELS[name] || name;
+}
+function extractTablesFromSql(sql) {
+  const text = String(sql || "");
+  const result = [];
+  const seen = /* @__PURE__ */ new Set();
+  const ident = '(`[^`]+`|"[^"]+"|\\[[^\\]]+\\]|[\\w$]+)';
+  const re = new RegExp(`\\b(?:from|join)\\s+${ident}(?:\\s*\\.\\s*${ident})?`, "gi");
+  let match;
+  while (match = re.exec(text)) {
+    const first = match[1] || "";
+    const second = match[2] || "";
+    const table = (second ? first + "." + second : first).replace(/[`"[\]]/g, "").replace(/\s*\.\s*/g, ".").trim();
+    if (!table || seen.has(table))
+      continue;
+    seen.add(table);
+    result.push(table);
+  }
+  return result;
 }
 function compactToolInput(name, input2) {
   if (!input2 || typeof input2 !== "object")
@@ -169077,6 +169784,12 @@ function compactToolInput(name, input2) {
     return { name: raw.name };
   if (name === "read_skill_file")
     return { name: raw.name, path: raw.path };
+  if (name === "ask_clarification") {
+    return {
+      question: raw.question,
+      fields: Array.isArray(raw.fields) ? raw.fields : []
+    };
+  }
   return void 0;
 }
 function summarizeToolOutput(name, output2) {
@@ -169116,6 +169829,8 @@ function summarizeToolOutput(name, output2) {
     }
   } else if (name === "list_tables") {
     summary.tableCount = Number(parsed.tableCount) || 0;
+  } else if (name === "ask_clarification") {
+    summary.title = "\u7B49\u5F85\u8865\u5145\u4FE1\u606F";
   } else if (name === "render_report" || name === "render_html_report" || name === "render_chart") {
     summary.component = typeof parsed.component === "string" ? parsed.component : "";
     summary.title = typeof parsed.title === "string" ? parsed.title : "";
@@ -169145,24 +169860,26 @@ function extractText(content) {
 }
 function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, skills }) {
   const toolStarts = /* @__PURE__ */ new Map();
+  const citations = [];
   const tablesUsed = /* @__PURE__ */ new Set();
   const dataWarnings = /* @__PURE__ */ new Set();
-  let inputTokens = 0;
-  let outputTokens = 0;
-  let modelCalls = 0;
   let maxInputTokens = 0;
+  let observedModelCalls = 0;
   let totalRowCount = 0;
   let anyTruncated = false;
   let lastReportSpec = null;
   let stopAfterVisual = false;
+  let clarifyPending = false;
   const addUsage = (usage) => {
     if (!usage)
       return;
-    inputTokens += usage.input_tokens || 0;
-    outputTokens += usage.output_tokens || 0;
+    observedModelCalls += 1;
     maxInputTokens = Math.max(maxInputTokens, usage.input_tokens || 0);
+    if (budget.usage.modelCalls < observedModelCalls) {
+      budget.recordModelUsage(extractUsage(usage), resolved.tokenPrices);
+    }
   };
-  const stats = () => `calls=${modelCalls} input=${inputTokens} output=${outputTokens} maxInput=${maxInputTokens}`;
+  const stats = () => `calls=${budget.usage.modelCalls} input=${budget.usage.inputTokens} output=${budget.usage.outputTokens} maxInput=${maxInputTokens} cache=${budget.usage.cacheReadTokens} cost=${budget.usage.cost.toFixed(4)}`;
   const reportMeta = () => {
     if (!lastReportSpec)
       return null;
@@ -169183,9 +169900,12 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
     send({
       type: "usage",
       model: resolved.llm.model,
-      inputTokens,
-      outputTokens,
-      calls: modelCalls,
+      inputTokens: budget.usage.inputTokens,
+      outputTokens: budget.usage.outputTokens,
+      cacheReadTokens: budget.usage.cacheReadTokens,
+      cacheCreationTokens: budget.usage.cacheCreationTokens,
+      estimatedCost: budget.usage.cost,
+      calls: budget.usage.modelCalls,
       maxInputTokens,
       elapsedMs
     });
@@ -169197,10 +169917,18 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       rowCount: totalRowCount,
       truncated: anyTruncated,
       tables: Array.from(tablesUsed),
+      citations,
       warnings: Array.from(dataWarnings),
       report: reportMeta(),
       knowledge,
-      skills
+      skills,
+      usage: {
+        inputTokens: budget.usage.inputTokens,
+        outputTokens: budget.usage.outputTokens,
+        cacheReadTokens: budget.usage.cacheReadTokens,
+        estimatedCost: budget.usage.cost,
+        modelCalls: budget.usage.modelCalls
+      }
     });
   };
   const handle = (event) => {
@@ -169216,7 +169944,12 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
       const input2 = event.data?.input;
       const startedAt = Date.now();
-      toolStarts.set(runId, { name, startedAt });
+      const compactInput = compactToolInput(name, input2);
+      toolStarts.set(runId, {
+        name,
+        startedAt,
+        input: compactInput && typeof compactInput === "object" ? compactInput : void 0
+      });
       if (name === "get_table_schema") {
         const schemaInput = input2;
         const tableList = Array.isArray(schemaInput?.tables) ? schemaInput.tables : [schemaInput?.table];
@@ -169249,8 +169982,35 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
         totalRowCount += summary.rowCount;
         if (summary.truncated)
           anyTruncated = true;
+        const rawInput = started?.input || {};
+        const queryList = Array.isArray(rawInput.queries) ? rawInput.queries.map((item) => String(item || "")).filter(Boolean) : [];
+        const sqlText = queryList.length ? queryList.join(";\n") : String(rawInput.sql || "");
+        if (sqlText.trim()) {
+          citations.push({
+            index: citations.length + 1,
+            id: runId,
+            sql: sqlText,
+            tables: extractTablesFromSql(sqlText),
+            rowCount: summary.rowCount,
+            truncated: summary.truncated,
+            durationMs: started ? Date.now() - started.startedAt : void 0
+          });
+        }
       }
       summary.warnings.forEach((item) => dataWarnings.add(item));
+      let clarifyEvent = null;
+      if (name === "ask_clarification") {
+        const parsedClarify = safeParseObject(output2) || {};
+        const fields = Array.isArray(parsedClarify.fields) ? parsedClarify.fields.slice(0, 5) : [];
+        if (fields.length) {
+          clarifyEvent = {
+            question: typeof parsedClarify.question === "string" ? parsedClarify.question : "\u8BF7\u8865\u5145\u4EE5\u4E0B\u4FE1\u606F\uFF0C\u4EE5\u4FBF\u66F4\u51C6\u786E\u5730\u5206\u6790",
+            fields,
+            allowSkip: parsedClarify.allow_skip !== false,
+            toolId: runId
+          };
+        }
+      }
       const isVisual = VISUAL_TOOL_NAMES.has(name);
       const parsedOutput = safeParseObject(output2);
       const rawSpec = isVisual ? artifact || parsedOutput : null;
@@ -169283,6 +170043,10 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
           error: summary.error || visualError
         }
       });
+      if (clarifyEvent) {
+        clarifyPending = true;
+        send({ type: "clarify", ...clarifyEvent });
+      }
       if (spec) {
         send({ type: "visual", ...spec, toolId: runId });
         if (isTerminalVisualTool(name))
@@ -169317,11 +170081,16 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       return;
     }
     if (event.event === "on_chat_model_end") {
-      modelCalls += 1;
       addUsage(event.data?.output?.usage_metadata);
     }
   };
-  return { handle, sendEnrichment, stats, shouldStop: () => stopAfterVisual };
+  return {
+    handle,
+    sendEnrichment,
+    stats,
+    shouldStop: () => stopAfterVisual || clarifyPending,
+    clarifyPending: () => clarifyPending
+  };
 }
 async function collectInterrupts(agent, threadId) {
   try {

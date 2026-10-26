@@ -74,10 +74,28 @@ knowledge/
 
 ```
 skills/data-analysis/          # 内置：通用数据分析（随包发布）
-skills-example/weekly-report/  # 示例：周报（复制到 skills/ 并按客户业务改写）
+skills/report-authoring/       # 内置：报告结构、图表选型、coverage
+skills/<name>/SKILL.md         # 客户自定义技能，按业务改写
 ```
 
 `SKILL.md` 里写步骤、指标、输出结构；具体表说明和预置查询仍从 `knowledge/` 读取。
+
+## WMS 厂家差异映射
+
+WMS 技能（`wms-inventory-analysis`、`wms-inbound-analysis`、`wms-outbound-analysis`、`wms-operations-analysis`）只写中性流程，不含任何厂家表名。每个客户应在 `docs/wms-mapping.md` 中提供映射：
+
+```md
+| 概念 | 实际表/字段 | 状态码 | 备注 |
+|---|---|---|---|
+| 库存快照 | dbo.Stock | - | 每日 00:00 快照 |
+| 可用库存 | Stock.Qty - Stock.LockQty | Status = 1 | 是否含质检需确认 |
+| 出库单 | dbo.OutOrder | Type = 2 | 与入库共用表 |
+| 收货完成时间 | Receipt.FinishTime | Status = 30 | 部分收货需按行 |
+```
+
+- 映射是**事实**，放 `knowledge/`，不要写进 SKILL.md；
+- 常用指标建议同时做成 `queries/*.json`，让模型优先走 `run_saved_query`；
+- 缺少映射时技能会标 `needs_review`，不会猜状态码。
 
 注意：表的行数/日期范围/枚举/空值（profile）、主键/外键关系是核心内置能力，不依赖知识包；
 知识包用于补充**数据库字段本身说不清的业务口径**。

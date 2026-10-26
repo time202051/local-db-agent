@@ -32,7 +32,10 @@ describe('resolveRequestConfig', () => {
   });
 
   it('支持 Windows 集成认证（无 user/password）', () => {
-    const cfg = resolveRequestConfig({ ...KEY, db: { server: 'db', database: 'D', trusted: true } });
+    const cfg = resolveRequestConfig({
+      ...KEY,
+      db: { server: 'db', database: 'D', trusted: true },
+    });
     expect(sqlServerDb(cfg).connectionString).toContain('Trusted_Connection=Yes');
     expect(sqlServerDb(cfg).connectionString).not.toContain('Pwd=');
   });
@@ -56,6 +59,47 @@ describe('resolveRequestConfig', () => {
     });
     expect(cfg.db.maxRows).toBe(5);
     expect(cfg.db.costLimit).toBe(7);
+  });
+
+  it('成本/建议/对账默认值生效', () => {
+    const cfg = resolveRequestConfig({
+      ...KEY,
+      db: { server: 'db', database: 'D', trusted: true },
+    });
+    expect(cfg.maxTurnTokens).toBe(150000);
+    expect(cfg.maxReportTurnTokens).toBe(200000);
+    expect(cfg.maxDailyTokens).toBe(2000000);
+    expect(cfg.maxModelCalls).toBe(12);
+    expect(cfg.maxReportModelCalls).toBe(16);
+    expect(cfg.enableSuggestions).toBe(true);
+    expect(cfg.strictNumberCheck).toBe(false);
+    expect(cfg.tokenPrices.outputPerMillion).toBeGreaterThan(0);
+  });
+
+  it('成本预算与单价可覆盖', () => {
+    const cfg = resolveRequestConfig({
+      ...KEY,
+      db: { server: 'db', database: 'D', trusted: true },
+      limits: {
+        maxTurnTokens: 9000,
+        maxReportTurnTokens: 8000,
+        maxDailyTokens: 0,
+        maxModelCalls: 3,
+        maxReportModelCalls: 2,
+        enableSuggestions: false,
+        strictNumberCheck: true,
+        tokenPrices: { outputPerMillion: 2 },
+      },
+    });
+    expect(cfg.maxTurnTokens).toBe(9000);
+    // 报告轮不能低于普通轮
+    expect(cfg.maxReportTurnTokens).toBe(9000);
+    expect(cfg.maxDailyTokens).toBe(0);
+    expect(cfg.maxModelCalls).toBe(3);
+    expect(cfg.maxReportModelCalls).toBe(3);
+    expect(cfg.enableSuggestions).toBe(false);
+    expect(cfg.strictNumberCheck).toBe(true);
+    expect(cfg.tokenPrices.outputPerMillion).toBe(2);
   });
 
   it('llm 覆盖生效', () => {

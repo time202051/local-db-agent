@@ -63,14 +63,19 @@ knowledge/              # 事实：数据库是什么（客户打包，可选）
 └─ .index.json         打包时生成
 
 skills/                 # 过程：一类任务怎么做（随包发布）
-├─ data-analysis/
-│  └─ SKILL.md         通用分析方法论（趋势/对比/分布/质量）
+├─ data-analysis/      通用分析方法论（趋势/对比/分布/质量）
+├─ report-authoring/   报告结构、图表选型、coverage
+├─ wms-inventory-analysis/   库存健康（周转/库龄/呆滞/ABC）
+├─ wms-inbound-analysis/     入库履约（收货/上架/差异）
+├─ wms-outbound-analysis/    出库履约（满足率/准时率/拣货）
+├─ wms-operations-analysis/  作业效率（人效/工时/峰值）
 └─ .index.json         打包时生成
 ```
 
 - 一个客户一个包，agent 自动加载；客户拿到包后不能改知识/技能，要改就重新打包。
 - 每轮只把知识索引（文档标题）、技能目录（name/description/when_to_use）和 `search_tables` 的 Top 8 紧凑目录给模型；详细内容用 `search_knowledge` / `read_knowledge` / `read_skill` / `read_skill_file` 按需读取。
-- 业务口径、指标 SQL 在 `knowledge/`；周报、异常排查、报告步骤在 `skills/`；核心代码不绑定具体业务表。
+- 业务口径、指标 SQL 在 `knowledge/`；报告结构、WMS 分析流程、异常排查在 `skills/`；核心代码不绑定具体业务表。
+- WMS 技能只写中性流程，厂家表名/状态码/单据类型由客户在 `knowledge/` 里映射，缺失时标 `needs_review`。
 - 详细格式见 `knowledge/README.md` 和 `skills/README.md`；打包时 `npm run release` 会校验并生成两个 `.index.json`。
 
 **没有知识包时**：agent 仍可作为通用数据库助手运行。首轮会提示“未加载知识包，将按表结构分析”，`meta` / `/config/check` 返回 `knowledge.loaded=false`；不注册 `search_knowledge` / `read_knowledge` / `run_saved_query`，表检索使用表名/注释/列名索引。没有 manifest 时 `npm run release` 不会失败。
@@ -98,13 +103,33 @@ skills/                 # 过程：一类任务怎么做（随包发布）
 - 完整列名索引（最多 500 张表）只用于服务端检索/get_table_schema，不整库注入；候选表会标出命中字段、主键、时间字段和真实外键关联（知识包优先，没有知识包用数据库约束兜底）；
 - 2 批 SQL 之后，旧 `list_tables` 清单压成一行提示、旧完整字段清单压成“表: 列名/类型”账本；**旧 SQL 结果转成紧凑格式，所有列和值保留**，最近 2 批保持原始 JSON；HTML 不动；
 - `run_sql` 单次最多 10 条独立 SQL，减少模型往返；同一批内完全相同的 SQL 只执行一次；
-- 报告轮使用精简工具集（列表/结构/查询/HTML 报告 + 知识包工具），不注入 skill 目录；SQL 达到 12 条时只给一次“优先出报告”软提示，不拦截；
+- 报告轮使用精简工具集（列表/结构/查询/技能/HTML 报告 + 知识包工具），会注入技能目录；SQL 达到 12 条时只给一次“优先出报告”软提示，不拦截；
 - 章节编号 `section-no` 由服务端归一化为纯数字，避免模型写入 `01 / OVERVIEW` 后撑破前端目录和标题；
 - 报告轮**不按 SQL/表结构条数限制**；120 秒超时 + 覆盖率门禁，数据没取全不出残缺报告；
 - 报告内容优先：单次结果上限至少 20KB、单轮工具输出至少 120KB，避免为了省 token 截断数据；
 - 相关表检索：每轮先给 Top 8 紧凑目录；需要更多表用 `search_tables`，不整库注入。
 
 摘要调用只作为内部上下文：`streamEvents` 使用 LangChain 自带的 `excludeTags: ['nostream']` 过滤，不会把摘要内容流给前端。本轮预计触发摘要时，前端只会收到一条 `status` 轻提示（“上下文较长，正在压缩…”），提示不会写入回答正文，也不会被复制/导出。
+
+### 成本与评测
+
+- `usage` 事件新增 `cacheReadTokens`、`cacheCreationTokens`、`estimatedCost`；`meta` 里也带一份 `usage` 摘要。
+- 每次模型调用由 `costGuardMiddleware` 记录真实 token（包含内部摘要调用）；超过 `maxTurnTokens` / `maxModelCalls` 会自动收尾，不会无限循环。
+- 日预算按 `conversationId` 放内存账本，重启清零；`/chat/suggest` 的单独调用也会记账。
+- 报告数值对账：`render_html_report` 会检查 `coverage` 里 `ok` 项的 `value` 是否来自本轮 SQL 结果；默认只写 `warnings`，`strictNumberCheck=true` 时拒绝出报告。
+- 业务评测：
+  ```powershell
+  $env:EVAL_DB_TYPE='kingbase'
+  $env:EVAL_DB_SERVER='host,20036'
+  $env:EVAL_DB_DATABASE='OLD.WMS.HF2Q.UAT'
+  $env:EVAL_DB_USER='sa'
+  $env:EVAL_DB_PASSWORD='***'
+  $env:EVAL_LLM_API_KEY='sk-***'   # eval:dry 不需要
+  npm run eval:dry                  # 只验证参考 SQL
+  npm run eval:smoke                # 10 条 smoke
+  npm run eval                      # 全量（含报告轮）
+  ```
+  用例在 `eval/cases.json`，结果写到 `eval/results/`。
 
 ---
 
@@ -272,6 +297,9 @@ npm run start        # 跑一次
 | `npm run knowledge:index` | 校验 `knowledge/` 并生成 `.index.json`                             |
 | `npm run skills:index`    | 校验 `skills/*/SKILL.md` 并生成 `.index.json`                      |
 | `npm run index-advisor`   | 只读查询 SQL Server DMV，输出索引建议（需 `DB_CONNECTION_STRING`） |
+| `npm run eval:dry`        | 只跑评测用例里的参考 SQL，验证数据库连接和期望值                   |
+| `npm run eval:smoke`      | 跑 10 条 smoke 业务评测（需 `EVAL_LLM_API_KEY` 等环境变量）        |
+| `npm run eval`            | 跑全部评测用例（含报告轮，消耗 token 较多）                        |
 
 ### `.env`（只需端口和监听地址）
 
@@ -394,6 +422,14 @@ Vue.use(OlCom, {
 | `maxResultChars`       | 8000                          | 单次工具结果字符数上限；报告轮至少 20000                          |
 | `maxTotalToolChars`    | 24000                         | 单轮所有工具输出字符数上限；报告轮至少 120000                     |
 | `maxOutputTokens`      | 20000                         | 单次大模型输出 token 上限                                         |
+| `maxTurnTokens`        | 150000                        | 普通轮 input+output 总 token 上限；超限自动收尾                   |
+| `maxReportTurnTokens`  | 200000                        | 报告轮总 token 上限                                               |
+| `maxDailyTokens`       | 2000000                       | 每个 `conversationId` 每日 token 上限（内存账本，重启清零）        |
+| `maxModelCalls`        | 12                            | 普通轮模型调用次数上限                                            |
+| `maxReportModelCalls`  | 16                            | 报告轮模型调用次数上限                                            |
+| `enableSuggestions`    | true                          | 是否启用 `/chat/suggest`；false 时直接返回空数组                   |
+| `strictNumberCheck`    | false                         | true = 报告数值对账不通过时拒绝出报告；false 只写 warnings        |
+| `tokenPrices`          | deepseek-chat 公开价          | 每 100 万 token 的 input miss/hit/output 单价，用于估算费用        |
 | `requireSqlApproval`   | false                         | true = 每次 `run_sql` 前通过 LangChain HITL 等待前端确认          |
 | `turnTimeoutSec`       | 120                           | 单轮对话总时长，超时不出残缺报告                                  |
 | `maxConcurrent`        | 3                             | 并发会话上限                                                      |

@@ -3,3 +3,4 @@ local-db-agent/knowledge/.index.json
 local-db-agent/skills/.index.json
 local-db-agent/data/
 local-db-agent/logs/
+local-db-agent/eval/results/

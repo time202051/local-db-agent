@@ -1,0 +1,91 @@
+[
+  {
+    "id": "stock_rows",
+    "question": "有效库存快照（未删除）现在有多少行？",
+    "tags": ["smoke", "inventory"],
+    "expectTables": ["WMS_Stocks"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_Stocks\" WHERE \"IsDeleted\" = false"
+  },
+  {
+    "id": "stock_qty",
+    "question": "当前库存总数量是多少？",
+    "tags": ["smoke", "inventory"],
+    "expectTables": ["WMS_Stocks"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COALESCE(SUM(\"Qty\"), 0) AS v FROM \"WMS_Stocks\" WHERE \"IsDeleted\" = false"
+  },
+  {
+    "id": "outbound_orders_sep",
+    "question": "2026年9月创建了多少张出库单？",
+    "tags": ["smoke", "outbound"],
+    "expectTables": ["WMS_StockOuts"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_StockOuts\" WHERE \"IsDeleted\" = false AND \"CreationTime\" >= '2026-09-01' AND \"CreationTime\" < '2026-10-01'"
+  },
+  {
+    "id": "pick_tasks_sep",
+    "question": "2026年9月创建了多少条拣货任务？",
+    "tags": ["smoke", "outbound"],
+    "expectTables": ["WMS_PickTasks"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_PickTasks\" WHERE \"IsDeleted\" = false AND \"CreationTime\" >= '2026-09-01' AND \"CreationTime\" < '2026-10-01'"
+  },
+  {
+    "id": "suppliers",
+    "question": "系统里有多少个供应商？",
+    "tags": ["smoke", "master-data"],
+    "expectTables": ["WMS_Suppliers"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_Suppliers\""
+  },
+  {
+    "id": "products",
+    "question": "系统里有多少个物料？",
+    "tags": ["smoke", "master-data"],
+    "expectTables": ["WMS_Products"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_Products\""
+  },
+  {
+    "id": "warehouses",
+    "question": "系统里有多少个仓库？",
+    "tags": ["smoke", "master-data"],
+    "expectTables": ["WMS_Warehouses"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_Warehouses\" WHERE \"IsDeleted\" = false"
+  },
+  {
+    "id": "arrivals",
+    "question": "有多少张到货登记单？",
+    "tags": ["smoke", "inbound"],
+    "expectTables": ["WMS_ArrivalRegistrations"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_ArrivalRegistrations\" WHERE \"IsDeleted\" = false"
+  },
+  {
+    "id": "transfers",
+    "question": "有多少张库存调拨单？",
+    "tags": ["smoke", "transfer"],
+    "expectTables": ["WMS_StockTransfers"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_StockTransfers\" WHERE \"IsDeleted\" = false"
+  },
+  {
+    "id": "stock_history_sep",
+    "question": "2026年9月的库存流水有多少行？",
+    "tags": ["smoke", "inventory"],
+    "expectTables": ["WMS_StockHistorys"],
+    "limits": { "maxSql": 6, "maxCalls": 6, "maxTokens": 80000 },
+    "referenceSql": "SELECT COUNT(*) AS v FROM \"WMS_StockHistorys_202609\" WHERE \"IsDeleted\" = false"
+  },
+  {
+    "id": "weekly_outbound_report",
+    "question": "生成本周出库履约分析报告",
+    "tags": ["full", "report", "outbound"],
+    "report": true,
+    "expectTables": ["WMS_StockOuts"],
+    "limits": { "maxSql": 40, "maxCalls": 12, "maxTokens": 250000 },
+    "reportChecks": { "minSections": 4, "maxCssKB": 10 }
+  }
+]
