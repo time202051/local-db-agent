@@ -110,3 +110,31 @@ describe('normalizeUnicodeLiterals', () => {
     expect(normalizeUnicodeLiterals("WHERE c = 'a''b'")).toBe("WHERE c = 'a''b'");
   });
 });
+
+describe('read-only hardening', () => {
+  it('blocks SQL Server session and external-access statements', () => {
+    expect(assertReadOnly('SET NOCOUNT ON')).not.toBeNull();
+    expect(assertReadOnly('USE master')).not.toBeNull();
+    expect(assertReadOnly('DECLARE @x int')).not.toBeNull();
+    expect(assertReadOnly('KILL 52')).not.toBeNull();
+    expect(assertReadOnly('CHECKPOINT')).not.toBeNull();
+    expect(assertReadOnly('SELECT * FROM OPENROWSET(BULK 1)')).toContain('openrowset');
+    expect(assertReadOnly('SELECT * FROM t WITH (UPDLOCK)')).toContain('updlock');
+    expect(assertReadOnly('SELECT * FROM t WITH (NOLOCK)')).toBeNull();
+  });
+
+  it('blocks Kingbase file and WAL side-effect functions', () => {
+    expect(assertReadOnly("SELECT pg_read_file('/etc/passwd')", 'kingbase')).toContain(
+      'pg_read_file',
+    );
+    expect(assertReadOnly("SELECT pg_write_file('/tmp/x','y')", 'kingbase')).toContain(
+      'pg_write_file',
+    );
+    expect(
+      assertReadOnly("SELECT pg_logical_emit_message(true,'x','y')", 'kingbase'),
+    ).toContain('pg_logical_emit_message');
+    expect(assertReadOnly("SELECT pg_create_restore_point('x')", 'kingbase')).toContain(
+      'pg_create_restore_point',
+    );
+  });
+});

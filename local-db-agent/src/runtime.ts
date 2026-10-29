@@ -251,19 +251,23 @@ export const compactMetadataEdit: ContextEdit = {
   },
 };
 
-function buildRuntime(cfg: ResolvedConfig, reportMode: boolean): RuntimeEntry {
-  const model = new ChatOpenAI({
+export function createChatModel(cfg: ResolvedConfig, options: { maxTokens?: number } = {}): ChatOpenAI {
+  return new ChatOpenAI({
     model: cfg.llm.model,
     apiKey: cfg.llm.apiKey,
     temperature: cfg.llm.temperature,
     topP: cfg.llm.topP,
     timeout: cfg.llm.timeoutMs,
     maxRetries: 1,
-    maxTokens: cfg.maxOutputTokens,
+    maxTokens: options.maxTokens ?? cfg.maxOutputTokens,
     configuration: {
       baseURL: cfg.llm.baseUrl,
     },
   });
+}
+
+function buildRuntime(cfg: ResolvedConfig, reportMode: boolean): RuntimeEntry {
+  const model = createChatModel(cfg);
 
   // 审批模式只暴露单条 SQL，避免审批弹窗看不到批量参数
   const tools = createTools(cfg.db, {

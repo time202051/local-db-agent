@@ -58,10 +58,19 @@ writeFileSync(
   'utf8',
 );
 
+const manualDir = mkdtempSync(join(tmpdir(), 'agent-knowledge-manual-'));
+writeFileSync(
+  join(manualDir, 'manual.md'),
+  '# 数据库说明书\n\n## 库存表\n库存数量字段是 Stock.Qty。\n',
+  'utf8',
+);
+writeFileSync(join(manualDir, 'README.md'), '# 说明\n这个文件不应被当成知识。\n', 'utf8');
+
 afterAll(() => {
   rmSync(dir, { recursive: true, force: true });
   rmSync(emptyDir, { recursive: true, force: true });
   rmSync(emptyPackDir, { recursive: true, force: true });
+  rmSync(manualDir, { recursive: true, force: true });
   reloadKnowledgePack();
 });
 
@@ -88,6 +97,15 @@ describe('knowledge pack', () => {
     expect(pack?.getQuery('missing')).toBeUndefined();
   });
 
+  it('manual sections are searchable and readable', () => {
+    const pack = loadKnowledgePack(dir);
+    expect(pack?.docs[0].sections.length).toBeGreaterThan(0);
+    const hits = pack?.search('OrderType', 5) || [];
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0].heading).toBe('口径');
+    expect(pack?.read('docs/order.md', 8000, '口径')).toContain('OrderType');
+  });
+
   it('拒绝路径穿越', () => {
     const pack = loadKnowledgePack(dir);
     expect(pack?.read('../manifest.json')).toBeNull();
@@ -98,6 +116,16 @@ describe('knowledge pack', () => {
     const pack = loadKnowledgePack(emptyDir);
     expect(pack).toBeNull();
     expect(getKnowledgeStatus().loaded).toBe(false);
+  });
+
+  it('没有 manifest 时把根目录说明书当作知识包', () => {
+    const pack = loadKnowledgePack(manualDir);
+    expect(pack?.manifest.name).toBe('manual');
+    expect(pack?.docs.map(doc => doc.path)).toContain('manual.md');
+    expect(pack?.docs.some(doc => /readme/i.test(doc.path))).toBe(false);
+    const hits = pack?.search('库存', 5) || [];
+    expect(hits.length).toBeGreaterThan(0);
+    expect(pack?.read('manual.md#库存表')).toContain('Stock.Qty');
   });
 
   it('空知识包视为无包，不注入占位提示', () => {

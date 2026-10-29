@@ -27,6 +27,7 @@ writeFileSync(
       CORE_Order: {
         comment: '单据主表',
         aliases: ['出库单', '入库单'],
+        columnAliases: { OrderType: ['单据类型', '出入库类型'] },
         keyColumns: ['OrderName', 'OrderType'],
         relationships: [{ to: 'CORE_OrderDetail' }],
       },
@@ -225,6 +226,21 @@ describe('retrieveTables', () => {
     } finally {
       reloadKnowledgePack(dir);
     }
+  });
+
+  it('用知识包 columnAliases 命中字段', async () => {
+    const db = { type: 'sqlserver', connectionString: 'Server=test;Database=WMS;Uid=sa' } as never;
+    const rows = await retrieveTables(db, '单据类型', 8);
+    expect(rows[0].table).toBe('dbo.CORE_Order');
+    expect(rows[0].matchedColumns).toContain('OrderType');
+  });
+
+  it('页面接口聚焦表即使问题里没有表名也排第一', async () => {
+    const db = { type: 'sqlserver', connectionString: 'Server=test;Database=WMS;Uid=sa' } as never;
+    const rows = await retrieveTables(db, '分析当前页面表格数据', 8, {
+      focusTables: ['CORE_Order'],
+    });
+    expect(rows[0].table).toBe('dbo.CORE_Order');
   });
 
   it('知识包 keyColumns 优先于数据库 PK 兜底', async () => {

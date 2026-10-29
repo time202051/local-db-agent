@@ -5,13 +5,54 @@
 
 打包前由客户后端生成，打包后运行时只读。一个客户一个包。
 
+> 本仓库当前 WMS 知识包在 `packs/wms-kingbase/knowledge/`，WMS 技能在 `packs/wms-kingbase/skills/`；根 `knowledge/` 只保留本说明。发布时 `scripts/build-release.ps1` 会自动复制 pack。
+
 ```
 knowledge/
-├─ manifest.json
+├─ manifest.json        可选：没有时自动进入“说明书模式”
+├─ manual/*.md          可选：整本数据库说明书
+├─ manual.md            可选：根目录单本说明书
 ├─ docs/*.md
 ├─ queries/*.json
-└─ .index.json         打包时生成
+└─ .index.json          打包时生成
 ```
+
+## 说明书模式
+
+如果暂时没有结构化 manifest，可以直接把数据库说明书放在 `knowledge/manual/*.md`
+或 `knowledge/manual.md`，运行时会把它们当作知识包加载，并自动按标题切分章节。
+`README.md` 不会被当成知识。
+
+- 规划阶段会拿到命中的章节片段，用来确定指标口径和表关系；
+- 执行阶段可用 `search_knowledge(query)` 找到章节，再用
+  `read_knowledge(path, section)` 或 `read_knowledge("docs/x.md#章节")` 读取某一节；
+- 需要更准确的口径时，再补 `manifest.json`、`docs/tables/*.md` 和 `queries/*.json`。
+
+## 从 ABP/.NET 源码生成
+
+如果客户后台是 ABP/.NET，可以直接从源码生成表说明、枚举和关系：
+
+```powershell
+npm run knowledge:abp -- `
+  --backend "D:\path\to\AbpProject" `
+  --out knowledge `
+  --name customer-wms `
+  --prefix WMS_
+```
+
+- 自动解析实体、`[Comment]`、枚举、`DbSet`、`ToTable`、`HasForeignKey`、索引；
+- 生成 `manifest.json`、`docs/generated/tables/*.md`、`docs/generated/enums/*.md`、`coverage.json`；
+- `docs/generated/` 每次重建，不要手改；人工补充请放 `docs/tables/` 或直接改 manifest；
+- 默认合并已有 manifest（会备份）；`--no-merge` 重新生成；
+- `--frontend "D:\path\to\frontend"` 可选，从 Vue/Element 页面提取中文列名和下拉选项；
+- 生成后会自动执行 `knowledge:index`。
+
+## 只读安全
+
+- 金仓：连接会话强制 `default_transaction_read_only=on`，写操作会被数据库拒绝。
+- SQL Server：没有可靠的会话级只读开关，**请给 agent 使用 `db_datareader` 账号**；
+  `sql-guard` 会再拦截写操作、DDL、`EXEC`、`SELECT INTO`、外部数据源和锁提示。
+- 不建议把 `sa` / `db_owner` 账号交给 agent；只读账号是第一道防线，SQL guard 是第二道。
 
 > `reports/*.md` 已 deprecated。报告结构、指标清单、写作步骤请放到
 > `skills/<report>/SKILL.md`，不要继续放在 `knowledge/reports/`。

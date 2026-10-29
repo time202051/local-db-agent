@@ -349,17 +349,44 @@ function knowledgeEntry(name, table) {
         return undefined;
     return (tables[name] || tables[table] || tables[bareTableName(name)] || tables[bareTableName(table)]);
 }
-export async function retrieveTables(db, question, limit = 8) {
+export async function retrieveTables(db, question, limit = 8, options = {}) {
     const schema = await getSchemaCached(db);
     const columnIndex = await getColumnIndexCached(db).catch(() => null);
     const pack = getKnowledgePack();
     const priority = new Set(pack?.manifest.priorityTables || []);
+    const focusTables = new Set((options.focusTables || []).map(value => normalizeTableKey(value)).filter(Boolean));
     const tokens = tokenizeForSearch(question);
+    const stopTokens = new Set([
+        '查询',
+        '数据',
+        '信息',
+        '列表',
+        '分页',
+        '导出',
+        '导入',
+        '统计',
+        '情况',
+        '所有',
+        '相关',
+        '查看',
+        '显示',
+        '一下',
+        '怎么',
+        '什么',
+        '多少',
+        '哪些',
+        '以及',
+        '并且',
+        '或者',
+        '然后',
+        '需要',
+    ]);
     const scored = [];
     for (const item of schema.tables) {
         const qualified = tableName(item);
         const info = knowledgeEntry(qualified, item.name);
         const aliases = info?.aliases || [];
+        const columnAliases = info?.columnAliases || {};
         const columns = columnIndex?.byTable.get(normalizeTableKey(qualified)) ||
             columnIndex?.byTable.get(normalizeTableKey(item.name)) ||
             [];
@@ -378,16 +405,26 @@ export async function retrieveTables(db, question, limit = 8) {
         const haystack = `${qualified} ${item.comment || ''} ${aliases.join(' ')} ${keyColumns.join(' ')}`.toLowerCase();
         const matchedColumns = new Set();
         let score = 0;
+        const focus = focusTables.has(normalizeTableKey(qualified)) ||
+            focusTables.has(normalizeTableKey(item.name)) ||
+            focusTables.has(normalizeTableKey(bareTableName(qualified))) ||
+            focusTables.has(normalizeTableKey(bareTableName(item.name)));
+        // 当前页面接口映射出的表：即使问题里没有表名，也要进入候选。
+        if (focus)
+            score += 25;
         for (const token of tokens) {
             const lower = token.toLowerCase();
+            if (stopTokens.has(lower))
+                continue;
             if (qualified.toLowerCase() === lower)
                 score += 12;
             else if (qualified.toLowerCase().includes(lower))
                 score += 5;
             if (aliases.some((alias) => alias.toLowerCase() === lower))
                 score += 7;
-            else if (aliases.some((alias) => alias.toLowerCase().includes(lower)))
-                score += 3;
+            else if (aliases.some((alias) => alias.length <= 30 && alias.toLowerCase().includes(lower))) {
+                score += 2;
+            }
             if ((item.comment || '').toLowerCase().includes(lower))
                 score += 2;
             if (keyColumns.some((column) => column.toLowerCase() === lower))
@@ -410,7 +447,18 @@ export async function retrieveTables(db, question, limit = 8) {
                     matchedColumns.add(column.name);
                 }
             }
-            if (haystack.includes(lower) && score === 0)
+            for (const [columnName, columnAliasList] of Object.entries(columnAliases)) {
+                if (columnAliasList.some((alias) => alias.toLowerCase() === lower)) {
+                    score += 3;
+                    matchedColumns.add(columnName);
+                    continue;
+                }
+                if (columnAliasList.some((alias) => alias.toLowerCase().includes(lower))) {
+                    score += 1;
+                    matchedColumns.add(columnName);
+                }
+            }
+            if (!stopTokens.has(lower) && haystack.includes(lower) && score === 0)
                 score += 1;
         }
         // 有关键词但完全没命中时，不靠 priorityTables 硬塞表；避免无关问题拿到错误候选。

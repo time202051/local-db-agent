@@ -51,7 +51,7 @@ const DEFAULTS = {
   llmBaseUrl: 'https://api.deepseek.com/v1',
   llmModel: 'deepseek-chat',
   llmTimeoutSec: 60,
-  llmTemperature: 0.3,
+  llmTemperature: 0.1,
   llmTopP: 0.9,
   recursionLimit: 30,
   turnTimeoutSec: 120,
@@ -71,10 +71,21 @@ const DEFAULTS = {
   maxDailyTokens: 2000000,
   maxModelCalls: 12,
   maxReportModelCalls: 16,
+  maxPlanModelCalls: 24,
+  maxPlanTurnTokens: 240000,
+  planTurnTimeoutSec: 600,
+  stepTimeoutSec: 240,
   enableSuggestions: true,
   enableClarify: true,
   strictNumberCheck: false,
   requireSqlApproval: false,
+  enablePlanMode: true,
+  maxPlanSteps: 8,
+  maxRetriesPerStep: 2,
+  maxReplans: 1,
+  maxParallelSteps: 3,
+  enableAccuracyCritic: true,
+  maxCriticRounds: 1,
 };
 
 export type DbType = 'sqlserver' | 'kingbase';
@@ -163,7 +174,7 @@ export interface LimitsInput {
   commandTimeoutSec?: number;
   /** 大模型调用超时（秒，默认 60） */
   llmTimeoutSec?: number;
-  /** 采样温度（默认 0.3）：越大报告结构与视觉风格越多变，SQL 稳定性略降 */
+  /** 采样温度（默认 0.1）：越低 SQL 越稳定、数值越可复现；报告版式变化会略少 */
   temperature?: number;
   /** 核采样（默认 0.9） */
   topP?: number;
@@ -192,6 +203,14 @@ export interface LimitsInput {
   maxModelCalls?: number;
   /** 报告轮模型调用次数上限（默认 16） */
   maxReportModelCalls?: number;
+  /** max model calls in plan mode (default 24) */
+  maxPlanModelCalls?: number;
+  /** max turn tokens in plan mode (default 240000) */
+  maxPlanTurnTokens?: number;
+  /** max wall-clock seconds for one plan-mode turn (default 600) */
+  planTurnTimeoutSec?: number;
+  /** max seconds for a single plan step before pausing to ask the user (default 240) */
+  stepTimeoutSec?: number;
   /** 是否启用 /chat/suggest 追问建议（默认 true） */
   enableSuggestions?: boolean;
   /** 是否允许 agent 调用 ask_clarification 请求用户补充条件（默认 true） */
@@ -202,6 +221,20 @@ export interface LimitsInput {
   tokenPrices?: Partial<TokenPrices>;
   /** true = 每次 run_sql 前通过 LangChain HITL 等待前端确认（默认 false） */
   requireSqlApproval?: boolean;
+  /** true = enable Plan-and-Execute mode (default true; falls back when HITL is on) */
+  enablePlanMode?: boolean;
+  /** max steps per plan (default 8) */
+  maxPlanSteps?: number;
+  /** max retries per step (default 2) */
+  maxRetriesPerStep?: number;
+  /** max replans per turn (default 1) */
+  maxReplans?: number;
+  /** max independent steps executed in parallel (default 3) */
+  maxParallelSteps?: number;
+  /** enable final evidence critic before answering (default true) */
+  enableAccuracyCritic?: boolean;
+  /** max critic-driven revisions/replans per turn (default 1) */
+  maxCriticRounds?: number;
 }
 
 export interface RequestConfigInput {
@@ -278,13 +311,24 @@ export interface ResolvedConfig {
   maxDailyTokens: number;
   maxModelCalls: number;
   maxReportModelCalls: number;
+  maxPlanModelCalls: number;
+  maxPlanTurnTokens: number;
+  planTurnTimeoutMs: number;
+  stepTimeoutMs: number;
   enableSuggestions: boolean;
   enableClarify: boolean;
   strictNumberCheck: boolean;
   tokenPrices: TokenPrices;
   /** 每次 run_sql 前是否需要人工确认（LangChain HITL） */
   requireSqlApproval: boolean;
-  /** 供运行时缓存的键（哈希，不含明文密钥） */
+  enablePlanMode: boolean;
+  maxPlanSteps: number;
+  maxRetriesPerStep: number;
+  maxReplans: number;
+  maxParallelSteps: number;
+  enableAccuracyCritic: boolean;
+  maxCriticRounds: number;
+  /** cache key (hash, no plaintext secrets) */
   key: string;
 }
 
@@ -519,11 +563,38 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     maxModelCalls,
     num(lim.maxReportModelCalls, DEFAULTS.maxReportModelCalls),
   );
+  const maxPlanModelCalls = Math.max(
+    maxModelCalls,
+    lim.maxModelCalls != null
+      ? num(lim.maxPlanModelCalls, maxModelCalls)
+      : num(lim.maxPlanModelCalls, DEFAULTS.maxPlanModelCalls),
+  );
+  const maxPlanTurnTokens = Math.max(
+    maxTurnTokens,
+    lim.maxTurnTokens != null
+      ? num(lim.maxPlanTurnTokens, maxTurnTokens)
+      : num(lim.maxPlanTurnTokens, DEFAULTS.maxPlanTurnTokens),
+  );
+  const planTurnTimeoutMs = Math.max(
+    turnTimeoutMs,
+    Math.max(1, num(lim.planTurnTimeoutSec, DEFAULTS.planTurnTimeoutSec)) * 1000,
+  );
+  const stepTimeoutMs = Math.max(
+    10_000,
+    Math.max(1, num(lim.stepTimeoutSec, DEFAULTS.stepTimeoutSec)) * 1000,
+  );
   const enableSuggestions = lim.enableSuggestions !== false;
   const enableClarify = lim.enableClarify !== false;
   const strictNumberCheck = lim.strictNumberCheck === true;
   const tokenPrices = normalizePrices(lim.tokenPrices);
   const requireSqlApproval = lim.requireSqlApproval === true;
+  const enablePlanMode = lim.enablePlanMode !== false;
+  const maxPlanSteps = Math.max(1, num(lim.maxPlanSteps, DEFAULTS.maxPlanSteps));
+  const maxRetriesPerStep = Math.max(0, num(lim.maxRetriesPerStep, DEFAULTS.maxRetriesPerStep));
+  const maxReplans = Math.max(0, num(lim.maxReplans, DEFAULTS.maxReplans));
+  const maxParallelSteps = Math.max(1, num(lim.maxParallelSteps, DEFAULTS.maxParallelSteps));
+  const enableAccuracyCritic = lim.enableAccuracyCritic !== false;
+  const maxCriticRounds = Math.max(0, num(lim.maxCriticRounds, DEFAULTS.maxCriticRounds));
 
   const key = hashKey(
     JSON.stringify({
@@ -542,10 +613,21 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
       maxDailyTokens,
       maxModelCalls,
       maxReportModelCalls,
+      maxPlanModelCalls,
+      maxPlanTurnTokens,
+      planTurnTimeoutMs,
+      stepTimeoutMs,
       enableSuggestions,
       enableClarify,
       strictNumberCheck,
       requireSqlApproval,
+      enablePlanMode,
+      maxPlanSteps,
+      maxRetriesPerStep,
+      maxReplans,
+      maxParallelSteps,
+      enableAccuracyCritic,
+      maxCriticRounds,
     }),
   );
 
@@ -567,11 +649,22 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     maxDailyTokens,
     maxModelCalls,
     maxReportModelCalls,
+    maxPlanModelCalls,
+    maxPlanTurnTokens,
+    planTurnTimeoutMs,
+    stepTimeoutMs,
     enableSuggestions,
     enableClarify,
     strictNumberCheck,
     tokenPrices,
     requireSqlApproval,
+    enablePlanMode,
+    maxPlanSteps,
+    maxRetriesPerStep,
+    maxReplans,
+    maxParallelSteps,
+    enableAccuracyCritic,
+    maxCriticRounds,
     key,
   };
 }

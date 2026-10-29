@@ -1,0 +1,11 @@
+{
+  "name": "wms-kingbase",
+  "version": 1,
+  "dbType": "kingbase",
+  "prefix": "WMS_",
+  "description": "WMS 金仓版知识包",
+  "tables": 134,
+  "enums": 153,
+  "apiEndpoints": 956,
+  "generatedAt": "2026-10-28"
+}

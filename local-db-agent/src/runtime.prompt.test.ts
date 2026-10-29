@@ -1,6 +1,25 @@
-import { describe, it, expect } from 'vitest';
+import { afterAll, beforeAll, describe, it, expect } from 'vitest';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { ResolvedConfig } from './config.js';
 import { buildSystemPrompt } from './runtime.js';
+import { reloadKnowledgePack } from './knowledge.js';
+
+const emptyKnowledgeDir = mkdtempSync(join(tmpdir(), 'agent-empty-knowledge-'));
+const previousKnowledgeDir = process.env.AGENT_KNOWLEDGE_DIR;
+
+beforeAll(() => {
+  process.env.AGENT_KNOWLEDGE_DIR = emptyKnowledgeDir;
+  reloadKnowledgePack(emptyKnowledgeDir);
+});
+
+afterAll(() => {
+  if (previousKnowledgeDir == null) delete process.env.AGENT_KNOWLEDGE_DIR;
+  else process.env.AGENT_KNOWLEDGE_DIR = previousKnowledgeDir;
+  reloadKnowledgePack();
+  rmSync(emptyKnowledgeDir, { recursive: true, force: true });
+});
 
 function config(db: Record<string, unknown>): ResolvedConfig {
   return { db } as unknown as ResolvedConfig;

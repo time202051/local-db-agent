@@ -1,11 +1,25 @@
 # Build a portable release package at: <repo>\release\agent-local
-# Usage: powershell -ExecutionPolicy Bypass -File scripts\build-release.ps1
+# Usage: powershell -ExecutionPolicy Bypass -File scripts\build-release.ps1 [-Pack wms-kingbase]
 # NOTE: keep comments ASCII-only (PowerShell 5.1 reads this as ANSI otherwise).
+param([string]$Pack = "")
+
 $ErrorActionPreference = 'Stop'
 
 $appDir = Resolve-Path (Join-Path $PSScriptRoot '..')
 $outDir = Join-Path $appDir '..\release\agent-local'
 Set-Location $appDir
+
+$packsDir = Join-Path $appDir 'packs'
+if (-not $Pack -and (Test-Path $packsDir)) {
+  $candidates = @(Get-ChildItem $packsDir -Directory | Select-Object -ExpandProperty Name)
+  if ($candidates.Count -eq 1) { $Pack = $candidates[0] }
+}
+$packDir = if ($Pack) { Join-Path $packsDir $Pack } else { $null }
+if ($Pack -and -not (Test-Path $packDir)) { throw "Pack not found: $Pack" }
+$knowledgeDir = if ($Pack) { Join-Path $packDir 'knowledge' } else { Join-Path $appDir 'knowledge' }
+$coreSkillsDir = Join-Path $appDir 'skills'
+$packSkillsDir = if ($Pack) { Join-Path $packDir 'skills' } else { $null }
+$mergedSkillsDir = $null
 
 # Retry a filesystem operation a few times: antivirus / a just-exiting process
 # may hold a handle for a short while.
@@ -57,13 +71,29 @@ Write-Host '2/8 Bundling into a single file (dist/app.mjs) ...'
 node scripts/bundle.mjs
 
 Write-Host 'Knowledge: validating pack and generating index ...'
-if (Test-Path (Join-Path $appDir 'knowledge')) {
+if (Test-Path $knowledgeDir) {
+  $env:AGENT_KNOWLEDGE_DIR = $knowledgeDir
   node scripts/knowledge-index.mjs
+  Remove-Item Env:AGENT_KNOWLEDGE_DIR -ErrorAction SilentlyContinue
   if ($LASTEXITCODE -ne 0) { throw "knowledge-index failed with exit code $LASTEXITCODE" }
 }
 
 Write-Host 'Skills: validating SKILL.md and generating index ...'
-if (Test-Path (Join-Path $appDir 'skills')) {
+if ($Pack) {
+  # Merge core skills with the project pack so both are available at runtime.
+  $mergedSkillsDir = Join-Path $env:TEMP ("agent-skills-" + $Pack + "-" + [guid]::NewGuid().ToString('N'))
+  New-Item -ItemType Directory -Force -Path $mergedSkillsDir | Out-Null
+  if (Test-Path $coreSkillsDir) {
+    Copy-Item (Join-Path $coreSkillsDir '*') $mergedSkillsDir -Recurse -Force
+  }
+  if ($packSkillsDir -and (Test-Path $packSkillsDir)) {
+    Copy-Item (Join-Path $packSkillsDir '*') $mergedSkillsDir -Recurse -Force
+  }
+  $env:AGENT_SKILLS_DIR = $mergedSkillsDir
+  npm run skills:index
+  Remove-Item Env:AGENT_SKILLS_DIR -ErrorAction SilentlyContinue
+  if ($LASTEXITCODE -ne 0) { throw "skills-index failed with exit code $LASTEXITCODE" }
+} elseif (Test-Path $coreSkillsDir) {
   npm run skills:index
   if ($LASTEXITCODE -ne 0) { throw "skills-index failed with exit code $LASTEXITCODE" }
 }
@@ -102,11 +132,14 @@ Write-Host '4/8 Copying bundle + manifests ...'
 Copy-Item (Join-Path $appDir 'dist\app.mjs') (Join-Path $outDir 'dist\app.mjs')
 Copy-Item (Join-Path $appDir '.env.example') $outDir
 Copy-Item (Join-Path $appDir 'packaging\README-deploy.txt') $outDir
-if (Test-Path (Join-Path $appDir 'knowledge')) {
-  Copy-Item (Join-Path $appDir 'knowledge') (Join-Path $outDir 'knowledge') -Recurse -Force
+if (Test-Path $knowledgeDir) {
+  Copy-Item $knowledgeDir (Join-Path $outDir 'knowledge') -Recurse -Force
 }
-if (Test-Path (Join-Path $appDir 'skills')) {
-  Copy-Item (Join-Path $appDir 'skills') (Join-Path $outDir 'skills') -Recurse -Force
+if ($mergedSkillsDir -and (Test-Path $mergedSkillsDir)) {
+  Copy-Item $mergedSkillsDir (Join-Path $outDir 'skills') -Recurse -Force
+  Remove-Item $mergedSkillsDir -Recurse -Force -ErrorAction SilentlyContinue
+} elseif (Test-Path $coreSkillsDir) {
+  Copy-Item $coreSkillsDir (Join-Path $outDir 'skills') -Recurse -Force
 }
 
 # Minimal package.json: only the native module needed at runtime, so npm installs

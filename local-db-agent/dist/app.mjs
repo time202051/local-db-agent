@@ -316,41 +316,41 @@ var require_queue = __commonJS({
       queue3.drained = drained;
       return queue3;
       function push2(value) {
-        var p = new Promise(function(resolve5, reject) {
+        var p = new Promise(function(resolve6, reject) {
           pushCb(value, function(err, result) {
             if (err) {
               reject(err);
               return;
             }
-            resolve5(result);
+            resolve6(result);
           });
         });
         p.catch(noop3);
         return p;
       }
       function unshift(value) {
-        var p = new Promise(function(resolve5, reject) {
+        var p = new Promise(function(resolve6, reject) {
           unshiftCb(value, function(err, result) {
             if (err) {
               reject(err);
               return;
             }
-            resolve5(result);
+            resolve6(result);
           });
         });
         p.catch(noop3);
         return p;
       }
       function drained() {
-        var p = new Promise(function(resolve5) {
+        var p = new Promise(function(resolve6) {
           process.nextTick(function() {
             if (queue3.idle()) {
-              resolve5();
+              resolve6();
             } else {
               var previousDrain = queue3.drain;
               queue3.drain = function() {
                 if (typeof previousDrain === "function") previousDrain();
-                resolve5();
+                resolve6();
                 queue3.drain = previousDrain;
               };
             }
@@ -693,8 +693,8 @@ var require_create_promise = __commonJS({
         reject: null,
         promise: null
       };
-      obj.promise = new Promise((resolve5, reject) => {
-        obj.resolve = resolve5;
+      obj.promise = new Promise((resolve6, reject) => {
+        obj.resolve = resolve6;
         obj.reject = reject;
       });
       return obj;
@@ -967,11 +967,11 @@ var require_thenify = __commonJS({
         return;
       }
       debug("thenify");
-      return (resolve5, reject) => {
+      return (resolve6, reject) => {
         const p = this._loadRegistered();
         return p.then(() => {
           this[kThenifyDoNotWrap] = true;
-          return resolve5(this._server);
+          return resolve6(this._server);
         }, reject);
       };
     }
@@ -1109,12 +1109,12 @@ var require_avvio = __commonJS({
     inherits(Boot, EE);
     if ("asyncDispose" in Symbol) {
       Boot.prototype[Symbol.asyncDispose] = function() {
-        return new Promise((resolve5, reject) => {
+        return new Promise((resolve6, reject) => {
           this.close((err) => {
             if (err) {
               return reject(err);
             }
-            resolve5();
+            resolve6();
           });
         });
       };
@@ -1261,12 +1261,12 @@ var require_avvio = __commonJS({
           throw new AVV_ERR_CALLBACK_NOT_FN("close", typeof func);
         }
       } else {
-        promise2 = new Promise(function(resolve5, reject) {
+        promise2 = new Promise(function(resolve6, reject) {
           func = function(err) {
             if (err) {
               return reject(err);
             }
-            resolve5();
+            resolve6();
           };
         });
       }
@@ -1286,7 +1286,7 @@ var require_avvio = __commonJS({
         queueMicrotask(this.start.bind(this));
         return;
       }
-      return new Promise((resolve5, reject) => {
+      return new Promise((resolve6, reject) => {
         this._readyQ.push(readyPromiseCB);
         this.start();
         const relativeContext = this._current[0].server;
@@ -1294,7 +1294,7 @@ var require_avvio = __commonJS({
           if (err) {
             reject(err);
           } else {
-            resolve5(relativeContext);
+            resolve6(relativeContext);
           }
           process.nextTick(done);
         }
@@ -2689,8 +2689,8 @@ var require_promise = __commonJS({
     var { kTestInternals } = require_symbols2();
     function withResolvers() {
       let res, rej;
-      const promise2 = new Promise((resolve5, reject) => {
-        res = resolve5;
+      const promise2 = new Promise((resolve6, reject) => {
+        res = resolve6;
         rej = reject;
       });
       return { promise: promise2, resolve: res, reject: rej };
@@ -2789,15 +2789,15 @@ var require_server = __commonJS({
         if (cb === void 0) {
           const listening = listenPromise.call(this, server, listenOptions);
           return listening.then((address) => {
-            const { promise: promise2, resolve: resolve5 } = PonyPromise.withResolvers();
+            const { promise: promise2, resolve: resolve6 } = PonyPromise.withResolvers();
             if (host === "localhost") {
               multipleBindings.call(this, server, httpHandler, options, listenOptions, () => {
                 this[kState].listening = true;
-                resolve5(address);
+                resolve6(address);
                 onListenHookRunner(this);
               });
             } else {
-              resolve5(address);
+              resolve6(address);
               onListenHookRunner(this);
             }
             return promise2;
@@ -2924,7 +2924,7 @@ var require_server = __commonJS({
       }
       return this.ready().then(() => {
         if (this[kState].aborted) return;
-        const { promise: promise2, resolve: resolve5, reject } = PonyPromise.withResolvers();
+        const { promise: promise2, resolve: resolve6, reject } = PonyPromise.withResolvers();
         const errEventHandler = (err) => {
           cleanup();
           this[kState].listening = false;
@@ -2933,7 +2933,7 @@ var require_server = __commonJS({
         const listeningEventHandler = () => {
           cleanup();
           this[kState].listening = true;
-          resolve5(logServerAddress.call(
+          resolve6(logServerAddress.call(
             this,
             server,
             listenOptions.listenTextResolver || defaultResolveServerListeningText
@@ -8058,7 +8058,7 @@ var require_thread_stream = __commonJS({
     var { version: version4 } = require_package();
     var { EventEmitter } = __require("events");
     var { Worker: Worker2 } = __require("worker_threads");
-    var { join: join5 } = __require("path");
+    var { join: join6 } = __require("path");
     var { pathToFileURL } = __require("url");
     var { wait } = require_wait();
     var {
@@ -8109,7 +8109,7 @@ var require_thread_stream = __commonJS({
     function createWorker(stream, opts) {
       const { filename, workerData } = opts;
       const bundlerOverrides = "__bundlerPathsOverrides" in globalThis ? globalThis.__bundlerPathsOverrides : {};
-      const toExecute = bundlerOverrides["thread-stream-worker"] || join5(__dirname, "lib", "worker.js");
+      const toExecute = bundlerOverrides["thread-stream-worker"] || join6(__dirname, "lib", "worker.js");
       const worker = new Worker2(toExecute, {
         ...opts.workerOpts,
         name: opts.workerOpts?.name || "thread-stream",
@@ -8575,10 +8575,10 @@ var require_transport = __commonJS({
   "node_modules/pino/lib/transport.js"(exports, module) {
     "use strict";
     var { createRequire } = __require("module");
-    var { existsSync: existsSync6 } = __require("node:fs");
+    var { existsSync: existsSync7 } = __require("node:fs");
     var getCallers = require_caller();
-    var { join: join5, isAbsolute: isAbsolute3, sep } = __require("node:path");
-    var { fileURLToPath: fileURLToPath5 } = __require("node:url");
+    var { join: join6, isAbsolute: isAbsolute3, sep } = __require("node:path");
+    var { fileURLToPath: fileURLToPath6 } = __require("node:url");
     var sleep5 = require_atomic_sleep();
     var onExit = require_on_exit_leak_free();
     var ThreadStream = require_thread_stream();
@@ -8645,12 +8645,12 @@ var require_transport = __commonJS({
       let path4 = unquoted;
       if (path4.startsWith("file://")) {
         try {
-          path4 = fileURLToPath5(path4);
+          path4 = fileURLToPath6(path4);
         } catch {
           return false;
         }
       }
-      return isAbsolute3(path4) && !existsSync6(path4);
+      return isAbsolute3(path4) && !existsSync7(path4);
     }
     function stripQuotes(value) {
       const first = value[0];
@@ -8732,7 +8732,7 @@ var require_transport = __commonJS({
         throw new Error("only one of target or targets can be specified");
       }
       if (targets) {
-        target = bundlerOverrides["pino-worker"] || join5(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join6(__dirname, "worker.js");
         options.targets = targets.filter((dest) => dest.target).map((dest) => {
           return {
             ...dest,
@@ -8753,7 +8753,7 @@ var require_transport = __commonJS({
         const pipelinesHaveLevel = options.pipelines.some((p) => p.some((t) => t.level != null));
         usesMultistream = options.targets.length + options.pipelines.length > 1 || targetsHaveLevel || pipelinesHaveLevel;
       } else if (pipeline) {
-        target = bundlerOverrides["pino-worker"] || join5(__dirname, "worker.js");
+        target = bundlerOverrides["pino-worker"] || join6(__dirname, "worker.js");
         options.pipelines = [pipeline.map((dest) => {
           return {
             ...dest,
@@ -8780,7 +8780,7 @@ var require_transport = __commonJS({
           return origin;
         }
         if (origin === "pino/file") {
-          return join5(__dirname, "..", "file.js");
+          return join6(__dirname, "..", "file.js");
         }
         let fixTarget2;
         for (const filePath of callers) {
@@ -9760,7 +9760,7 @@ var require_safe_stable_stringify = __commonJS({
               return circularValue;
             }
             let res = "";
-            let join5 = ",";
+            let join6 = ",";
             const originalIndentation = indentation;
             if (Array.isArray(value)) {
               if (value.length === 0) {
@@ -9774,7 +9774,7 @@ var require_safe_stable_stringify = __commonJS({
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join5 = `,
+                join6 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -9782,13 +9782,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join5;
+                res += join6;
               }
               const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join5}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -9809,7 +9809,7 @@ ${originalIndentation}`;
             let separator = "";
             if (spacer !== "") {
               indentation += spacer;
-              join5 = `,
+              join6 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -9823,13 +9823,13 @@ ${indentation}`;
               const tmp = stringifyFnReplacer(key2, value, stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join5;
+                separator = join6;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...":${whitespace}"${getItemCount(removedKeys)} not stringified"`;
-              separator = join5;
+              separator = join6;
             }
             if (spacer !== "" && separator.length > 1) {
               res = `
@@ -9870,7 +9870,7 @@ ${originalIndentation}`;
             }
             const originalIndentation = indentation;
             let res = "";
-            let join5 = ",";
+            let join6 = ",";
             if (Array.isArray(value)) {
               if (value.length === 0) {
                 return "[]";
@@ -9883,7 +9883,7 @@ ${originalIndentation}`;
                 indentation += spacer;
                 res += `
 ${indentation}`;
-                join5 = `,
+                join6 = `,
 ${indentation}`;
               }
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
@@ -9891,13 +9891,13 @@ ${indentation}`;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
                 res += tmp2 !== void 0 ? tmp2 : "null";
-                res += join5;
+                res += join6;
               }
               const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
               res += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res += `${join5}"... ${getItemCount(removedKeys)} not stringified"`;
+                res += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               if (spacer !== "") {
                 res += `
@@ -9910,7 +9910,7 @@ ${originalIndentation}`;
             let whitespace = "";
             if (spacer !== "") {
               indentation += spacer;
-              join5 = `,
+              join6 = `,
 ${indentation}`;
               whitespace = " ";
             }
@@ -9919,7 +9919,7 @@ ${indentation}`;
               const tmp = stringifyArrayReplacer(key2, value[key2], stack, replacer, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}:${whitespace}${tmp}`;
-                separator = join5;
+                separator = join6;
               }
             }
             if (spacer !== "" && separator.length > 1) {
@@ -9977,20 +9977,20 @@ ${originalIndentation}`;
               indentation += spacer;
               let res2 = `
 ${indentation}`;
-              const join6 = `,
+              const join7 = `,
 ${indentation}`;
               const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
               let i = 0;
               for (; i < maximumValuesToStringify - 1; i++) {
                 const tmp2 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
                 res2 += tmp2 !== void 0 ? tmp2 : "null";
-                res2 += join6;
+                res2 += join7;
               }
               const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
               res2 += tmp !== void 0 ? tmp : "null";
               if (value.length - 1 > maximumBreadth) {
                 const removedKeys = value.length - maximumBreadth - 1;
-                res2 += `${join6}"... ${getItemCount(removedKeys)} not stringified"`;
+                res2 += `${join7}"... ${getItemCount(removedKeys)} not stringified"`;
               }
               res2 += `
 ${originalIndentation}`;
@@ -10006,16 +10006,16 @@ ${originalIndentation}`;
               return '"[Object]"';
             }
             indentation += spacer;
-            const join5 = `,
+            const join6 = `,
 ${indentation}`;
             let res = "";
             let separator = "";
             let maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
             if (isTypedArrayWithEntries(value)) {
-              res += stringifyTypedArray(value, join5, maximumBreadth);
+              res += stringifyTypedArray(value, join6, maximumBreadth);
               keys = keys.slice(value.length);
               maximumPropertiesToStringify -= value.length;
-              separator = join5;
+              separator = join6;
             }
             if (deterministic) {
               keys = sort(keys, comparator);
@@ -10026,13 +10026,13 @@ ${indentation}`;
               const tmp = stringifyIndent(key2, value[key2], stack, spacer, indentation);
               if (tmp !== void 0) {
                 res += `${separator}${strEscape(key2)}: ${tmp}`;
-                separator = join5;
+                separator = join6;
               }
             }
             if (keyLength > maximumBreadth) {
               const removedKeys = keyLength - maximumBreadth;
               res += `${separator}"...": "${getItemCount(removedKeys)} not stringified"`;
-              separator = join5;
+              separator = join6;
             }
             if (separator !== "") {
               res = `
@@ -17139,7 +17139,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve5.call(this, root, ref);
+      let _sch = resolve6.call(this, root, ref);
       if (_sch === void 0) {
         const schema2 = (_a8 = root.localRefs) === null || _a8 === void 0 ? void 0 : _a8[ref];
         const { schemaId } = this.opts;
@@ -17166,7 +17166,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve5(root, ref) {
+    function resolve6(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -17996,7 +17996,7 @@ var require_fast_uri = __commonJS({
       }
       return uri2;
     }
-    function resolve5(baseURI, relativeURI, options) {
+    function resolve6(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -18365,7 +18365,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize: normalize4,
-      resolve: resolve5,
+      resolve: resolve6,
       resolveComponent,
       equal,
       serialize: serialize2,
@@ -23768,7 +23768,7 @@ var require_fast_uri2 = __commonJS({
       }
       return uri2;
     }
-    function resolve5(baseURI, relativeURI, options) {
+    function resolve6(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -24173,7 +24173,7 @@ var require_fast_uri2 = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize: normalize4,
-      resolve: resolve5,
+      resolve: resolve6,
       resolveComponent,
       equal,
       serialize: serialize2,
@@ -37338,9 +37338,9 @@ var require_light_my_request = __commonJS({
         const res = new Response2(req, callback);
         return makeRequest(dispatchFunc, server, req, res);
       } else {
-        return new Promise((resolve5, reject) => {
+        return new Promise((resolve6, reject) => {
           const req = new RequestConstructor(options);
-          const res = new Response2(req, resolve5, reject);
+          const res = new Response2(req, resolve6, reject);
           makeRequest(dispatchFunc, server, req, res);
         });
       }
@@ -43527,7 +43527,7 @@ async function onAttemptFailure({ error: error62, attemptNumber, retriesConsumed
   const delayTime = calculateDelay(retriesConsumed, options);
   const finalDelay = Math.min(delayTime, remainingTime);
   if (finalDelay > 0) {
-    await new Promise((resolve5, reject) => {
+    await new Promise((resolve6, reject) => {
       const onAbort = () => {
         clearTimeout(timeoutToken);
         options.signal?.removeEventListener("abort", onAbort);
@@ -43535,7 +43535,7 @@ async function onAttemptFailure({ error: error62, attemptNumber, retriesConsumed
       };
       const timeoutToken = setTimeout(() => {
         options.signal?.removeEventListener("abort", onAbort);
-        resolve5();
+        resolve6();
       }, finalDelay);
       if (options.unref) {
         timeoutToken.unref?.();
@@ -43797,11 +43797,11 @@ var require_p_finally = __commonJS({
       onFinally = onFinally || (() => {
       });
       return promise2.then(
-        (val) => new Promise((resolve5) => {
-          resolve5(onFinally());
+        (val) => new Promise((resolve6) => {
+          resolve6(onFinally());
         }).then(() => val),
-        (err) => new Promise((resolve5) => {
-          resolve5(onFinally());
+        (err) => new Promise((resolve6) => {
+          resolve6(onFinally());
         }).then(() => {
           throw err;
         })
@@ -43821,18 +43821,18 @@ var require_p_timeout = __commonJS({
         this.name = "TimeoutError";
       }
     };
-    var pTimeout = (promise2, milliseconds, fallback) => new Promise((resolve5, reject) => {
+    var pTimeout = (promise2, milliseconds, fallback) => new Promise((resolve6, reject) => {
       if (typeof milliseconds !== "number" || milliseconds < 0) {
         throw new TypeError("Expected `milliseconds` to be a positive number");
       }
       if (milliseconds === Infinity) {
-        resolve5(promise2);
+        resolve6(promise2);
         return;
       }
       const timer = setTimeout(() => {
         if (typeof fallback === "function") {
           try {
-            resolve5(fallback());
+            resolve6(fallback());
           } catch (error62) {
             reject(error62);
           }
@@ -43847,7 +43847,7 @@ var require_p_timeout = __commonJS({
       }, milliseconds);
       pFinally(
         // eslint-disable-next-line promise/prefer-await-to-then
-        promise2.then(resolve5, reject),
+        promise2.then(resolve6, reject),
         () => {
           clearTimeout(timer);
         }
@@ -44065,7 +44065,7 @@ var require_dist4 = __commonJS({
       Adds a sync or async task to the queue. Always returns a promise.
       */
       async add(fn, options = {}) {
-        return new Promise((resolve5, reject) => {
+        return new Promise((resolve6, reject) => {
           const run = async () => {
             this._pendingCount++;
             this._intervalCount++;
@@ -44076,7 +44076,7 @@ var require_dist4 = __commonJS({
                 }
                 return void 0;
               });
-              resolve5(await operation);
+              resolve6(await operation);
             } catch (error62) {
               reject(error62);
             }
@@ -44127,11 +44127,11 @@ var require_dist4 = __commonJS({
         if (this._queue.size === 0) {
           return;
         }
-        return new Promise((resolve5) => {
+        return new Promise((resolve6) => {
           const existingResolve = this._resolveEmpty;
           this._resolveEmpty = () => {
             existingResolve();
-            resolve5();
+            resolve6();
           };
         });
       }
@@ -44144,11 +44144,11 @@ var require_dist4 = __commonJS({
         if (this._pendingCount === 0 && this._queue.size === 0) {
           return;
         }
-        return new Promise((resolve5) => {
+        return new Promise((resolve6) => {
           const existingResolve = this._resolveIdle;
           this._resolveIdle = () => {
             existingResolve();
-            resolve5();
+            resolve6();
           };
         });
       }
@@ -44593,7 +44593,7 @@ var init_values = __esm({
 var sleep;
 var init_sleep = __esm({
   "node_modules/langsmith/internal/utils/sleep.mjs"() {
-    sleep = (ms) => new Promise((resolve5) => setTimeout(resolve5, ms));
+    sleep = (ms) => new Promise((resolve6) => setTimeout(resolve6, ms));
   }
 });
 
@@ -45321,8 +45321,8 @@ var init_api_promise = __esm({
     init_parse3();
     APIPromise = class _APIPromise extends Promise {
       constructor(client2, responsePromise, parseResponse2 = defaultParseResponse) {
-        super((resolve5) => {
-          resolve5(null);
+        super((resolve6) => {
+          resolve6(null);
         });
         Object.defineProperty(this, "responsePromise", {
           enumerable: true,
@@ -48966,7 +48966,7 @@ var init_fetch = __esm({
 
 // node_modules/langsmith/lib/utils/profile-lock.mjs
 function sleep2(ms) {
-  return new Promise((resolve5) => setTimeout(resolve5, ms));
+  return new Promise((resolve6) => setTimeout(resolve6, ms));
 }
 function isEEXIST(err) {
   return typeof err === "object" && err !== null && err.code === "EEXIST";
@@ -49988,8 +49988,8 @@ parentPort.on("message", (msg) => {
         if (!ok)
           return null;
         const id = this.nextId++;
-        return new Promise((resolve5, reject) => {
-          this.pending.set(id, { resolve: resolve5, reject });
+        return new Promise((resolve6, reject) => {
+          this.pending.set(id, { resolve: resolve6, reject });
           try {
             this.worker.postMessage({ id, op: "serialize", payload });
           } catch (e) {
@@ -50199,7 +50199,7 @@ var init_client2 = __esm({
       if (response?.status === 429) {
         const retryAfter = parseInt(response.headers.get("retry-after") ?? "10", 10) * 1e3;
         if (retryAfter > 0) {
-          await new Promise((resolve5) => setTimeout(resolve5, retryAfter));
+          await new Promise((resolve6) => setTimeout(resolve6, retryAfter));
           return true;
         }
       }
@@ -50236,8 +50236,8 @@ var init_client2 = __esm({
       }
       push(item) {
         let itemPromiseResolve;
-        const itemPromise = new Promise((resolve5) => {
-          itemPromiseResolve = resolve5;
+        const itemPromise = new Promise((resolve6) => {
+          itemPromiseResolve = resolve6;
         });
         const size = estimateSerializedSize(item.item).size;
         if (this.sizeBytes + size > this.maxSizeBytes && this.items.length > 0) {
@@ -55261,7 +55261,7 @@ Message: ${Array.isArray(result.detail) ? result.detail.join("\n") : "Unspecifie
           console.warn("[WARNING]: When tracing in manual flush mode, you must call `await client.flush()` manually to submit trace batches.");
           return Promise.resolve();
         }
-        await new Promise((resolve5) => setTimeout(resolve5, 1));
+        await new Promise((resolve6) => setTimeout(resolve6, 1));
         while (this._pendingDrains.size > 0) {
           await Promise.all([...this._pendingDrains]);
         }
@@ -59812,11 +59812,11 @@ var init_stream = __esm({
         this.generator = params.generator;
         this.config = params.config;
         this.signal = params.signal ?? this.config?.signal;
-        this.setup = new Promise((resolve5, reject) => {
+        this.setup = new Promise((resolve6, reject) => {
           AsyncLocalStorageProviderSingleton2.runWithConfig(pickRunnableConfigKeys(params.config), async () => {
             this.firstResult = this.signal ? raceWithSignal(params.generator.next(), this.signal) : params.generator.next();
-            if (params.startSetup) this.firstResult.then(params.startSetup).then(resolve5, reject);
-            else this.firstResult.then((_result) => resolve5(void 0), reject);
+            if (params.startSetup) this.firstResult.then(params.startSetup).then(resolve6, reject);
+            else this.firstResult.then((_result) => resolve6(void 0), reject);
           }, true);
         });
       }
@@ -60674,7 +60674,7 @@ async function onAttemptFailure2({ error: error62, attemptNumber, retriesConsume
   const retryAfterMs = typeof normalizedError.retryAfterMs === "number" && normalizedError.retryAfterMs >= 0 ? normalizedError.retryAfterMs : void 0;
   if (retryAfterMs !== void 0) delayTime = Math.max(delayTime, retryAfterMs);
   const finalDelay = Math.min(delayTime, remainingTime);
-  if (finalDelay > 0) await new Promise((resolve5, reject) => {
+  if (finalDelay > 0) await new Promise((resolve6, reject) => {
     const onAbort = () => {
       clearTimeout(timeoutToken);
       options.signal?.removeEventListener("abort", onAbort);
@@ -60682,7 +60682,7 @@ async function onAttemptFailure2({ error: error62, attemptNumber, retriesConsume
     };
     const timeoutToken = setTimeout(() => {
       options.signal?.removeEventListener("abort", onAbort);
-      resolve5();
+      resolve6();
     }, finalDelay);
     if (options.unref) timeoutToken.unref?.();
     options.signal?.addEventListener("abort", onAbort, { once: true });
@@ -65530,7 +65530,7 @@ function isRef(value) {
 function cloneIssues(issues) {
   return issues.map((iss) => iss.path ? { ...iss, path: iss.path.slice() } : { ...iss });
 }
-function isRecursive(inst, stack, resolve5) {
+function isRecursive(inst, stack, resolve6) {
   const cached4 = recursive.get(inst);
   if (cached4 !== void 0)
     return cached4 ? PROVEN : NONE;
@@ -65540,7 +65540,7 @@ function isRecursive(inst, stack, resolve5) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve5);
+      const answer = isRecursive(child, stack, resolve6);
       if (answer > result)
         result = answer;
     }
@@ -65551,7 +65551,7 @@ function isRecursive(inst, stack, resolve5) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve5) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve6) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -65615,7 +65615,7 @@ function isRecursive(inst, stack, resolve5) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve5 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve6 ? inst._zod.innerType : void 0);
       merge3(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -85750,8 +85750,8 @@ var init_event_stream = __esm({
         let tappedPromise = this.tappedPromises.get(runId);
         if (tappedPromise === void 0) {
           let tappedPromiseResolver;
-          tappedPromise = new Promise((resolve5) => {
-            tappedPromiseResolver = resolve5;
+          tappedPromise = new Promise((resolve6) => {
+            tappedPromiseResolver = resolve6;
           });
           this.tappedPromises.set(runId, tappedPromise);
           try {
@@ -87265,7 +87265,7 @@ var init_base4 = __esm({
         return new RunnableLambda2({ func });
       }
       async _invoke(input2, config2, runManager) {
-        return new Promise((resolve5, reject) => {
+        return new Promise((resolve6, reject) => {
           const childConfig = patchConfig(config2, {
             callbacks: runManager?.getChild(),
             recursionLimit: (config2?.recursionLimit ?? 25) - 1
@@ -87304,7 +87304,7 @@ var init_base4 = __esm({
                 }
                 output2 = finalOutput;
               }
-              resolve5(output2);
+              resolve6(output2);
             } catch (e) {
               reject(e);
             }
@@ -87326,10 +87326,10 @@ var init_base4 = __esm({
           callbacks: runManager?.getChild(),
           recursionLimit: (config2?.recursionLimit ?? 25) - 1
         });
-        const output2 = await new Promise((resolve5, reject) => {
+        const output2 = await new Promise((resolve6, reject) => {
           AsyncLocalStorageProviderSingleton2.runWithConfig(pickRunnableConfigKeys(childConfig), async () => {
             try {
-              resolve5(await this.func(finalChunk, {
+              resolve6(await this.func(finalChunk, {
                 ...childConfig,
                 config: childConfig
               }));
@@ -92427,12 +92427,12 @@ var init_stream2 = __esm({
             if (this.error) throw this.error;
             return;
           }
-          await new Promise((resolve5) => {
+          await new Promise((resolve6) => {
             if (cursor < this.events.length || this.finished) {
-              resolve5();
+              resolve6();
               return;
             }
-            this.waiters.push(resolve5);
+            this.waiters.push(resolve6);
           });
         }
       }
@@ -100712,11 +100712,11 @@ function tool(func, fields) {
     ...fields,
     description: fields.description ?? fields.schema?.description ?? `${fields.name} tool`,
     func: async (input2, runManager, config2) => {
-      return new Promise((resolve5, reject) => {
+      return new Promise((resolve6, reject) => {
         const childConfig = patchConfig(config2, { callbacks: runManager?.getChild() });
         AsyncLocalStorageProviderSingleton2.runWithConfig(pickRunnableConfigKeys(childConfig), async () => {
           try {
-            resolve5(func(input2, childConfig));
+            resolve6(func(input2, childConfig));
           } catch (e) {
             reject(e);
           }
@@ -100731,7 +100731,7 @@ function tool(func, fields) {
     description,
     schema: schema2,
     func: async (input2, runManager, config2) => {
-      return new Promise((resolve5, reject) => {
+      return new Promise((resolve6, reject) => {
         let listener;
         const cleanup = () => {
           if (config2?.signal && listener) config2.signal.removeEventListener("abort", listener);
@@ -100748,7 +100748,7 @@ function tool(func, fields) {
           try {
             const result = await func(input2, childConfig);
             if (isAsyncGenerator(result)) {
-              resolve5(result);
+              resolve6(result);
               return;
             }
             if (config2?.signal?.aborted) {
@@ -100756,7 +100756,7 @@ function tool(func, fields) {
               return;
             }
             cleanup();
-            resolve5(result);
+            resolve6(result);
           } catch (e) {
             cleanup();
             reject(e);
@@ -102265,8 +102265,8 @@ var init_chat_models2 = __esm({
         if (this.sleep !== void 0) await this._sleep();
       }
       async _sleep() {
-        return new Promise((resolve5) => {
-          setTimeout(() => resolve5(), this.sleep);
+        return new Promise((resolve6) => {
+          setTimeout(() => resolve6(), this.sleep);
         });
       }
       _createResponseChunk(text, generationInfo) {
@@ -102466,7 +102466,7 @@ var init_llms2 = __esm({
         const response = this.responses?.[0];
         this.responses = this.responses?.slice(1);
         for (const c of response ?? input2) {
-          await new Promise((resolve5) => setTimeout(resolve5, this.sleep));
+          await new Promise((resolve6) => setTimeout(resolve6, this.sleep));
           yield {
             text: c,
             generationInfo: {}
@@ -103977,20 +103977,20 @@ var init_batch = __esm({
         if (this.processingTask) await this.processingTask;
       }
       enqueueOperation(operation) {
-        return new Promise((resolve5, reject) => {
+        return new Promise((resolve6, reject) => {
           const key = this.nextKey;
           this.nextKey += 1;
           this.queue.set(key, {
             operation,
-            resolve: resolve5,
+            resolve: resolve6,
             reject
           });
         });
       }
       async processBatchQueue() {
         while (this.running) {
-          await new Promise((resolve5) => {
-            setTimeout(resolve5, 0);
+          await new Promise((resolve6) => {
+            setTimeout(resolve6, 0);
           });
           if (this.queue.size === 0) continue;
           const batch = new Map(this.queue);
@@ -103998,8 +103998,8 @@ var init_batch = __esm({
           try {
             const operations = Array.from(batch.values()).map(({ operation }) => operation);
             const results = await this.store.batch(operations);
-            batch.forEach(({ resolve: resolve5 }, key) => {
-              resolve5(results[Array.from(batch.keys()).indexOf(key)]);
+            batch.forEach(({ resolve: resolve6 }, key) => {
+              resolve6(results[Array.from(batch.keys()).indexOf(key)]);
             });
           } catch (e) {
             batch.forEach(({ reject }) => {
@@ -105055,7 +105055,7 @@ var init_stream_channel = __esm({
                 done: true
               };
             }
-            await new Promise((resolve5) => this.#waiters.push(resolve5));
+            await new Promise((resolve6) => this.#waiters.push(resolve6));
           }
         } };
       }
@@ -106087,8 +106087,8 @@ var init_run_stream = __esm({
         this.#eventStart = eventStart;
         this.extensions = extensions ?? {};
         this.#abortController = abortController ?? new AbortController();
-        this.#valuesDone = new Promise((resolve5, reject) => {
-          this.#resolveValuesFn = resolve5;
+        this.#valuesDone = new Promise((resolve6, reject) => {
+          this.#resolveValuesFn = resolve6;
           this.#rejectValuesFn = reject;
         });
         this.#valuesDone.catch(() => {
@@ -106740,11 +106740,11 @@ var init_utils9 = __esm({
         this.recurse = fields.recurse ?? this.recurse;
       }
       async _tracedInvoke(input2, config2, runManager) {
-        return new Promise((resolve5, reject) => {
+        return new Promise((resolve6, reject) => {
           const childConfig = patchConfig(config2, { callbacks: runManager?.getChild() });
           AsyncLocalStorageProviderSingleton2.runWithConfig(childConfig, async () => {
             try {
-              resolve5(await this.func(input2, childConfig));
+              resolve6(await this.func(input2, childConfig));
             } catch (e) {
               reject(e);
             }
@@ -108464,8 +108464,8 @@ var init_stream6 = __esm({
       }
       constructor(params) {
         let streamControllerPromiseResolver;
-        const streamControllerPromise = new Promise((resolve5) => {
-          streamControllerPromiseResolver = resolve5;
+        const streamControllerPromise = new Promise((resolve6) => {
+          streamControllerPromiseResolver = resolve6;
         });
         super({ start: (controller) => {
           streamControllerPromiseResolver(controller);
@@ -110192,8 +110192,8 @@ async function runAttemptWithTimeout(task2, config2, policy, invoke) {
     if (runTimer !== void 0) clearTimeout(runTimer);
     if (idleTimer !== void 0) clearTimeout(idleTimer);
   };
-  const watchdog = new Promise((resolve5) => {
-    if (policy.runTimeout !== void 0) runTimer = setTimeout(() => resolve5({
+  const watchdog = new Promise((resolve6) => {
+    if (policy.runTimeout !== void 0) runTimer = setTimeout(() => resolve6({
       type: "timeout",
       kind: "run"
     }), policy.runTimeout);
@@ -110201,7 +110201,7 @@ async function runAttemptWithTimeout(task2, config2, policy, invoke) {
       const idleMs = policy.idleTimeout;
       const checkIdle = () => {
         const remaining = scope.lastProgress + idleMs - Date.now();
-        if (remaining <= 0) resolve5({
+        if (remaining <= 0) resolve6({
           type: "timeout",
           kind: "idle"
         });
@@ -110360,7 +110360,7 @@ async function _runWithRetry(pregelTask, retryPolicy, configurable, signal) {
       const initialInterval = resolvedRetryPolicy.initialInterval ?? 500;
       const interval = Math.min(resolvedRetryPolicy.maxInterval ?? 128e3, initialInterval * (resolvedRetryPolicy.backoffFactor ?? 2) ** (attempts - 1));
       const sleepMs = resolvedRetryPolicy.jitter ?? true ? interval + Math.random() * 1e3 : interval;
-      await new Promise((resolve5) => setTimeout(resolve5, sleepMs));
+      await new Promise((resolve6) => setTimeout(resolve6, sleepMs));
       const errorName = error62.name ?? error62.constructor.unminifiable_name ?? error62.constructor.name;
       if (resolvedRetryPolicy?.logWarning ?? true) console.log(`Retrying task "${String(pregelTask.name)}" after ${sleepMs.toFixed(2)}ms (attempt ${attempts}) after ${errorName}: ${error62}`);
       config2 = patchConfigurable2(config2, { [CONFIG_KEY_RESUMING]: true });
@@ -110415,10 +110415,10 @@ function createPromiseBarrier() {
     next: () => void 0,
     wait: Promise.resolve(PROMISE_ADDED_SYMBOL)
   };
-  function waitHandler(resolve5) {
+  function waitHandler(resolve6) {
     barrier.next = () => {
       barrier.wait = new Promise(waitHandler);
-      resolve5(PROMISE_ADDED_SYMBOL);
+      resolve6(PROMISE_ADDED_SYMBOL);
     };
   }
   barrier.wait = new Promise(waitHandler);
@@ -112004,8 +112004,8 @@ var init_pregel = __esm({
               loopError = loopError ?? e;
             }
             if (loopError) {
-              await new Promise((resolve5) => {
-                queueMicrotask(resolve5);
+              await new Promise((resolve6) => {
+                queueMicrotask(resolve6);
               });
               stream.error(loopError);
             } else stream.close();
@@ -117575,7 +117575,7 @@ var require_dist5 = __commonJS({
     function parse8(stream, callback) {
       const parser = new parser_1.Parser();
       stream.on("data", (buffer) => parser.parse(buffer, callback));
-      return new Promise((resolve5) => stream.on("end", () => resolve5()));
+      return new Promise((resolve6) => stream.on("end", () => resolve6()));
     }
   }
 });
@@ -118344,12 +118344,12 @@ var require_client = __commonJS({
           this._connect(callback);
           return;
         }
-        return new this._Promise((resolve5, reject) => {
+        return new this._Promise((resolve6, reject) => {
           this._connect((error62) => {
             if (error62) {
               reject(error62);
             } else {
-              resolve5(this);
+              resolve6(this);
             }
           });
         });
@@ -118731,8 +118731,8 @@ var require_client = __commonJS({
         } else {
           query = new Query2(config2, values, callback);
           if (!query.callback) {
-            result = new this._Promise((resolve5, reject) => {
-              query.callback = (err, res) => err ? reject(err) : resolve5(res);
+            result = new this._Promise((resolve6, reject) => {
+              query.callback = (err, res) => err ? reject(err) : resolve6(res);
             }).catch((err) => {
               Error.captureStackTrace(err);
               throw err;
@@ -118832,8 +118832,8 @@ var require_client = __commonJS({
         if (cb) {
           this.connection.once("end", cb);
         } else {
-          return new this._Promise((resolve5) => {
-            this.connection.once("end", resolve5);
+          return new this._Promise((resolve6) => {
+            this.connection.once("end", resolve6);
           });
         }
       }
@@ -118882,8 +118882,8 @@ var require_pg_pool = __commonJS({
       const cb = function(err, client2) {
         err ? rej(err) : res(client2);
       };
-      const result = new Promise2(function(resolve5, reject) {
-        res = resolve5;
+      const result = new Promise2(function(resolve6, reject) {
+        res = resolve6;
         rej = reject;
       }).catch((err) => {
         Error.captureStackTrace(err);
@@ -118944,7 +118944,7 @@ var require_pg_pool = __commonJS({
         if (typeof Promise2.try === "function") {
           return Promise2.try(f3);
         }
-        return new Promise2((resolve5) => resolve5(f3()));
+        return new Promise2((resolve6) => resolve6(f3()));
       }
       _isFull() {
         return this._clients.length >= this.options.max;
@@ -119339,8 +119339,8 @@ var require_query2 = __commonJS({
     NativeQuery.prototype._getPromise = function() {
       if (this._promise) return this._promise;
       this._promise = new Promise(
-        function(resolve5, reject) {
-          this._once("end", resolve5);
+        function(resolve6, reject) {
+          this._once("end", resolve6);
           this._once("error", reject);
         }.bind(this)
       );
@@ -119519,12 +119519,12 @@ var require_client2 = __commonJS({
         this._connect(callback);
         return;
       }
-      return new this._Promise((resolve5, reject) => {
+      return new this._Promise((resolve6, reject) => {
         this._connect((error62) => {
           if (error62) {
             reject(error62);
           } else {
-            resolve5(this);
+            resolve6(this);
           }
         });
       });
@@ -119548,8 +119548,8 @@ var require_client2 = __commonJS({
         query = new NativeQuery(config2, values, callback);
         if (!query.callback) {
           let resolveOut, rejectOut;
-          result = new this._Promise((resolve5, reject) => {
-            resolveOut = resolve5;
+          result = new this._Promise((resolve6, reject) => {
+            resolveOut = resolve6;
             rejectOut = reject;
           }).catch((err) => {
             Error.captureStackTrace(err);
@@ -119612,8 +119612,8 @@ var require_client2 = __commonJS({
       }
       let result;
       if (!cb) {
-        result = new this._Promise(function(resolve5, reject) {
-          cb = (err) => err ? reject(err) : resolve5();
+        result = new this._Promise(function(resolve6, reject) {
+          cb = (err) => err ? reject(err) : resolve6();
         });
       }
       const doEnd = function() {
@@ -121086,15 +121086,15 @@ var require_utils5 = __commonJS({
     exports.tryPromise = tryPromise;
     var PromiseInspection_1 = require_PromiseInspection();
     function defer() {
-      let resolve5 = null;
+      let resolve6 = null;
       let reject = null;
       const promise2 = new Promise((resolver, rejecter) => {
-        resolve5 = resolver;
+        resolve6 = resolver;
         reject = rejecter;
       });
       return {
         promise: promise2,
-        resolve: resolve5,
+        resolve: resolve6,
         reject
       };
     }
@@ -121114,7 +121114,7 @@ var require_utils5 = __commonJS({
       return typeof time4 === "number" && time4 === Math.round(time4) && time4 > 0;
     }
     function delay(millis) {
-      return new Promise((resolve5) => setTimeout(resolve5, millis));
+      return new Promise((resolve6) => setTimeout(resolve6, millis));
     }
     function reflect(promise2) {
       return promise2.then((value) => {
@@ -121173,11 +121173,11 @@ var require_PendingOperation = __commonJS({
     };
     exports.PendingOperation = PendingOperation;
     function timeout(promise2, time4) {
-      return new Promise((resolve5, reject) => {
+      return new Promise((resolve6, reject) => {
         const timeoutHandle = setTimeout(() => reject(new TimeoutError_1.TimeoutError()), time4);
         promise2.then((result) => {
           clearTimeout(timeoutHandle);
-          resolve5(result);
+          resolve6(result);
         }).catch((err) => {
           clearTimeout(timeoutHandle);
           reject(err);
@@ -121394,15 +121394,15 @@ var require_Pool = __commonJS({
         this.pendingRetryTimers.forEach((timer) => clearTimeout(timer));
         this.pendingRetryTimers = [];
         return (0, utils_1.reflect)(Promise.all(this.pendingCreates.map((create) => (0, utils_1.reflect)(create.promise))).then(() => {
-          return new Promise((resolve5, reject) => {
+          return new Promise((resolve6, reject) => {
             if (this.numPendingValidations() === 0) {
-              resolve5();
+              resolve6();
               return;
             }
             const interval = setInterval(() => {
               if (this.numPendingValidations() === 0) {
                 (0, timers_1.clearInterval)(interval);
-                resolve5();
+                resolve6();
               }
             }, 100);
           });
@@ -121637,17 +121637,17 @@ var require_Pool = __commonJS({
       }
     }
     function callbackOrPromise(func) {
-      return new Promise((resolve5, reject) => {
+      return new Promise((resolve6, reject) => {
         const callback = (err, resource) => {
           if (err) {
             reject(err);
           } else {
-            resolve5(resource);
+            resolve6(resource);
           }
         };
         (0, utils_1.tryPromise)(() => func(callback)).then((res) => {
           if (res) {
-            resolve5(res);
+            resolve6(res);
           }
         }).catch((err) => {
           reject(err);
@@ -122926,10 +122926,10 @@ var require_connection_pool = __commonJS({
           return this;
         }
         return tracePromise(CHANNELS.TRACE_CONNECT, () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             return this._connect((err) => {
               if (err) return reject(err);
-              resolve5(this);
+              resolve6(this);
             });
           });
         }, () => ({
@@ -123020,10 +123020,10 @@ var require_connection_pool = __commonJS({
           this._close(callback);
           return this;
         }
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           this._close((err) => {
             if (err) return reject(err);
-            resolve5(this);
+            resolve6(this);
           });
         });
       }
@@ -123195,8 +123195,8 @@ var require_global_connection = __commonJS({
         setImmediate(callback);
         return null;
       }
-      return new shared.Promise((resolve5) => {
-        resolve5(globalConnection);
+      return new shared.Promise((resolve6) => {
+        resolve6(globalConnection);
       });
     }
     function on(event, handler) {
@@ -123419,10 +123419,10 @@ var require_prepared_statement = __commonJS({
           return this;
         }
         return tracePromise(CHANNELS.TRACE_PREPARED_STATEMENT_PREPARE, () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             this._prepare(statement, (err) => {
               if (err) return reject(err);
-              resolve5(this);
+              resolve6(this);
             });
           });
         }, () => ({
@@ -123508,10 +123508,10 @@ var require_prepared_statement = __commonJS({
           }), this, [values, callback]);
         }
         return tracePromise(CHANNELS.TRACE_PREPARED_STATEMENT_EXECUTE, () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             this._execute(values, (err, recordset) => {
               if (err) return reject(err);
-              resolve5(recordset);
+              resolve6(recordset);
             });
           });
         }, () => ({
@@ -123574,14 +123574,14 @@ var require_prepared_statement = __commonJS({
           });
           return this;
         }
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           this._unprepare((err) => {
             if (err) return reject(err);
             publish(CHANNELS.PREPARED_STATEMENT_UNPREPARE, () => ({
               preparedStatementId: IDS.get(this),
               poolId: getPoolId(this)
             }));
-            resolve5();
+            resolve6();
           });
         });
       }
@@ -123865,7 +123865,7 @@ var require_request3 = __commonJS({
           requestId: IDS.get(this),
           poolId: getPoolId(this)
         }), () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             this._batch(batchCommand, (err, recordsets, output2, rowsAffected) => {
               if (this.stream) {
                 if (err) this.emit("error", err);
@@ -123876,7 +123876,7 @@ var require_request3 = __commonJS({
                 });
               }
               if (err) return reject(err);
-              resolve5({
+              resolve6({
                 recordsets,
                 recordset: recordsets && recordsets[0],
                 output: output2,
@@ -123944,10 +123944,10 @@ var require_request3 = __commonJS({
           requestId: IDS.get(this),
           poolId: getPoolId(this)
         }), () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             this._bulk(table, options, (err, rowsAffected) => {
               if (err) return reject(err);
-              resolve5({
+              resolve6({
                 rowsAffected
               });
             });
@@ -124077,7 +124077,7 @@ var require_request3 = __commonJS({
           requestId: IDS.get(this),
           poolId: getPoolId(this)
         }), () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             this._query(command, (err, recordsets, output2, rowsAffected, columns) => {
               if (this.stream) {
                 if (err) this.emit("error", err);
@@ -124095,7 +124095,7 @@ var require_request3 = __commonJS({
                 rowsAffected
               };
               if (this.arrayRowMode) result.columns = columns;
-              resolve5(result);
+              resolve6(result);
             });
           });
         });
@@ -124161,7 +124161,7 @@ var require_request3 = __commonJS({
           requestId: IDS.get(this),
           poolId: getPoolId(this)
         }), () => {
-          return new shared.Promise((resolve5, reject) => {
+          return new shared.Promise((resolve6, reject) => {
             this._execute(command, (err, recordsets, output2, returnValue, rowsAffected, columns) => {
               if (this.stream) {
                 if (err) this.emit("error", err);
@@ -124181,7 +124181,7 @@ var require_request3 = __commonJS({
                 returnValue
               };
               if (this.arrayRowMode) result.columns = columns;
-              resolve5(result);
+              resolve6(result);
             });
           });
         });
@@ -124366,7 +124366,7 @@ var require_transaction = __commonJS({
           });
           return this;
         }
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           this._begin(isolationLevel, (err) => {
             if (err) return reject(err);
             publish(CHANNELS.TRANSACTION_BEGIN, () => ({
@@ -124376,7 +124376,7 @@ var require_transaction = __commonJS({
               poolId: getPoolId(this)
             }));
             this.emit("begin");
-            resolve5(this);
+            resolve6(this);
           });
         });
       }
@@ -124423,14 +124423,14 @@ var require_transaction = __commonJS({
           });
           return this;
         }
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           this._commit((err) => {
             if (err) return reject(err);
             publish(CHANNELS.TRANSACTION_COMMIT, () => ({
               transactionId: IDS.get(this)
             }));
             this.emit("commit");
-            resolve5();
+            resolve6();
           });
         });
       }
@@ -124498,7 +124498,7 @@ var require_transaction = __commonJS({
           });
           return this;
         }
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           return this._rollback((err) => {
             if (err) return reject(err);
             publish(CHANNELS.TRANSACTION_ROLLBACK, () => ({
@@ -124506,7 +124506,7 @@ var require_transaction = __commonJS({
               aborted: this._aborted
             }));
             this.emit("rollback", this._aborted);
-            resolve5();
+            resolve6();
           });
         });
       }
@@ -124622,7 +124622,7 @@ var require_connection_pool2 = __commonJS({
     var DEFAULT_CONNECTION_DRIVER = ["darwin", "linux"].includes(platform()) ? "ODBC Driver 17 for SQL Server" : "SQL Server Native Client 11.0";
     var ConnectionPool = class extends BaseConnectionPool {
       _poolCreate() {
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           this.config.requestTimeout = this.config.requestTimeout ?? this.config.timeout ?? 15e3;
           const cfg = {
             conn_str: this.config.connectionString,
@@ -124665,24 +124665,24 @@ var require_connection_pool2 = __commonJS({
               server: this.config.server,
               database: this.config.database
             }));
-            resolve5(tds);
+            resolve6(tds);
           });
         });
       }
       _poolValidate(tds) {
         if (tds && !tds.hasError) {
-          return !this.config.validateConnection || new shared.Promise((resolve5) => {
+          return !this.config.validateConnection || new shared.Promise((resolve6) => {
             tds.query("SELECT 1;", (err) => {
-              resolve5(!err);
+              resolve6(!err);
             });
           });
         }
         return false;
       }
       _poolDestroy(tds) {
-        return new shared.Promise((resolve5, reject) => {
+        return new shared.Promise((resolve6, reject) => {
           if (!tds) {
-            resolve5();
+            resolve6();
             return;
           }
           const connectionId = IDS.get(tds);
@@ -124694,7 +124694,7 @@ var require_connection_pool2 = __commonJS({
               connectionId,
               poolId
             }));
-            resolve5();
+            resolve6();
           });
         });
       }
@@ -126873,8 +126873,8 @@ function createSubagentTransformer(scope = []) {
       const nestedProjection = nested.init();
       let resolveOutput;
       let rejectOutput;
-      const output2 = new Promise((resolve5, reject) => {
-        resolveOutput = resolve5;
+      const output2 = new Promise((resolve6, reject) => {
+        resolveOutput = resolve6;
         rejectOutput = reject;
       });
       handles.set(key, {
@@ -129160,14 +129160,14 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
       runtime
     });
   };
-  const processDecision = (decision, toolCall, config2) => {
+  const processDecision = (decision2, toolCall, config2) => {
     const allowedDecisions = config2.allowedDecisions;
-    if (decision.type === "approve" && allowedDecisions.includes("approve")) return {
+    if (decision2.type === "approve" && allowedDecisions.includes("approve")) return {
       revisedToolCall: toolCall,
       toolMessage: null
     };
-    if (decision.type === "edit" && allowedDecisions.includes("edit")) {
-      const editedAction = decision.editedAction;
+    if (decision2.type === "edit" && allowedDecisions.includes("edit")) {
+      const editedAction = decision2.editedAction;
       if (!editedAction || typeof editedAction.name !== "string") throw new Error(`Invalid edited action for tool "${toolCall.name}": name must be a string`);
       if (!editedAction.args || typeof editedAction.args !== "object") throw new Error(`Invalid edited action for tool "${toolCall.name}": args must be an object`);
       return {
@@ -129180,9 +129180,9 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         toolMessage: null
       };
     }
-    if (decision.type === "reject" && allowedDecisions.includes("reject")) {
-      if (decision.message !== void 0 && typeof decision.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision.message}`);
-      const content = decision.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`;
+    if (decision2.type === "reject" && allowedDecisions.includes("reject")) {
+      if (decision2.message !== void 0 && typeof decision2.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision2.message}`);
+      const content = decision2.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`;
       return {
         revisedToolCall: toolCall,
         toolMessage: new ToolMessage({
@@ -129193,19 +129193,19 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         })
       };
     }
-    if (decision.type === "respond" && allowedDecisions.includes("respond")) {
-      if (typeof decision.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision.message}`);
+    if (decision2.type === "respond" && allowedDecisions.includes("respond")) {
+      if (typeof decision2.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision2.message}`);
       return {
         revisedToolCall: toolCall,
         toolMessage: new ToolMessage({
-          content: decision.message,
+          content: decision2.message,
           name: toolCall.name,
           tool_call_id: toolCall.id,
           status: "success"
         })
       };
     }
-    const msg = `Unexpected human decision: ${JSON.stringify(decision)}. Decision type '${decision.type}' is not allowed for tool '${toolCall.name}'. Expected one of ${JSON.stringify(allowedDecisions)} based on the tool's configuration.`;
+    const msg = `Unexpected human decision: ${JSON.stringify(decision2)}. Decision type '${decision2.type}' is not allowed for tool '${toolCall.name}'. Expected one of ${JSON.stringify(allowedDecisions)} based on the tool's configuration.`;
     throw new Error(msg);
   };
   const interruptMode = options.interruptMode ?? "batched";
@@ -129238,21 +129238,21 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         description: actionRequest.description ?? ""
       };
       const responseSchema = decisionSchema(toolConfig.allowedDecisions, toolCall.name, request.tool);
-      const decision = interrupt(value, { responseSchema });
-      if (decision.type === "approve") return handler(request);
-      if (decision.type === "reject") return new ToolMessage({
-        content: decision.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`,
+      const decision2 = interrupt(value, { responseSchema });
+      if (decision2.type === "approve") return handler(request);
+      if (decision2.type === "reject") return new ToolMessage({
+        content: decision2.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`,
         name: toolCall.name,
         tool_call_id: toolCall.id,
         status: "error"
       });
-      if (decision.type === "respond") return new ToolMessage({
-        content: decision.message,
+      if (decision2.type === "respond") return new ToolMessage({
+        content: decision2.message,
         name: toolCall.name,
         tool_call_id: toolCall.id,
         status: "success"
       });
-      const executed = decision.edited_action;
+      const executed = decision2.edited_action;
       return withEditNotice(await handler({
         ...request,
         toolCall: {
@@ -129300,14 +129300,14 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         if (decisions.length !== interruptToolCalls.length) throw new Error(`Number of human decisions (${decisions.length}) does not match number of hanging tool calls (${interruptToolCalls.length}).`);
         const revisedToolCalls = [...autoApprovedToolCalls];
         const artificialToolMessages = [];
-        const hasRejectedToolCalls = decisions.some((decision) => decision.type === "reject");
-        const hasRespondedToolCalls = decisions.some((decision) => decision.type === "respond");
+        const hasRejectedToolCalls = decisions.some((decision2) => decision2.type === "reject");
+        const hasRespondedToolCalls = decisions.some((decision2) => decision2.type === "respond");
         for (let i = 0; i < decisions.length; i++) {
-          const decision = decisions[i];
+          const decision2 = decisions[i];
           const toolCall = interruptToolCalls[i];
           const interruptConfig = resolvedConfigs[toolCall.name];
-          const { revisedToolCall, toolMessage } = processDecision(decision, toolCall, interruptConfig);
-          if (revisedToolCall && (!hasRejectedToolCalls || decision.type === "reject" || decision.type === "respond")) revisedToolCalls.push(revisedToolCall);
+          const { revisedToolCall, toolMessage } = processDecision(decision2, toolCall, interruptConfig);
+          if (revisedToolCall && (!hasRejectedToolCalls || decision2.type === "reject" || decision2.type === "respond")) revisedToolCalls.push(revisedToolCall);
           if (toolMessage) artificialToolMessages.push(toolMessage);
         }
         if (AIMessage.isInstance(lastMessage)) lastMessage.tool_calls = revisedToolCalls;
@@ -130450,7 +130450,7 @@ var DEFAULTS = {
   llmBaseUrl: "https://api.deepseek.com/v1",
   llmModel: "deepseek-chat",
   llmTimeoutSec: 60,
-  llmTemperature: 0.3,
+  llmTemperature: 0.1,
   llmTopP: 0.9,
   recursionLimit: 30,
   turnTimeoutSec: 120,
@@ -130470,10 +130470,21 @@ var DEFAULTS = {
   maxDailyTokens: 2e6,
   maxModelCalls: 12,
   maxReportModelCalls: 16,
+  maxPlanModelCalls: 24,
+  maxPlanTurnTokens: 24e4,
+  planTurnTimeoutSec: 600,
+  stepTimeoutSec: 240,
   enableSuggestions: true,
   enableClarify: true,
   strictNumberCheck: false,
-  requireSqlApproval: false
+  requireSqlApproval: false,
+  enablePlanMode: true,
+  maxPlanSteps: 8,
+  maxRetriesPerStep: 2,
+  maxReplans: 1,
+  maxParallelSteps: 3,
+  enableAccuracyCritic: true,
+  maxCriticRounds: 1
 };
 var ConfigError = class extends Error {
 };
@@ -130646,11 +130657,22 @@ function resolveRequestConfig(raw) {
   const maxDailyTokens = Math.max(0, num(lim.maxDailyTokens, DEFAULTS.maxDailyTokens));
   const maxModelCalls = Math.max(1, num(lim.maxModelCalls, DEFAULTS.maxModelCalls));
   const maxReportModelCalls = Math.max(maxModelCalls, num(lim.maxReportModelCalls, DEFAULTS.maxReportModelCalls));
+  const maxPlanModelCalls = Math.max(maxModelCalls, lim.maxModelCalls != null ? num(lim.maxPlanModelCalls, maxModelCalls) : num(lim.maxPlanModelCalls, DEFAULTS.maxPlanModelCalls));
+  const maxPlanTurnTokens = Math.max(maxTurnTokens, lim.maxTurnTokens != null ? num(lim.maxPlanTurnTokens, maxTurnTokens) : num(lim.maxPlanTurnTokens, DEFAULTS.maxPlanTurnTokens));
+  const planTurnTimeoutMs = Math.max(turnTimeoutMs, Math.max(1, num(lim.planTurnTimeoutSec, DEFAULTS.planTurnTimeoutSec)) * 1e3);
+  const stepTimeoutMs = Math.max(1e4, Math.max(1, num(lim.stepTimeoutSec, DEFAULTS.stepTimeoutSec)) * 1e3);
   const enableSuggestions = lim.enableSuggestions !== false;
   const enableClarify = lim.enableClarify !== false;
   const strictNumberCheck = lim.strictNumberCheck === true;
   const tokenPrices = normalizePrices(lim.tokenPrices);
   const requireSqlApproval = lim.requireSqlApproval === true;
+  const enablePlanMode = lim.enablePlanMode !== false;
+  const maxPlanSteps = Math.max(1, num(lim.maxPlanSteps, DEFAULTS.maxPlanSteps));
+  const maxRetriesPerStep = Math.max(0, num(lim.maxRetriesPerStep, DEFAULTS.maxRetriesPerStep));
+  const maxReplans = Math.max(0, num(lim.maxReplans, DEFAULTS.maxReplans));
+  const maxParallelSteps = Math.max(1, num(lim.maxParallelSteps, DEFAULTS.maxParallelSteps));
+  const enableAccuracyCritic = lim.enableAccuracyCritic !== false;
+  const maxCriticRounds = Math.max(0, num(lim.maxCriticRounds, DEFAULTS.maxCriticRounds));
   const key = hashKey(JSON.stringify({
     db,
     llm,
@@ -130667,10 +130689,21 @@ function resolveRequestConfig(raw) {
     maxDailyTokens,
     maxModelCalls,
     maxReportModelCalls,
+    maxPlanModelCalls,
+    maxPlanTurnTokens,
+    planTurnTimeoutMs,
+    stepTimeoutMs,
     enableSuggestions,
     enableClarify,
     strictNumberCheck,
-    requireSqlApproval
+    requireSqlApproval,
+    enablePlanMode,
+    maxPlanSteps,
+    maxRetriesPerStep,
+    maxReplans,
+    maxParallelSteps,
+    enableAccuracyCritic,
+    maxCriticRounds
   }));
   return {
     db,
@@ -130690,11 +130723,22 @@ function resolveRequestConfig(raw) {
     maxDailyTokens,
     maxModelCalls,
     maxReportModelCalls,
+    maxPlanModelCalls,
+    maxPlanTurnTokens,
+    planTurnTimeoutMs,
+    stepTimeoutMs,
     enableSuggestions,
     enableClarify,
     strictNumberCheck,
     tokenPrices,
     requireSqlApproval,
+    enablePlanMode,
+    maxPlanSteps,
+    maxRetriesPerStep,
+    maxReplans,
+    maxParallelSteps,
+    enableAccuracyCritic,
+    maxCriticRounds,
     key
   };
 }
@@ -130961,7 +131005,7 @@ var safeJSON2 = (text) => {
 };
 
 // node_modules/openai/internal/utils/sleep.mjs
-var sleep4 = (ms, ...signals) => new Promise((resolve5, reject) => {
+var sleep4 = (ms, ...signals) => new Promise((resolve6, reject) => {
   const activeSignals = [...new Set(signals.filter((signal) => signal != null))];
   let timeout;
   let settled = false;
@@ -130993,7 +131037,7 @@ var sleep4 = (ms, ...signals) => new Promise((resolve5, reject) => {
     return;
   }
   timeout = setTimeout(() => {
-    settle2(resolve5);
+    settle2(resolve6);
   }, ms);
   for (const signal of activeSignals) {
     if (settled) {
@@ -131794,8 +131838,8 @@ function createAbortableSSESource(body, signal) {
   let interrupt2;
   const waitForAbort = () => (
     // oxlint-disable-next-line promise/avoid-new -- AbortSignal callbacks need a portable Promise bridge.
-    new Promise((resolve5) => {
-      interrupt2 = resolve5;
+    new Promise((resolve6) => {
+      interrupt2 = resolve6;
     })
   );
   const cancel = () => {
@@ -132731,8 +132775,8 @@ function resolveDataResidency(options) {
 var _APIPromise_client2;
 var APIPromise2 = class _APIPromise extends Promise {
   constructor(client2, responsePromise, parseResponse2 = defaultParseResponse2) {
-    super((resolve5) => {
-      resolve5(null);
+    super((resolve6) => {
+      resolve6(null);
     });
     this.responsePromise = responsePromise;
     this.parseResponse = parseResponse2;
@@ -135802,12 +135846,12 @@ var EventStream = class {
     _EventStream_aborted.set(this, false);
     _EventStream_catchingPromiseCreated.set(this, false);
     _EventStream_terminalFailure.set(this, void 0);
-    __classPrivateFieldSet2(this, _EventStream_connectedPromise, new Promise((resolve5, reject) => {
-      __classPrivateFieldSet2(this, _EventStream_resolveConnectedPromise, resolve5, "f");
+    __classPrivateFieldSet2(this, _EventStream_connectedPromise, new Promise((resolve6, reject) => {
+      __classPrivateFieldSet2(this, _EventStream_resolveConnectedPromise, resolve6, "f");
       __classPrivateFieldSet2(this, _EventStream_rejectConnectedPromise, reject, "f");
     }), "f");
-    __classPrivateFieldSet2(this, _EventStream_endPromise, new Promise((resolve5, reject) => {
-      __classPrivateFieldSet2(this, _EventStream_resolveEndPromise, resolve5, "f");
+    __classPrivateFieldSet2(this, _EventStream_endPromise, new Promise((resolve6, reject) => {
+      __classPrivateFieldSet2(this, _EventStream_resolveEndPromise, resolve6, "f");
       __classPrivateFieldSet2(this, _EventStream_rejectEndPromise, reject, "f");
     }), "f");
     __classPrivateFieldGet2(this, _EventStream_connectedPromise, "f").catch(() => void 0);
@@ -135945,7 +135989,7 @@ var EventStream = class {
    *   const message = await stream.emitted('message') // rejects if the stream errors
    */
   emitted(event) {
-    return new Promise((resolve5, reject) => {
+    return new Promise((resolve6, reject) => {
       __classPrivateFieldSet2(this, _EventStream_catchingPromiseCreated, true, "f");
       const onError = (error62) => {
         this.off(event, onEvent);
@@ -135955,7 +135999,7 @@ var EventStream = class {
         if (event !== "error") {
           this.off("error", onError);
         }
-        resolve5(values.length > 1 ? values : values[0]);
+        resolve6(values.length > 1 ? values : values[0]);
       };
       if (event !== "error") {
         __classPrivateFieldGet2(this, _EventStream_instances, "m", _EventStream_onceForEmitted).call(this, "error", onError);
@@ -136171,8 +136215,8 @@ var EventStream = class {
         if (ended) {
           return Promise.resolve(doneResult());
         }
-        return new Promise((resolve5, reject) => {
-          readQueue.enqueue({ resolve: resolve5, reject });
+        return new Promise((resolve6, reject) => {
+          readQueue.enqueue({ resolve: resolve6, reject });
         });
       },
       return: () => {
@@ -143252,8 +143296,8 @@ _AgentToolDispatcher_handlers = /* @__PURE__ */ new WeakMap(), _AgentToolDispatc
     try {
       await __classPrivateFieldGet2(this, _AgentToolDispatcher_instances, "m", _AgentToolDispatcher_wait).call(this, () => (
         // oxlint-disable-next-line promise/avoid-new -- Own the registration timer so cancellation clears it promptly.
-        new Promise((resolve5) => {
-          timer = setTimeout(resolve5, delay);
+        new Promise((resolve6) => {
+          timer = setTimeout(resolve6, delay);
         })
       ));
     } finally {
@@ -146784,7 +146828,7 @@ function assertNever3(_x) {
 
 // node_modules/openai/lib/polling.mjs
 function sleepUntilAborted(milliseconds, signal) {
-  return new Promise((resolve5, reject) => {
+  return new Promise((resolve6, reject) => {
     let timer;
     let registered;
     let settled = false;
@@ -146833,7 +146877,7 @@ function sleepUntilAborted(milliseconds, signal) {
       }
       settled = true;
       cleanup();
-      resolve5();
+      resolve6();
     }, milliseconds);
     registered = abort;
     try {
@@ -161357,8 +161401,8 @@ import { dirname as dirname2, isAbsolute, join, normalize as normalize2, relativ
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 var currentDir2 = dirname2(fileURLToPath2(import.meta.url));
 var DEFAULT_DIR = resolve2(currentDir2, "..", "knowledge");
-var MAX_DOC_BYTES = 512 * 1024;
-var MAX_READ_CHARS = 6e3;
+var MAX_DOC_BYTES = 2 * 1024 * 1024;
+var MAX_READ_CHARS = 8e3;
 var MAX_INDEX_DOCS = 20;
 var cached2;
 function knowledgeDir() {
@@ -161388,12 +161432,58 @@ function listFiles(dir2, ext) {
   }
   return out.sort();
 }
+function listRootMarkdown(dir2) {
+  if (!existsSync3(dir2))
+    return [];
+  const out = [];
+  for (const entry of readdirSync(dir2, { withFileTypes: true })) {
+    if (!entry.isFile())
+      continue;
+    if (!entry.name.toLowerCase().endsWith(".md"))
+      continue;
+    if (/^readme/i.test(entry.name))
+      continue;
+    const full = join(dir2, entry.name);
+    try {
+      if (statSync2(full).size > MAX_DOC_BYTES)
+        continue;
+    } catch {
+      continue;
+    }
+    out.push(full);
+  }
+  return out.sort();
+}
 function titleOf(content, fallback) {
   const line = content.split(/\r?\n/).map((item) => item.trim()).find((item) => /^#{1,3}\s+/.test(item));
   return line ? line.replace(/^#{1,3}\s+/, "").trim() : fallback;
 }
 function headingsOf(content) {
   return content.split(/\r?\n/).map((item) => item.trim()).filter((item) => /^#{1,3}\s+/.test(item)).map((item) => item.replace(/^#{1,3}\s+/, "").trim()).filter(Boolean);
+}
+function sectionsOf(content) {
+  const lines = content.split(/\r?\n/);
+  const sections = [];
+  let heading = "";
+  let buffer = [];
+  const flush = () => {
+    const text = buffer.join("\n").trim();
+    if (heading || text)
+      sections.push({ heading: heading || "\u6B63\u6587", content: text });
+    buffer = [];
+  };
+  for (const line of lines) {
+    const match = /^(#{1,4})\s+(.+)$/.exec(line.trim());
+    if (match) {
+      flush();
+      heading = match[2].trim();
+      buffer.push(line);
+      continue;
+    }
+    buffer.push(line);
+  }
+  flush();
+  return sections.filter((section) => section.content.length > 0);
 }
 function readDoc(packDir, full, kind) {
   let content;
@@ -161409,7 +161499,8 @@ function readDoc(packDir, full, kind) {
     title: titleOf(content, fallback),
     headings: headingsOf(content),
     kind,
-    content
+    content,
+    sections: sectionsOf(content)
   };
 }
 function loadQueries(packDir) {
@@ -161480,7 +161571,8 @@ function snippetOf(content, terms) {
 }
 function buildIndexText(manifest, docs, reports, queries) {
   const lines = [`\u3010\u77E5\u8BC6\u5305\u3011${manifest.name}${manifest.description ? `\uFF1A${manifest.description}` : ""}`];
-  const docList = [...docs, ...reports];
+  const rank = (path4) => /tables\//.test(path4) ? 0 : /metrics\//.test(path4) ? 1 : /enums\//.test(path4) ? 2 : 3;
+  const docList = [...docs, ...reports].sort((a, b) => rank(a.path) - rank(b.path) || a.title.localeCompare(b.title));
   if (docList.length) {
     lines.push("\u53EF\u7528\u6587\u6863\uFF08\u9700\u8981\u7EC6\u8282\u7528 search_knowledge / read_knowledge\uFF09\uFF1A");
     for (const doc of docList.slice(0, MAX_INDEX_DOCS)) {
@@ -161512,19 +161604,26 @@ function safeReadPath(packDir, requested) {
 }
 function buildPack(packDir) {
   const manifestFile = join(packDir, "manifest.json");
-  if (!existsSync3(manifestFile)) {
-    return { pack: null, status: { loaded: false, reason: "manifest.json \u4E0D\u5B58\u5728" } };
-  }
+  const hasManifest = existsSync3(manifestFile);
   let manifest;
-  try {
-    manifest = JSON.parse(readFileSync4(manifestFile, "utf8"));
-  } catch {
-    return { pack: null, status: { loaded: false, reason: "manifest.json \u4E0D\u662F\u5408\u6CD5 JSON" } };
+  if (hasManifest) {
+    try {
+      manifest = JSON.parse(readFileSync4(manifestFile, "utf8"));
+    } catch {
+      return { pack: null, status: { loaded: false, reason: "manifest.json \u4E0D\u662F\u5408\u6CD5 JSON" } };
+    }
+    if (!manifest || typeof manifest.name !== "string") {
+      return { pack: null, status: { loaded: false, reason: "manifest.name \u7F3A\u5931" } };
+    }
+  } else {
+    manifest = { name: "manual", version: 1, description: "\u6570\u636E\u5E93\u8BF4\u660E\u4E66" };
   }
-  if (!manifest || typeof manifest.name !== "string") {
-    return { pack: null, status: { loaded: false, reason: "manifest.name \u7F3A\u5931" } };
-  }
-  const docs = listFiles(join(packDir, "docs"), ".md").map((file3) => readDoc(packDir, file3, "doc")).filter((doc) => Boolean(doc));
+  const docFiles = Array.from(/* @__PURE__ */ new Set([
+    ...listFiles(join(packDir, "docs"), ".md"),
+    ...listFiles(join(packDir, "manual"), ".md"),
+    ...listRootMarkdown(packDir)
+  ]));
+  const docs = docFiles.map((file3) => readDoc(packDir, file3, "doc")).filter((doc) => Boolean(doc));
   const reports = listFiles(join(packDir, "reports"), ".md").map((file3) => readDoc(packDir, file3, "report")).filter((doc) => Boolean(doc));
   const queries = loadQueries(packDir);
   const hasMetadata = docs.length > 0 || reports.length > 0 || queries.length > 0 || Object.keys(manifest.tables || {}).length > 0 || (manifest.priorityTables || []).length > 0;
@@ -161551,33 +161650,56 @@ function buildPack(packDir) {
     }
     const hits = [];
     for (const doc of [...docs, ...reports]) {
-      const title = `${doc.title} ${doc.headings.join(" ")}`.toLowerCase();
-      const body = doc.content.toLowerCase();
-      let score = 0;
-      for (const term of terms) {
-        if (title.includes(term))
-          score += 4;
-        else if (body.includes(term))
-          score += 1;
+      const docTitle = doc.title.toLowerCase();
+      const sections = doc.sections.length ? doc.sections : [{ heading: "", content: doc.content }];
+      for (const section of sections) {
+        const heading = String(section.heading || "").toLowerCase();
+        const body = section.content.toLowerCase();
+        let score = 0;
+        for (const term of terms) {
+          if (docTitle.includes(term))
+            score += 4;
+          else if (heading.includes(term))
+            score += 3;
+          else if (body.includes(term))
+            score += 1;
+        }
+        if (!score)
+          continue;
+        hits.push({
+          path: doc.path,
+          title: doc.title,
+          kind: doc.kind,
+          heading: section.heading && section.heading !== "\u6B63\u6587" ? section.heading : void 0,
+          snippet: snippetOf(section.content, terms),
+          score
+        });
       }
-      if (!score)
-        continue;
-      hits.push({
-        path: doc.path,
-        title: doc.title,
-        kind: doc.kind,
-        snippet: snippetOf(doc.content, terms),
-        score
-      });
     }
     return hits.sort((a, b) => b.score - a.score).slice(0, limit3);
   };
-  const read = (requested, maxChars = MAX_READ_CHARS) => {
-    const full = safeReadPath(packDir, requested);
+  const read = (requested, maxChars = MAX_READ_CHARS, sectionName) => {
+    const rawRequested = String(requested || "");
+    const hashIndex = rawRequested.indexOf("#");
+    const requestedPath = hashIndex >= 0 ? rawRequested.slice(0, hashIndex) : rawRequested;
+    const full = safeReadPath(packDir, requestedPath);
     if (!full || !existsSync3(full))
       return null;
     try {
       const content = readFileSync4(full, "utf8");
+      const inlineSection = hashIndex >= 0 ? rawRequested.slice(hashIndex + 1) : "";
+      const wanted = String(sectionName || inlineSection || "").trim().toLowerCase();
+      if (wanted) {
+        const doc = [...docs, ...reports].find((item) => item.path.toLowerCase() === requestedPath.replace(/\\/g, "/").toLowerCase());
+        const section = doc?.sections.find((item) => {
+          const heading = item.heading.toLowerCase();
+          return heading === wanted || heading.includes(wanted);
+        });
+        if (section) {
+          return `## ${section.heading}
+${section.content}`.slice(0, maxChars);
+        }
+      }
       return content.slice(0, maxChars);
     } catch {
       return null;
@@ -165499,8 +165621,24 @@ var SQLSERVER_FORBIDDEN_KEYWORDS = [
   "reconfigure",
   "waitfor",
   "openrowset",
+  "opendatasource",
   "openquery",
+  "openxml",
   "bulk",
+  "set",
+  "use",
+  "declare",
+  "cursor",
+  "deallocate",
+  "kill",
+  "checkpoint",
+  "readtext",
+  "writetext",
+  "updatetext",
+  "updlock",
+  "xlock",
+  "tablockx",
+  "holdlock",
   "xp_",
   "sp_",
   "into"
@@ -165564,6 +165702,20 @@ var KINGBASE_FORBIDDEN_FUNCTIONS = [
   "pg_start_backup",
   "pg_stop_backup",
   "pg_promote",
+  "pg_write_file",
+  "pg_file_write",
+  "pg_file_rename",
+  "pg_file_unlink",
+  "pg_logdir_ls",
+  "pg_ls_logdir",
+  "pg_ls_waldir",
+  "pg_ls_tmpdir",
+  "pg_ls_archive_statusdir",
+  "pg_logical_emit_message",
+  "pg_create_restore_point",
+  "pg_replication_origin_create",
+  "pg_replication_origin_drop",
+  "pg_replication_origin_advance",
   "lo_import",
   "lo_export",
   "lo_unlink",
@@ -166956,17 +167108,44 @@ function knowledgeEntry(name, table) {
     return void 0;
   return tables[name] || tables[table] || tables[bareTableName(name)] || tables[bareTableName(table)];
 }
-async function retrieveTables(db, question, limit3 = 8) {
+async function retrieveTables(db, question, limit3 = 8, options = {}) {
   const schema2 = await getSchemaCached(db);
   const columnIndex = await getColumnIndexCached(db).catch(() => null);
   const pack = getKnowledgePack();
   const priority = new Set(pack?.manifest.priorityTables || []);
+  const focusTables = new Set((options.focusTables || []).map((value) => normalizeTableKey(value)).filter(Boolean));
   const tokens = tokenizeForSearch(question);
+  const stopTokens = /* @__PURE__ */ new Set([
+    "\u67E5\u8BE2",
+    "\u6570\u636E",
+    "\u4FE1\u606F",
+    "\u5217\u8868",
+    "\u5206\u9875",
+    "\u5BFC\u51FA",
+    "\u5BFC\u5165",
+    "\u7EDF\u8BA1",
+    "\u60C5\u51B5",
+    "\u6240\u6709",
+    "\u76F8\u5173",
+    "\u67E5\u770B",
+    "\u663E\u793A",
+    "\u4E00\u4E0B",
+    "\u600E\u4E48",
+    "\u4EC0\u4E48",
+    "\u591A\u5C11",
+    "\u54EA\u4E9B",
+    "\u4EE5\u53CA",
+    "\u5E76\u4E14",
+    "\u6216\u8005",
+    "\u7136\u540E",
+    "\u9700\u8981"
+  ]);
   const scored = [];
   for (const item of schema2.tables) {
     const qualified = tableName(item);
     const info = knowledgeEntry(qualified, item.name);
     const aliases = info?.aliases || [];
+    const columnAliases = info?.columnAliases || {};
     const columns = columnIndex?.byTable.get(normalizeTableKey(qualified)) || columnIndex?.byTable.get(normalizeTableKey(item.name)) || [];
     const pkColumns = columns.filter((column) => column.primaryKey).map((column) => column.name);
     const dateColumns = columns.filter((column) => isDateColumnType(column.type)).map((column) => column.name).slice(0, 2);
@@ -166976,16 +167155,22 @@ async function retrieveTables(db, question, limit3 = 8) {
     const haystack = `${qualified} ${item.comment || ""} ${aliases.join(" ")} ${keyColumns.join(" ")}`.toLowerCase();
     const matchedColumns = /* @__PURE__ */ new Set();
     let score = 0;
+    const focus = focusTables.has(normalizeTableKey(qualified)) || focusTables.has(normalizeTableKey(item.name)) || focusTables.has(normalizeTableKey(bareTableName(qualified))) || focusTables.has(normalizeTableKey(bareTableName(item.name)));
+    if (focus)
+      score += 25;
     for (const token of tokens) {
       const lower = token.toLowerCase();
+      if (stopTokens.has(lower))
+        continue;
       if (qualified.toLowerCase() === lower)
         score += 12;
       else if (qualified.toLowerCase().includes(lower))
         score += 5;
       if (aliases.some((alias) => alias.toLowerCase() === lower))
         score += 7;
-      else if (aliases.some((alias) => alias.toLowerCase().includes(lower)))
-        score += 3;
+      else if (aliases.some((alias) => alias.length <= 30 && alias.toLowerCase().includes(lower))) {
+        score += 2;
+      }
       if ((item.comment || "").toLowerCase().includes(lower))
         score += 2;
       if (keyColumns.some((column) => column.toLowerCase() === lower))
@@ -167006,7 +167191,18 @@ async function retrieveTables(db, question, limit3 = 8) {
           matchedColumns.add(column.name);
         }
       }
-      if (haystack.includes(lower) && score === 0)
+      for (const [columnName, columnAliasList] of Object.entries(columnAliases)) {
+        if (columnAliasList.some((alias) => alias.toLowerCase() === lower)) {
+          score += 3;
+          matchedColumns.add(columnName);
+          continue;
+        }
+        if (columnAliasList.some((alias) => alias.toLowerCase().includes(lower))) {
+          score += 1;
+          matchedColumns.add(columnName);
+        }
+      }
+      if (!stopTokens.has(lower) && haystack.includes(lower) && score === 0)
         score += 1;
     }
     if (tokens.length && score === 0)
@@ -168292,6 +168488,7 @@ function createTools(db, options = {}) {
       const json3 = JSON.stringify(hits.map((hit) => ({
         path: hit.path,
         title: hit.title,
+        heading: hit.heading,
         kind: hit.kind,
         snippet: hit.snippet
       })));
@@ -168306,9 +168503,9 @@ function createTools(db, options = {}) {
       schema: external_exports2.object({
         query: external_exports2.string().describe("\u8981\u641C\u7D22\u7684\u4E1A\u52A1\u8BCD/\u8868\u540D/\u6307\u6807/\u95EE\u9898\u5173\u952E\u8BCD")
       })
-    }), tool(async ({ path: path4 }) => {
+    }), tool(async ({ path: path4, section }) => {
       const budget = currentBudget();
-      const content = knowledge.read(String(path4 || ""), 6e3);
+      const content = knowledge.read(String(path4 || ""), 8e3, section ? String(section) : void 0);
       if (!content)
         return JSON.stringify({ success: false, error: "\u77E5\u8BC6\u6587\u6863\u4E0D\u5B58\u5728\u6216\u8DEF\u5F84\u4E0D\u5141\u8BB8" });
       const json3 = JSON.stringify({ path: path4, content });
@@ -168319,9 +168516,10 @@ function createTools(db, options = {}) {
       return json3;
     }, {
       name: "read_knowledge",
-      description: "\u8BFB\u53D6\u77E5\u8BC6\u5305\u4E2D\u7684\u4E00\u7BC7\u6587\u6863\uFF08Markdown\uFF09\uFF0C\u5355\u6B21\u6700\u591A 6000 \u5B57\u7B26\u3002\u5148\u7528 search_knowledge \u627E\u5230 path\uFF0C\u518D\u6309\u9700\u8BFB\u53D6\u3002",
+      description: "\u8BFB\u53D6\u77E5\u8BC6\u5305\u4E2D\u7684\u4E00\u7BC7\u6587\u6863\uFF08Markdown\uFF09\uFF0C\u5355\u6B21\u6700\u591A 8000 \u5B57\u7B26\uFF1B\u53EF\u53EA\u8BFB\u67D0\u4E00\u8282\u3002\u5148\u7528 search_knowledge \u627E\u5230 path\uFF0C\u518D\u6309\u9700\u8BFB\u53D6\u3002",
       schema: external_exports2.object({
-        path: external_exports2.string().describe("\u77E5\u8BC6\u5305\u5185\u76F8\u5BF9\u8DEF\u5F84\uFF0C\u4F8B\u5982 docs/\u4E1A\u52A1\u672F\u8BED.md")
+        path: external_exports2.string().describe("\u77E5\u8BC6\u5305\u5185\u76F8\u5BF9\u8DEF\u5F84\uFF0C\u4F8B\u5982 docs/\u4E1A\u52A1\u672F\u8BED.md"),
+        section: external_exports2.string().optional().describe("\u53EF\u9009\uFF1A\u53EA\u8BFB\u53D6\u8BE5\u6807\u9898\u4E0B\u7684\u7AE0\u8282")
       })
     }));
   }
@@ -168635,19 +168833,22 @@ var compactMetadataEdit = {
     }
   }
 };
-function buildRuntime(cfg, reportMode) {
-  const model = new ChatOpenAI({
+function createChatModel(cfg, options = {}) {
+  return new ChatOpenAI({
     model: cfg.llm.model,
     apiKey: cfg.llm.apiKey,
     temperature: cfg.llm.temperature,
     topP: cfg.llm.topP,
     timeout: cfg.llm.timeoutMs,
     maxRetries: 1,
-    maxTokens: cfg.maxOutputTokens,
+    maxTokens: options.maxTokens ?? cfg.maxOutputTokens,
     configuration: {
       baseURL: cfg.llm.baseUrl
     }
   });
+}
+function buildRuntime(cfg, reportMode) {
+  const model = createChatModel(cfg);
   const tools2 = createTools(cfg.db, {
     batchQueries: !cfg.requireSqlApproval,
     reportMode,
@@ -169082,6 +169283,2269 @@ ${formatMeta(input2.meta)}`
   };
 }
 
+// dist/plan-graph.js
+init_messages2();
+init_dist4();
+
+// dist/plan.js
+import { createHash as createHash4 } from "node:crypto";
+var PlannerStepSchema = external_exports2.object({
+  title: external_exports2.string().describe("\u6B65\u9AA4\u6807\u9898\uFF0C\u77ED\u8BED\uFF0C\u4F8B\u5982\uFF1A\u67E5\u8BE2\u8FD1 30 \u5929\u51FA\u5E93\u5355\u91CF"),
+  intent: external_exports2.string().describe("\u8FD9\u4E00\u6B65\u8981\u505A\u4EC0\u4E48\u3001\u7528\u54EA\u4E9B\u8868/\u53E3\u5F84\uFF0C\u4E0D\u8981\u5199 SQL \u5168\u6587"),
+  tables: external_exports2.array(external_exports2.string()).max(8).optional().describe("\u6D89\u53CA\u7684\u8868\u540D"),
+  knowledgeRefs: external_exports2.array(external_exports2.string()).max(8).optional().describe("\u77E5\u8BC6\u5E93\u6587\u6863\u8DEF\u5F84\u6216\u7AE0\u8282"),
+  successCriteria: external_exports2.string().optional().describe("\u600E\u6837\u7B97\u5B8C\u6210\uFF0C\u4F8B\u5982\uFF1A\u62FF\u5230\u6309\u65E5\u8D8B\u52BF\uFF0C\u884C\u6570>0"),
+  dependsOn: external_exports2.array(external_exports2.union([external_exports2.string(), external_exports2.number()])).max(8).optional().describe("\u4F9D\u8D56\u7684\u524D\u7F6E\u6B65\u9AA4\u5E8F\u53F7\uFF08\u4ECE 1 \u5F00\u59CB\uFF09\u6216\u6B65\u9AA4\u6807\u9898\uFF1B\u72EC\u7ACB\u6B65\u9AA4\u4E0D\u586B\uFF0C\u53EF\u5E76\u884C\u6267\u884C")
+});
+var PlannerSchema = external_exports2.object({
+  goal: external_exports2.string().describe("\u7528\u89C4\u5212\u8005\u81EA\u5DF1\u7684\u7406\u89E3\u6982\u62EC\u5206\u6790\u5BF9\u8C61\u3001\u8303\u56F4\u548C\u4EA7\u51FA\uFF0C\u7981\u6B62\u539F\u6837\u590D\u5236\u7528\u6237\u539F\u8BDD"),
+  simple: external_exports2.boolean().optional().describe("\u662F\u5426\u80FD\u7528\u4E00\u4E2A\u6B65\u9AA4\u76F4\u63A5\u7B54\u5B8C"),
+  steps: external_exports2.array(PlannerStepSchema).min(1).max(8)
+});
+var PLANNER_SYSTEM_PROMPT = `\u4F60\u662F\u4E00\u4E2A\u6570\u636E\u5E93\u5206\u6790\u4EFB\u52A1\u7684\u89C4\u5212\u5668\u3002\u4F60\u53EA\u8D1F\u8D23\u5236\u5B9A\u6267\u884C\u8BA1\u5212\uFF0C\u4E0D\u6267\u884C SQL\uFF0C\u4E5F\u4E0D\u56DE\u7B54\u7528\u6237\u3002
+
+\u8F93\u51FA\u8981\u6C42\uFF1A
+- \u7528\u4E2D\u6587\u63CF\u8FF0\u76EE\u6807\u4E0E\u6B65\u9AA4\u3002
+- goal \u5FC5\u987B\u662F\u4F60\u5BF9\u4EFB\u52A1\u7684\u7406\u89E3\uFF0C\u8BF4\u660E\u201C\u5206\u6790/\u67E5\u8BE2\u4EC0\u4E48\u5BF9\u8C61\u3001\u4EC0\u4E48\u8303\u56F4\u3001\u8981\u4EA7\u51FA\u4EC0\u4E48\u201D\uFF0C\u4E0D\u8981\u539F\u6837\u590D\u5236\u7528\u6237\u6700\u540E\u4E00\u53E5\u8BDD\uFF0C\u4E5F\u4E0D\u8981\u628A\u201C\u5E2E\u6211/\u6211\u60F3\u8981/\u6362\u4E86\u6A21\u578B\u518D\u751F\u6210\u4E00\u6B21\u201D\u7B49\u5BF9\u8BDD\u5185\u5BB9\u5199\u8FDB\u53BB\u3002
+- \u7B80\u5355\u3001\u5355\u6307\u6807\u7684\u95EE\u9898\u53EA\u7ED9 1 \u6B65\uFF1B\u9700\u8981\u591A\u53E3\u5F84\u3001\u8D8B\u52BF\u3001\u5BF9\u6BD4\u3001\u62A5\u544A\u65F6\u62C6\u6210 2~8 \u6B65\u3002
+- \u6BCF\u4E00\u6B65\u5FC5\u987B\u6709\u660E\u786E\u7684\u6210\u529F\u6807\u51C6\uFF08successCriteria\uFF09\uFF0C\u4FBF\u4E8E\u6267\u884C\u540E\u68C0\u67E5\u3002
+- \u4E92\u76F8\u72EC\u7ACB\u7684\u6B65\u9AA4\u4E0D\u8981\u5199 dependsOn\uFF0C\u5B83\u4EEC\u4F1A\u5E76\u884C\u6267\u884C\uFF1B\u6709\u4F9D\u8D56\u65F6\u5728 dependsOn \u91CC\u5199\u524D\u7F6E\u6B65\u9AA4\u5E8F\u53F7\uFF08\u4ECE 1 \u5F00\u59CB\uFF09\u6216\u6807\u9898\u3002
+- \u62A5\u544A\u7C7B\u6700\u540E\u4E00\u6B65\u5FC5\u987B\u4F9D\u8D56\u524D\u9762\u6240\u6709\u6570\u636E\u6B65\u9AA4\u3002
+- \u8868\u540D\u53EA\u80FD\u6765\u81EA\u63D0\u4F9B\u7684\u5019\u9009\u8868\u6216\u5DF2\u77E5\u8868\uFF1B\u4E0D\u786E\u5B9A\u65F6\u5199\u7A7A\uFF0C\u4E0D\u8981\u81C6\u9020\u3002
+- \u77E5\u8BC6\u5E93\u91CC\u6709\u6307\u6807\u53E3\u5F84\u3001\u72B6\u6001\u7801\u3001\u8868\u8BF4\u660E\u65F6\uFF0C\u5728 knowledgeRefs \u91CC\u5199\u6587\u6863\u8DEF\u5F84\u6216\u7AE0\u8282\u3002
+- \u4E0D\u8981\u5199\u5B8C\u6574 SQL\uFF1B\u53EA\u5728 intent \u91CC\u63CF\u8FF0\u53E3\u5F84\u548C\u8FC7\u6EE4\u6761\u4EF6\u3002
+- \u5982\u679C\u7528\u6237\u8981\u6C42\u62A5\u544A/\u5927\u5C4F\uFF0C\u6700\u540E\u4E00\u6B65\u5FC5\u987B\u662F\u201C\u751F\u6210 HTML \u62A5\u544A\u201D\u3002
+- \u4E0D\u8981\u8F93\u51FA Markdown\uFF0C\u4E0D\u8981\u8F93\u51FA\u89E3\u91CA\u6027\u524D\u540E\u7F00\u3002`;
+var REPORT_RE = /报告|日报|周报|月报|年报|年度|汇报|大屏|出一份|来一份/;
+var ANALYSIS_RE = /分析|趋势|同比|环比|对比|分布|排名|异常|原因|诊断|明细|拆解|建议|预测|画像|漏斗|结构/;
+var SIMPLE_RE = /多少|总数|合计|总计|统计|查询|查一下|查下|列出|显示|平均|最大|最小|最近|top\s*\d+|前\s*\d+/i;
+function isLikelySimpleQuestion(text) {
+  const question = String(text || "").trim();
+  if (!question || question.length > 40)
+    return false;
+  if (REPORT_RE.test(question))
+    return false;
+  if (ANALYSIS_RE.test(question))
+    return false;
+  return SIMPLE_RE.test(question);
+}
+function limitText(value, max, fallback = "") {
+  const text = typeof value === "string" ? value.trim() : "";
+  return (text || fallback).slice(0, max);
+}
+function stringList(value, max = 8) {
+  if (!Array.isArray(value))
+    return [];
+  return value.map((item) => typeof item === "string" ? item.trim() : "").filter(Boolean).slice(0, max);
+}
+function newPlanId() {
+  return `plan-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+function comparableText(text) {
+  return String(text || "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+}
+function isEchoGoal(goal, question) {
+  const goalText = comparableText(goal);
+  const questionText = comparableText(question);
+  if (!goalText || !questionText)
+    return false;
+  if (goalText === questionText)
+    return true;
+  const shorter = Math.min(goalText.length, questionText.length);
+  if (shorter < 8)
+    return false;
+  return goalText.includes(questionText) || questionText.includes(goalText);
+}
+function deriveGoal(steps, question) {
+  const tables = Array.from(new Set(steps.flatMap((step) => step.tables).filter(Boolean))).slice(0, 3);
+  const titles = steps.map((step) => step.title).filter(Boolean).slice(0, 4);
+  if (tables.length) {
+    return `\u56F4\u7ED5 ${tables.join("\u3001")} \u5B8C\u6210 ${steps.length} \u4E2A\u76EE\u6807\uFF1A${titles.join(" \u2192 ")}`.slice(0, 300);
+  }
+  const details = steps.map((step) => {
+    const intent = String(step.intent || "").trim();
+    return intent && !isEchoGoal(intent, question) ? intent : step.title;
+  }).filter(Boolean).slice(0, 3);
+  return `\u6309\u4EE5\u4E0B\u76EE\u6807\u63A8\u8FDB\uFF1A${details.join("\uFF1B")}`.slice(0, 300);
+}
+function normalizePlan(draft, options = {}) {
+  const planId = newPlanId();
+  const maxSteps = Math.max(1, options.maxSteps || 8);
+  const rawSteps = Array.isArray(draft.steps) ? draft.steps : [];
+  const draftSteps = rawSteps.slice(0, maxSteps);
+  const steps = draftSteps.map((step, index2) => ({
+    id: `${planId}-s${index2 + 1}`,
+    index: index2,
+    title: limitText(step.title, 80, `\u6B65\u9AA4 ${index2 + 1}`),
+    intent: limitText(step.intent, 600, "\u5B8C\u6210\u5F53\u524D\u6B65\u9AA4"),
+    tables: stringList(step.tables),
+    knowledgeRefs: stringList(step.knowledgeRefs),
+    successCriteria: limitText(step.successCriteria, 300),
+    dependsOn: [],
+    status: "pending"
+  }));
+  const resolveDependsOn = (raw, index2) => {
+    if (!Array.isArray(raw))
+      return [];
+    const out = /* @__PURE__ */ new Set();
+    for (const item of raw) {
+      let depIndex = -1;
+      if (typeof item === "number" && Number.isFinite(item)) {
+        depIndex = Math.floor(item) - 1;
+      } else if (typeof item === "string") {
+        const text = item.trim();
+        if (/^\d+$/.test(text)) {
+          depIndex = Number(text) - 1;
+        } else {
+          depIndex = steps.findIndex((step) => step.id === text || step.title === text);
+        }
+      }
+      if (depIndex >= 0 && depIndex < index2 && depIndex < steps.length) {
+        out.add(steps[depIndex].id);
+      }
+    }
+    return Array.from(out);
+  };
+  steps.forEach((step, index2) => {
+    step.dependsOn = resolveDependsOn(draftSteps[index2]?.dependsOn, index2);
+  });
+  if (!steps.length) {
+    const question2 = limitText(options.fallbackQuestion, 120, "\u5206\u6790\u7528\u6237\u95EE\u9898");
+    steps.push({
+      id: `${planId}-s1`,
+      index: 0,
+      title: "\u67E5\u8BE2\u5E76\u56DE\u7B54",
+      intent: question2,
+      tables: [],
+      knowledgeRefs: [],
+      successCriteria: "\u62FF\u5230\u53EF\u56DE\u7B54\u95EE\u9898\u7684\u6570\u636E\u6216\u660E\u786E\u8BF4\u660E\u7F3A\u5931\u539F\u56E0",
+      dependsOn: [],
+      status: "pending"
+    });
+  }
+  if (options.reportMode) {
+    const reportSteps = steps.filter((step) => isReportStep(step));
+    const dataSteps = steps.filter((step) => !isReportStep(step));
+    const reportStep = reportSteps.length > 0 ? { ...reportSteps[reportSteps.length - 1] } : {
+      id: `${planId}-s${steps.length + 1}`,
+      index: steps.length,
+      title: "\u751F\u6210 HTML \u62A5\u544A",
+      intent: "\u57FA\u4E8E\u524D\u9762\u6B65\u9AA4\u7684\u6570\u636E\u751F\u6210\u5B8C\u6574 HTML \u62A5\u544A\uFF0C\u9010\u9879\u6807\u6CE8 coverage\u3002",
+      tables: [],
+      knowledgeRefs: [],
+      successCriteria: "render_html_report \u6210\u529F\u5E76\u8FD4\u56DE coverage",
+      dependsOn: [],
+      status: "pending"
+    };
+    const base = dataSteps.slice(0, Math.max(0, maxSteps - 1));
+    if (!base.length) {
+      base.push({
+        id: `${planId}-s0`,
+        index: 0,
+        title: "\u67E5\u8BE2\u5E76\u6821\u9A8C\u6570\u636E",
+        intent: limitText(options.fallbackQuestion || draft.goal, 300, "\u67E5\u8BE2\u5E76\u6821\u9A8C\u56DE\u7B54\u6240\u9700\u7684\u6570\u636E"),
+        tables: [],
+        knowledgeRefs: [],
+        successCriteria: "\u62FF\u5230\u53EF\u56DE\u7B54\u7684\u6570\u636E\uFF0C\u5E76\u5B8C\u6210\u4E00\u6B21\u57FA\u672C\u6821\u9A8C",
+        dependsOn: [],
+        status: "pending"
+      });
+    }
+    steps.length = 0;
+    steps.push(...base, {
+      ...reportStep,
+      id: `${planId}-s${base.length + 1}`,
+      index: base.length,
+      dependsOn: base.map((step) => step.id),
+      status: "pending"
+    });
+  }
+  const rawGoal = limitText(draft.goal, 300, "");
+  const question = String(options.fallbackQuestion || "").trim();
+  const goal = rawGoal && !isEchoGoal(rawGoal, question) ? rawGoal : deriveGoal(steps, question || rawGoal);
+  return {
+    planId,
+    revision: 1,
+    goal: goal || "\u5206\u6790\u7528\u6237\u95EE\u9898",
+    simple: draft.simple === true || steps.length === 1,
+    mode: options.reportMode ? "report" : "analyze",
+    steps: steps.map((step, index2) => ({ ...step, index: index2 }))
+  };
+}
+function isReportStep(step) {
+  if (!step)
+    return false;
+  const title = String(step.title || "");
+  const criteria = String(step.successCriteria || "");
+  if (/(查询|分析|统计|计算|核对|校验|汇总|获取)/.test(title))
+    return false;
+  return /报告|大屏|HTML/i.test(title) || /render_(?:html_)?report/i.test(criteria);
+}
+function fallbackPlan(question, options = {}) {
+  return normalizePlan({
+    goal: question || "\u5206\u6790\u7528\u6237\u95EE\u9898",
+    simple: true,
+    steps: [
+      {
+        title: "\u67E5\u8BE2\u5E76\u56DE\u7B54",
+        intent: question || "\u6839\u636E\u7528\u6237\u95EE\u9898\u67E5\u8BE2\u6570\u636E\u5E76\u56DE\u7B54",
+        successCriteria: "\u62FF\u5230\u53EF\u56DE\u7B54\u95EE\u9898\u7684\u6570\u636E\u6216\u660E\u786E\u8BF4\u660E\u7F3A\u5931\u539F\u56E0"
+      }
+    ]
+  }, { ...options, fallbackQuestion: question });
+}
+function buildQuickPlan(question, tables = []) {
+  const plan = normalizePlan({
+    goal: "\u5FEB\u901F\u56DE\u7B54\u7528\u6237\u95EE\u9898",
+    simple: true,
+    steps: [
+      {
+        title: "\u5FEB\u901F\u56DE\u7B54",
+        intent: question || "\u6839\u636E\u7528\u6237\u95EE\u9898\u67E5\u8BE2\u6570\u636E\u5E76\u56DE\u7B54",
+        tables: Array.from(new Set(tables.filter(Boolean))).slice(0, 4),
+        successCriteria: "\u62FF\u5230\u53EF\u56DE\u7B54\u7684\u6570\u636E\uFF0C\u5E76\u5B8C\u6210\u4E00\u6B21\u57FA\u672C\u6821\u9A8C"
+      }
+    ]
+  }, { maxSteps: 1, fallbackQuestion: question });
+  plan.mode = "quick";
+  plan.simple = true;
+  return plan;
+}
+function parsePlanDraft(text) {
+  const raw = String(text || "").trim();
+  if (!raw)
+    return null;
+  const candidates = [raw];
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenced && fenced[1])
+    candidates.push(fenced[1]);
+  const first = raw.indexOf("{");
+  const last = raw.lastIndexOf("}");
+  if (first >= 0 && last > first)
+    candidates.push(raw.slice(first, last + 1));
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (!parsed || !Array.isArray(parsed.steps) || !parsed.steps.length)
+        continue;
+      return parsed;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+function planEventPayload(plan) {
+  return {
+    planId: plan.planId,
+    revision: plan.revision,
+    goal: plan.goal,
+    simple: plan.simple,
+    mode: plan.mode || "analyze",
+    steps: plan.steps.map((step) => ({
+      id: step.id,
+      index: step.index,
+      title: step.title,
+      intent: step.intent,
+      tables: step.tables,
+      knowledgeRefs: step.knowledgeRefs,
+      successCriteria: step.successCriteria,
+      dependsOn: step.dependsOn,
+      status: step.status
+    }))
+  };
+}
+function hashSql(sql) {
+  return createHash4("sha1").update(String(sql || "").replace(/\s+/g, " ").trim()).digest("hex");
+}
+function evaluateStep(observation, options) {
+  const issues = [];
+  if (observation.clarify) {
+    return { verdict: "finish", reason: "\u7B49\u5F85\u7528\u6237\u8865\u5145\u4FE1\u606F", issues, feedback: "" };
+  }
+  if (observation.visual) {
+    return { verdict: "finish", reason: "\u53EF\u89C6\u5316\u7ED3\u679C\u5DF2\u751F\u6210", issues, feedback: "" };
+  }
+  if (observation.timedOut) {
+    issues.push({ type: "timeout", detail: "\u5F53\u524D\u6B65\u9AA4\u6267\u884C\u8D85\u65F6\uFF0C\u5DF2\u505C\u6B62\u672C\u6B21\u5DE5\u5177\u5FAA\u73AF" });
+    return {
+      verdict: "abort",
+      reason: "\u6B65\u9AA4\u6267\u884C\u8D85\u65F6\uFF0C\u7B49\u5F85\u7528\u6237\u51B3\u5B9A\u662F\u5426\u7EE7\u7EED",
+      issues,
+      feedback: ""
+    };
+  }
+  if (observation.budgetBlocked) {
+    return {
+      verdict: "continue",
+      reason: "\u5DF2\u8FBE\u5230\u672C\u8F6E\u9884\u7B97\u4E0A\u9650\uFF0C\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u7EE7\u7EED",
+      issues,
+      feedback: ""
+    };
+  }
+  for (const message of observation.errorMessages) {
+    issues.push({ type: "sql_error", detail: message });
+  }
+  const empty = observation.sql.some((item) => item.ok && item.rowCount === 0);
+  if (empty) {
+    issues.push({ type: "empty", detail: "\u67E5\u8BE2\u6210\u529F\u4F46\u7ED3\u679C\u4E3A\u7A7A\uFF0C\u9700\u786E\u8BA4\u8FC7\u6EE4\u6761\u4EF6/\u65F6\u95F4\u8303\u56F4/\u8868\u540D\u662F\u5426\u6B63\u786E" });
+  }
+  const truncated = observation.sql.find((item) => item.truncated);
+  if (truncated) {
+    issues.push({ type: "truncated", detail: "\u7ED3\u679C\u88AB\u622A\u65AD\uFF0C\u805A\u5408\u6216\u7F29\u5C0F\u8303\u56F4\u540E\u518D\u53D6\u6570" });
+  }
+  const seen = options.seenSql || /* @__PURE__ */ new Set();
+  const duplicates = observation.sql.filter((item) => seen.has(item.hash));
+  if (duplicates.length) {
+    issues.push({ type: "duplicate_sql", detail: "\u91CD\u590D\u6267\u884C\u4E86\u672C\u8F6E\u5DF2\u6709\u7684 SQL\uFF0C\u9700\u8981\u6362\u6761\u4EF6\u6216\u57FA\u4E8E\u5DF2\u6709\u7ED3\u679C\u7EE7\u7EED" });
+  }
+  const hardError = observation.errorMessages.length > 0;
+  const visualError = observation.tools.some((item) => item.name.startsWith("render") && !item.ok);
+  if (visualError) {
+    issues.push({ type: "visual_error", detail: "\u62A5\u544A/\u56FE\u8868\u751F\u6210\u5931\u8D25\uFF0C\u9700\u8981\u4FEE\u6B63\u53C2\u6570\u540E\u91CD\u8BD5" });
+  }
+  const canRetry = options.attempt < options.maxRetries;
+  const emptyFirstTime = empty && !options.emptyRetried && options.attempt < 1;
+  const truncatedFirstTime = Boolean(truncated) && !options.truncatedRetried && options.attempt < 1;
+  if ((hardError || visualError || duplicates.length > 0 || emptyFirstTime || truncatedFirstTime) && canRetry) {
+    const feedback = buildFeedback(issues, "\u8BF7\u4FEE\u6B63\u540E\u91CD\u65B0\u6267\u884C\u5F53\u524D\u6B65\u9AA4");
+    return {
+      verdict: "retry",
+      reason: issues.map((item) => item.detail).join("\uFF1B"),
+      issues,
+      feedback
+    };
+  }
+  if (hardError && options.replanCount < options.maxReplans) {
+    return {
+      verdict: "replan",
+      reason: "\u8FDE\u7EED\u91CD\u8BD5\u4ECD\u672A\u6210\u529F\uFF0C\u9700\u8981\u8C03\u6574\u8BA1\u5212",
+      issues,
+      feedback: buildFeedback(issues, "\u5F53\u524D\u6B65\u9AA4\u6267\u884C\u5931\u8D25\uFF0C\u8BF7\u91CD\u65B0\u89C4\u5212\u540E\u7EED\u6B65\u9AA4")
+    };
+  }
+  if (issues.length) {
+    return {
+      verdict: "continue",
+      reason: issues.map((item) => item.detail).join("\uFF1B"),
+      issues,
+      feedback: ""
+    };
+  }
+  return { verdict: "continue", reason: "\u6B65\u9AA4\u5B8C\u6210", issues, feedback: "" };
+}
+function buildFeedback(issues, head) {
+  if (!issues.length)
+    return head;
+  return `${head}\uFF1A
+${issues.map((item) => `- ${item.detail}`).join("\n")}`;
+}
+function summarizeObservation(observation) {
+  const parts = [];
+  if (observation.sql.length) {
+    const rows = observation.sql.reduce((sum, item) => sum + item.rowCount, 0);
+    parts.push(`${observation.sql.length} \u6B21\u67E5\u8BE2`);
+    parts.push(`${rows} \u884C`);
+    if (observation.sql.some((item) => item.truncated))
+      parts.push("\u5DF2\u622A\u65AD");
+  }
+  if (observation.visual)
+    parts.push("\u5DF2\u751F\u6210\u53EF\u89C6\u5316");
+  if (observation.errorMessages.length)
+    parts.push(`${observation.errorMessages.length} \u4E2A\u9519\u8BEF`);
+  if (observation.aiText)
+    parts.push(observation.aiText.slice(0, 80));
+  return parts.join(" \xB7 ") || "\u5DF2\u5B8C\u6210";
+}
+
+// dist/plan-runner.js
+init_messages2();
+var REPORTER_SYSTEM_PROMPT = `\u4F60\u662F\u6570\u636E\u5E93\u5206\u6790\u52A9\u624B\u3002\u53EA\u80FD\u57FA\u4E8E\u63D0\u4F9B\u7684\u6267\u884C\u7ED3\u679C\u56DE\u7B54\uFF0C\u4E0D\u80FD\u8C03\u7528\u5DE5\u5177\uFF0C\u4E0D\u80FD\u7F16\u9020\u6570\u636E\u3002
+
+\u8981\u6C42\uFF1A
+- \u7528\u4E2D\u6587\u56DE\u7B54\uFF0C\u5148\u8BF4\u7ED3\u8BBA\uFF0C\u518D\u7ED9\u5173\u952E\u6570\u636E\u548C\u53E3\u5F84\u3002
+- \u6570\u636E\u7F3A\u5931\u3001\u7ED3\u679C\u4E3A\u7A7A\u6216\u53E3\u5F84\u5F85\u786E\u8BA4\u65F6\u660E\u786E\u8BF4\u660E\uFF0C\u4E0D\u8981\u7528\u63A8\u6D4B\u586B\u8865\u3002
+- \u4E0D\u8981\u8F93\u51FA\u6267\u884C\u8BA1\u5212\u3001\u5DE5\u5177\u8C03\u7528\u8FC7\u7A0B\u6216 HTML \u62A5\u544A\u6E90\u7801\u3002
+- \u4E0D\u8981\u5199\u201C\u6211\u5DF2\u7ECF\u67E5\u8BE2/\u6211\u8C03\u7528\u5DE5\u5177\u201D\u7B49\u65C1\u767D\u3002
+- \u7ED3\u8BBA\u76F4\u63A5\u6765\u81EA\u67D0\u6B21 SQL \u7ED3\u679C\u65F6\uFF0C\u53EF\u5728\u53E5\u672B\u7528 [n] \u6807\u6CE8\u6765\u6E90\uFF08n \u4E3A\u6267\u884C\u7ED3\u679C\u4E2D\u7684\u67E5\u8BE2\u5E8F\u53F7\uFF09\u3002`;
+function pageContextBlock(context2) {
+  if (!context2)
+    return "";
+  if (!context2.tables.length) {
+    return `\u3010\u5F53\u524D\u9875\u9762\u3011\u63A5\u53E3\uFF1A${context2.method} ${context2.apiUrl}\uFF1B\u672A\u8BC6\u522B\u5230\u5BF9\u5E94\u8868\uFF08${context2.reason || "\u672A\u6620\u5C04"}\uFF09\u3002\u7528\u6237\u8BF4\u201C\u5F53\u524D\u9875\u9762\u201D\u65F6\u4E0D\u8981\u81C6\u9020\u8868\u540D\u3002`;
+  }
+  return `\u3010\u5F53\u524D\u9875\u9762\u3011\u63A5\u53E3\uFF1A${context2.method} ${context2.apiUrl}\uFF1B\u4E3B\u8868\uFF1A${context2.primaryTable || context2.tables[0]}\uFF1B` + (context2.tables.length > 1 ? `\u5019\u9009\u8868\uFF1A${context2.tables.join("\u3001")}\uFF1B` : "") + "\u7528\u6237\u8BF4\u201C\u5F53\u524D\u9875\u9762/\u5F53\u524D\u8868\u683C/\u5F53\u524D\u6570\u636E\u201D\u65F6\u9ED8\u8BA4\u6307\u4E3B\u8868\uFF0C\u9664\u975E\u7528\u6237\u660E\u786E\u70B9\u540D\u5176\u4ED6\u8868\u3002";
+}
+function extractText(content) {
+  if (typeof content === "string")
+    return content;
+  if (Array.isArray(content)) {
+    return content.map((part) => {
+      if (typeof part === "string")
+        return part;
+      if (part && typeof part === "object" && "text" in part) {
+        return String(part.text || "");
+      }
+      return "";
+    }).join("");
+  }
+  if (content && typeof content === "object" && "content" in content) {
+    return extractText(content.content);
+  }
+  return "";
+}
+function toRecord(value) {
+  return value && typeof value === "object" ? value : null;
+}
+function checkBudget(budget) {
+  const deny = budget.checkModelBudget();
+  if (deny)
+    throw new BudgetExceededError(deny);
+}
+function recordUsage(usageMetadata, responseMetadata, budget, prices) {
+  const usage = extractUsage(usageMetadata, responseMetadata);
+  if (usage.inputTokens || usage.outputTokens)
+    budget.recordModelUsage(usage, prices);
+}
+function emitTrace(sink, event) {
+  if (!sink)
+    return;
+  sink({ type: "trace", ...event });
+}
+function knowledgeBlock(question, onTrace) {
+  const pack = getKnowledgePack();
+  if (!pack)
+    return "";
+  const searchStartedAt = Date.now();
+  const hits = pack.search(question, 5);
+  const lines = [];
+  if (hits.length) {
+    emitTrace(onTrace, {
+      id: `trace-plan-knowledge-${searchStartedAt}`,
+      phase: "planning",
+      kind: "knowledge_search",
+      title: "\u89C4\u5212\u68C0\u7D22\u77E5\u8BC6\u5E93",
+      detail: `\u547D\u4E2D ${hits.length} \u7BC7\uFF1A${hits.slice(0, 3).map((hit) => hit.title).join("\u3001")}`,
+      status: "success",
+      durationMs: Date.now() - searchStartedAt,
+      data: {
+        query: question,
+        hits: hits.map((hit) => ({
+          path: hit.path,
+          title: hit.title,
+          heading: hit.heading || "",
+          score: Math.round(hit.score * 100) / 100,
+          snippet: hit.snippet.slice(0, 240)
+        }))
+      }
+    });
+    lines.push("\u3010\u77E5\u8BC6\u5E93\u547D\u4E2D\u3011");
+    for (const hit of hits) {
+      const location2 = hit.heading ? `${hit.path}#${hit.heading}` : hit.path;
+      lines.push(`- ${hit.title}\uFF08${location2}\uFF09\uFF1A${hit.snippet}`);
+    }
+  }
+  const skills = getSkillPack();
+  if (skills && skills.skills.length) {
+    emitTrace(onTrace, {
+      id: `trace-plan-skills-${Date.now()}`,
+      phase: "planning",
+      kind: "skill_catalog",
+      title: "\u89C4\u5212\u5339\u914D\u6280\u80FD",
+      detail: `${skills.skills.length} \u4E2A\u53EF\u7528\u6280\u80FD`,
+      status: "success",
+      data: {
+        skills: skills.skills.slice(0, 8).map((skill) => ({
+          name: skill.name,
+          description: skill.description
+        }))
+      }
+    });
+    lines.push(skills.catalogText);
+  }
+  return lines.join("\n").slice(0, 5e3);
+}
+function buildPlannerMessages(cfg, candidates, request, onTrace) {
+  const candidateBlock = formatTableCandidates(candidates);
+  const knowledge = knowledgeBlock(request.question, onTrace);
+  const completed = (request.completed || []).map((item, index2) => `- \u7B2C ${index2 + 1} \u6B65 ${item.title}\uFF1A${item.summary}`).join("\n");
+  const parts = [
+    `\u7528\u6237\u95EE\u9898\uFF1A${request.question}`,
+    request.history ? `\u3010\u6700\u8FD1\u5BF9\u8BDD\u3011
+${request.history}` : "",
+    pageContextBlock(request.pageContext),
+    candidateBlock,
+    knowledge,
+    completed ? `\u3010\u5DF2\u5B8C\u6210\u6B65\u9AA4\u3011
+${completed}
+\u53EA\u89C4\u5212\u5C1A\u672A\u5B8C\u6210\u7684\u6B65\u9AA4\uFF0C\u4E0D\u8981\u91CD\u590D\u5DF2\u5B8C\u6210\u7684\u5DE5\u4F5C\u3002` : "",
+    request.feedback ? `\u3010\u53CD\u601D\u53CD\u9988\u3011
+${request.feedback}` : "",
+    `\u8BF7\u8F93\u51FA JSON\uFF0C\u4E0D\u8981\u8F93\u51FA\u5176\u4ED6\u5185\u5BB9\u3002\u6700\u591A ${cfg.maxPlanSteps} \u6B65\u3002`
+  ].filter(Boolean);
+  return [new SystemMessage(PLANNER_SYSTEM_PROMPT), new HumanMessage(parts.join("\n\n"))];
+}
+async function planWithModel(cfg, budget, candidates, request, onTrace) {
+  const model = createChatModel(cfg, { maxTokens: 2e3 });
+  checkBudget(budget);
+  const response = await model.invoke(buildPlannerMessages(cfg, candidates, request, onTrace));
+  recordUsage(response.usage_metadata, response.response_metadata, budget, cfg.tokenPrices);
+  const draft = parsePlanDraft(extractText(response.content));
+  if (!draft) {
+    return fallbackPlan(request.question, { maxSteps: cfg.maxPlanSteps });
+  }
+  return normalizePlan(draft, {
+    maxSteps: cfg.maxPlanSteps,
+    fallbackQuestion: request.question
+  });
+}
+function buildStepMessages(messages, plan, step, pageContext, feedback, completed) {
+  const completedLines = [];
+  let completedBudget = 8e3;
+  for (const item of completed) {
+    const head = `- ${item.step.title}\uFF1A${item.step.summary || "\u5DF2\u5B8C\u6210"}`;
+    completedLines.push(head);
+    completedBudget -= head.length;
+    for (const tool2 of item.observation.tools) {
+      if (completedBudget <= 0)
+        break;
+      if (!tool2.output)
+        continue;
+      const text = tool2.output.slice(0, Math.min(2e3, completedBudget));
+      completedBudget -= text.length;
+      completedLines.push(`  [${tool2.name}] ${text}`);
+    }
+    if (completedBudget <= 0) {
+      completedLines.push("  \uFF08\u66F4\u65E9\u7ED3\u679C\u5DF2\u7701\u7565\uFF0C\u9700\u8981\u65F6\u8BF7\u91CD\u65B0\u67E5\u8BE2\uFF09");
+      break;
+    }
+  }
+  const completedText = completedLines.length ? completedLines.join("\n") : "\u6682\u65E0";
+  const tableText = step.tables.length ? step.tables.join(", ") : "\u89C1\u5019\u9009\u8868";
+  const knowledgeText = step.knowledgeRefs.length ? step.knowledgeRefs.join(", ") : "\u6309\u9700\u4F7F\u7528 search_knowledge / read_knowledge";
+  const stepContext = `\u3010\u672C\u8F6E\u6267\u884C\u8BA1\u5212\u3011\u76EE\u6807\uFF1A${plan.goal}
+\u3010\u5F53\u524D\u6B65\u9AA4\u3011\u7B2C ${step.index + 1}/${plan.steps.length} \u6B65\uFF1A${step.title}
+\u610F\u56FE\uFF1A${step.intent}
+\u6D89\u53CA\u8868\uFF1A${tableText}
+\u77E5\u8BC6\u4F9D\u636E\uFF1A${knowledgeText}
+${pageContextBlock(pageContext)}
+\u6210\u529F\u6807\u51C6\uFF1A${step.successCriteria || "\u62FF\u5230\u53EF\u56DE\u7B54\u7684\u6570\u636E"}
+\u3010\u5DF2\u5B8C\u6210\u6B65\u9AA4\u3011
+${completedText}
+${feedback ? `\u3010\u4E0A\u4E00\u8F6E\u53CD\u601D\u53CD\u9988\u3011
+${feedback}
+` : ""}
+\u3010\u6267\u884C\u7EA6\u675F\u3011
+- \u53EA\u6267\u884C\u5F53\u524D\u6B65\u9AA4\uFF0C\u4E0D\u8981\u8F93\u51FA\u8BA1\u5212\u3001\u603B\u7ED3\u6216\u201C\u6211\u6765\u67E5\u8BE2\u201D\u7B49\u65C1\u767D\u3002
+- \u9700\u8981\u6570\u636E\u65F6\u8C03\u7528\u5DE5\u5177\uFF1B\u4E0D\u8981\u81C6\u9020\u8868\u540D\u3001\u5217\u540D\u6216\u6570\u503C\u3002
+- \u4E0D\u8981\u63D0\u524D\u751F\u6210\u62A5\u544A\u6216\u53EF\u89C6\u5316\uFF0C\u9664\u975E\u5F53\u524D\u6B65\u9AA4\u5C31\u662F\u201C\u751F\u6210\u62A5\u544A\u201D\u3002
+- \u5F53\u524D\u6B65\u9AA4\u5B8C\u6210\u540E\u76F4\u63A5\u7ED3\u675F\uFF0C\u4E0D\u8981\u7EE7\u7EED\u505A\u540E\u7EED\u6B65\u9AA4\u3002`;
+  const recent = messages.slice(-12);
+  return [new SystemMessage(stepContext), ...recent];
+}
+function parseSqlResults(name, input2, output2) {
+  if (name !== "run_sql" && name !== "run_saved_query") {
+    return { observations: [], errors: [], budgetBlocked: false };
+  }
+  let parsed = null;
+  try {
+    parsed = JSON.parse(output2);
+  } catch {
+    return { observations: [], errors: [], budgetBlocked: false };
+  }
+  if (!parsed)
+    return { observations: [], errors: [], budgetBlocked: false };
+  const errors = [];
+  const budgetBlocked = parsed.budget != null || /已达上限|成本上限|查询次数已达/.test(String(parsed.error || ""));
+  const inputQueries = Array.isArray(input2?.queries) ? input2.queries.map((item) => String(item || "")).filter(Boolean) : input2?.sql ? [String(input2.sql)] : [];
+  const sqlAt = (index2) => inputQueries[index2] || String(input2?.key || `${name}-${index2}`);
+  if (Array.isArray(parsed.results)) {
+    const observations = parsed.results.map((item, index2) => {
+      const error63 = typeof item.error === "string" ? item.error : void 0;
+      if (error63)
+        errors.push(error63);
+      return {
+        hash: hashSql(sqlAt(index2)),
+        sql: sqlAt(index2),
+        ok: item.success !== false && !error63,
+        rowCount: Number(item.rowCount) || 0,
+        truncated: item.truncated === true,
+        error: error63
+      };
+    });
+    return { observations, errors, budgetBlocked };
+  }
+  const error62 = typeof parsed.error === "string" ? parsed.error : void 0;
+  if (error62 && !budgetBlocked)
+    errors.push(error62);
+  return {
+    observations: [
+      {
+        hash: hashSql(sqlAt(0)),
+        sql: sqlAt(0),
+        ok: parsed.success !== false && !error62,
+        rowCount: Number(parsed.rowCount) || 0,
+        truncated: parsed.truncated === true,
+        error: error62
+      }
+    ],
+    errors,
+    budgetBlocked
+  };
+}
+function isVisualTool(name) {
+  return name === "render_report" || name === "render_html_report" || name === "render_chart";
+}
+async function executeStep(options) {
+  const { cfg, agent, messages, plan, step, feedback, completed, bridge, controller } = options;
+  const observation = {
+    tools: [],
+    sql: [],
+    aiText: "",
+    visual: false,
+    clarify: false,
+    errorMessages: [],
+    budgetBlocked: false,
+    timedOut: false
+  };
+  emitTrace(options.onTrace, {
+    id: `trace-step-context-${step.id}-${Date.now()}`,
+    stepId: step.id,
+    phase: "step",
+    kind: "step_context",
+    title: "\u6B65\u9AA4\u51C6\u5907",
+    detail: [
+      step.tables.length ? `\u8868\uFF1A${step.tables.join("\u3001")}` : "\u8868\uFF1A\u6309\u9700\u68C0\u7D22",
+      step.knowledgeRefs.length ? `\u77E5\u8BC6\uFF1A${step.knowledgeRefs.map((ref) => ref.split("/").pop() || ref).join("\u3001")}` : "\u77E5\u8BC6\uFF1A\u6309\u9700\u68C0\u7D22"
+    ].join("\uFF1B"),
+    status: "success",
+    data: {
+      tables: step.tables,
+      knowledgeRefs: step.knowledgeRefs,
+      successCriteria: step.successCriteria,
+      pageTable: options.pageContext?.primaryTable || ""
+    }
+  });
+  const toolStarts = /* @__PURE__ */ new Map();
+  let lastSql = [];
+  let lastSqlErrors = [];
+  let lastSqlBudget = false;
+  const nonSqlErrors = [];
+  const stepMessages = buildStepMessages(messages, plan, step, options.pageContext, feedback, completed);
+  let stepTimedOut = false;
+  const stepController = new AbortController();
+  const onTurnAbort = () => stepController.abort();
+  controller.signal.addEventListener("abort", onTurnAbort, { once: true });
+  const stepTimer = options.stepTimeoutMs && options.stepTimeoutMs > 0 ? setTimeout(() => {
+    stepTimedOut = true;
+    stepController.abort();
+  }, options.stepTimeoutMs) : null;
+  const streamConfig = {
+    version: "v2",
+    recursionLimit: cfg.recursionLimit,
+    signal: stepController.signal
+  };
+  try {
+    const stream = await agent.streamEvents({ messages: stepMessages }, streamConfig, {
+      excludeTags: ["nostream"]
+    });
+    for await (const event of stream) {
+      const item = event;
+      bridge.handle(item, { emitTokens: false, stepId: step.id });
+      if (item.event === "on_tool_start") {
+        const name = item.name || "tool";
+        const runId = item.run_id || `tool-${Date.now()}-${toolStarts.size}`;
+        const input2 = toRecord(item.data?.input);
+        toolStarts.set(runId, { name, input: input2 || void 0 });
+      } else if (item.event === "on_tool_end") {
+        const name = item.name || "tool";
+        const runId = item.run_id || `tool-${Date.now()}-${toolStarts.size}`;
+        const output2 = extractText(item.data?.output);
+        const started = toolStarts.get(runId);
+        const tool2 = {
+          name,
+          input: started?.input,
+          output: output2,
+          ok: true
+        };
+        observation.tools.push(tool2);
+        if (isVisualTool(name)) {
+          const parsed = (() => {
+            try {
+              return JSON.parse(output2);
+            } catch {
+              return null;
+            }
+          })();
+          if (parsed && parsed.success === false) {
+            nonSqlErrors.push(typeof parsed.error === "string" ? parsed.error : "\u53EF\u89C6\u5316\u751F\u6210\u5931\u8D25");
+          } else {
+            observation.visual = true;
+          }
+        }
+        if (name === "run_sql" || name === "run_saved_query") {
+          const sql = parseSqlResults(name, started?.input, output2);
+          lastSql = sql.observations;
+          lastSqlErrors = sql.errors;
+          lastSqlBudget = sql.budgetBlocked;
+        }
+      } else if (item.event === "on_tool_error") {
+        const name = item.name || "tool";
+        const raw = item.data?.error;
+        const message = raw instanceof Error ? raw.message : typeof raw === "string" ? raw : "\u5DE5\u5177\u6267\u884C\u5931\u8D25";
+        observation.tools.push({ name, ok: false });
+        if (name === "run_sql" || name === "run_saved_query")
+          lastSqlErrors = [message];
+        else
+          nonSqlErrors.push(message);
+      } else if (item.event === "on_chat_model_end") {
+        const output2 = item.data?.output;
+        if (AIMessage.isInstance(output2)) {
+          const text = extractText(output2.content).trim();
+          const toolCalls = Array.isArray(output2.tool_calls) ? output2.tool_calls : [];
+          if (text && !toolCalls.length)
+            observation.aiText = text;
+        }
+      }
+      if (bridge.shouldStop()) {
+        break;
+      }
+    }
+  } catch (error62) {
+    if (!stepTimedOut)
+      throw error62;
+  } finally {
+    if (stepTimer)
+      clearTimeout(stepTimer);
+    controller.signal.removeEventListener("abort", onTurnAbort);
+  }
+  observation.sql = lastSql;
+  observation.errorMessages = [...nonSqlErrors, ...lastSqlErrors];
+  observation.budgetBlocked = lastSqlBudget;
+  observation.timedOut = stepTimedOut;
+  observation.clarify = bridge.clarifyPending();
+  return observation;
+}
+function buildResultSummary(stepResults, plan) {
+  const lines = [`\u3010\u6267\u884C\u8BA1\u5212\u3011${plan.goal}`];
+  let budget = 18e3;
+  for (const item of stepResults) {
+    const { step, observation } = item;
+    lines.push(`
+### ${step.index + 1}. ${step.title}\uFF08${step.status}\uFF09`);
+    if (step.summary)
+      lines.push(step.summary);
+    if (observation.aiText) {
+      const text = observation.aiText.slice(0, 1500);
+      lines.push(text);
+      budget -= text.length;
+    }
+    for (const tool2 of observation.tools) {
+      if (budget <= 0)
+        break;
+      if (tool2.name === "run_sql" || tool2.name === "run_saved_query") {
+        const input2 = tool2.input || {};
+        const sql = typeof input2.sql === "string" ? input2.sql : Array.isArray(input2.queries) ? input2.queries.map((item2) => String(item2 || "")).join(";\n") : typeof input2.key === "string" ? `saved_query:${input2.key}` : "";
+        if (sql) {
+          const text = `[SQL] ${sql}`.slice(0, Math.min(1600, budget));
+          budget -= text.length;
+          lines.push(text);
+        }
+      }
+      if (!tool2.output)
+        continue;
+      const output2 = tool2.output.slice(0, Math.min(4e3, budget));
+      budget -= output2.length;
+      lines.push(`[${tool2.name}] ${output2}`);
+    }
+    if (budget <= 0) {
+      lines.push("\uFF08\u540E\u7EED\u7ED3\u679C\u5DF2\u7701\u7565\uFF09");
+      break;
+    }
+  }
+  lines.push("\n\u8BF7\u57FA\u4E8E\u4EE5\u4E0A\u771F\u5B9E\u6267\u884C\u7ED3\u679C\u56DE\u7B54\u7528\u6237\u95EE\u9898\u3002\u4E0D\u8981\u7F16\u9020\u6570\u636E\uFF1B\u6570\u636E\u7F3A\u5931\u6216\u53E3\u5F84\u5F85\u786E\u8BA4\u65F6\u660E\u786E\u8BF4\u660E\u3002");
+  return lines.join("\n");
+}
+async function produceAnswer(options) {
+  const { cfg, budget, question, stepResults, plan, send, controller, fallbackText } = options;
+  const model = createChatModel(cfg);
+  checkBudget(budget);
+  const messages = [
+    new SystemMessage(REPORTER_SYSTEM_PROMPT),
+    new SystemMessage(buildResultSummary(stepResults, plan)),
+    ...options.warnings && options.warnings.length ? [
+      new SystemMessage(`\u3010\u6700\u7EC8\u6570\u636E\u6821\u9A8C\u63D0\u793A\u3011
+${options.warnings.slice(0, 8).map((item) => `- ${item}`).join("\n")}
+\u56DE\u7B54\u65F6\u5FC5\u987B\u5982\u5B9E\u8BF4\u660E\u8FD9\u4E9B\u7F3A\u53E3\u6216\u4E0D\u786E\u5B9A\u6027\uFF0C\u4E0D\u8981\u7528\u63A8\u6D4B\u586B\u8865\u3002`)
+    ] : [],
+    new HumanMessage(question)
+  ];
+  const answerTraceId = `trace-answer-${Date.now()}`;
+  const answerStartedAt = Date.now();
+  send({
+    type: "trace",
+    id: answerTraceId,
+    phase: "answer",
+    kind: "answer",
+    title: "\u6C47\u603B\u56DE\u7B54",
+    detail: "\u57FA\u4E8E\u6267\u884C\u7ED3\u679C\u751F\u6210\u6700\u7EC8\u56DE\u7B54",
+    status: "running"
+  });
+  const finishAnswerTrace = (status, detail) => {
+    send({
+      type: "trace",
+      id: answerTraceId,
+      phase: "answer",
+      kind: "answer",
+      title: "\u6C47\u603B\u56DE\u7B54",
+      detail,
+      status,
+      durationMs: Date.now() - answerStartedAt
+    });
+  };
+  let text = "";
+  let usageMetadata;
+  let responseMetadata;
+  try {
+    const stream = await model.stream(messages, { signal: controller.signal });
+    for await (const chunk of stream) {
+      const delta = extractText(chunk.content);
+      if (delta) {
+        text += delta;
+        send({ type: "token", content: delta });
+      }
+      if (chunk.usage_metadata)
+        usageMetadata = chunk.usage_metadata;
+      if (chunk.response_metadata)
+        responseMetadata = chunk.response_metadata;
+    }
+  } catch (error62) {
+    if (error62 instanceof BudgetExceededError)
+      throw error62;
+  }
+  if (text.trim()) {
+    const usage = extractUsage(usageMetadata, responseMetadata);
+    if (usage.inputTokens || usage.outputTokens) {
+      budget.recordModelUsage(usage, cfg.tokenPrices);
+    } else {
+      const estimated = {
+        inputTokens: Math.ceil(messages.reduce((sum, item) => sum + extractText(item.content).length, 0) / 4),
+        outputTokens: Math.ceil(text.length / 4),
+        cacheReadTokens: 0,
+        cacheCreationTokens: 0
+      };
+      budget.recordModelUsage(estimated, cfg.tokenPrices);
+    }
+    finishAnswerTrace("success", `\u56DE\u7B54 ${text.length} \u5B57`);
+    return text;
+  }
+  const fallback = fallbackText.trim();
+  if (fallback) {
+    send({ type: "token", content: fallback });
+    finishAnswerTrace("success", `\u4F7F\u7528\u56DE\u9000\u56DE\u7B54 ${fallback.length} \u5B57`);
+    return fallback;
+  }
+  const message = "\u672C\u8F6E\u6CA1\u6709\u53D6\u5230\u53EF\u56DE\u7B54\u7684\u6570\u636E\uFF0C\u8BF7\u7F29\u5C0F\u8303\u56F4\u540E\u91CD\u8BD5\u3002";
+  send({ type: "token", content: message });
+  finishAnswerTrace("error", "\u6CA1\u6709\u53D6\u5230\u53EF\u56DE\u7B54\u7684\u6570\u636E");
+  return message;
+}
+
+// dist/plan-graph.js
+var PlanGraphState = Annotation.Root({
+  messages: Annotation({
+    reducer: (_, next) => next,
+    default: () => []
+  }),
+  question: Annotation({ reducer: (_, next) => next, default: () => "" }),
+  candidates: Annotation({
+    reducer: (_, next) => next,
+    default: () => []
+  }),
+  pageContext: Annotation({
+    reducer: (_, next) => next,
+    default: () => null
+  }),
+  reportMode: Annotation({ reducer: (_, next) => next, default: () => false }),
+  executionMode: Annotation({
+    reducer: (_, next) => next,
+    default: () => "analyze"
+  }),
+  plan: Annotation({ reducer: (_, next) => next, default: () => null }),
+  stepResults: Annotation({
+    reducer: (left, right) => left.concat(right),
+    default: () => []
+  }),
+  activeSteps: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  observations: Annotation({
+    reducer: (_, next) => next,
+    default: () => []
+  }),
+  stepAttempts: Annotation({
+    reducer: (left, right) => ({ ...left, ...right }),
+    default: () => ({})
+  }),
+  stepFeedback: Annotation({
+    reducer: (left, right) => ({ ...left, ...right }),
+    default: () => ({})
+  }),
+  stepEmptyRetried: Annotation({
+    reducer: (left, right) => ({ ...left, ...right }),
+    default: () => ({})
+  }),
+  stepTruncatedRetried: Annotation({
+    reducer: (left, right) => ({ ...left, ...right }),
+    default: () => ({})
+  }),
+  route: Annotation({ reducer: (_, next) => next, default: () => "executor" }),
+  feedback: Annotation({ reducer: (_, next) => next, default: () => "" }),
+  replanCount: Annotation({ reducer: (_, next) => next, default: () => 0 }),
+  retryCount: Annotation({ reducer: (_, next) => next, default: () => 0 }),
+  checkedCount: Annotation({ reducer: (_, next) => next, default: () => 0 }),
+  criticRounds: Annotation({ reducer: (_, next) => next, default: () => 0 }),
+  criticVerdict: Annotation({ reducer: (_, next) => next, default: () => "" }),
+  criticIssues: Annotation({ reducer: (_, next) => next, default: () => [] }),
+  lastFailure: Annotation({ reducer: (_, next) => next, default: () => "" }),
+  seenSql: Annotation({
+    reducer: (left, right) => Array.from(/* @__PURE__ */ new Set([...left, ...right])),
+    default: () => []
+  }),
+  stopped: Annotation({ reducer: (_, next) => next, default: () => false }),
+  clarified: Annotation({ reducer: (_, next) => next, default: () => false }),
+  timedOutSteps: Annotation({ reducer: (_, next) => next, default: () => [] })
+});
+var CRITIC_SYSTEM_PROMPT = `\u4F60\u662F\u6570\u636E\u5E93\u5206\u6790\u7ED3\u679C\u7684\u6570\u636E\u51C6\u786E\u6027\u8BC4\u5BA1\u5458\u3002\u4F60\u53EA\u8BC4\u5BA1\uFF0C\u4E0D\u56DE\u7B54\u7528\u6237\u3002
+
+\u68C0\u67E5\u91CD\u70B9\uFF1A
+1. \u6267\u884C\u7ED3\u679C\u662F\u5426\u771F\u6B63\u56DE\u7B54\u4E86\u7528\u6237\u95EE\u9898\uFF0C\u662F\u5426\u7F3A\u5C11\u5173\u952E\u7EF4\u5EA6\u6216\u65F6\u95F4\u8303\u56F4\u3002
+2. \u5173\u952E\u6570\u5B57\u662F\u5426\u80FD\u5728 SQL \u7ED3\u679C\u4E2D\u627E\u5230\uFF0C\u662F\u5426\u6709\u7F16\u9020\u3001\u5355\u4F4D\u9519\u8BEF\u6216\u53E3\u5F84\u4E0D\u4E00\u81F4\u3002
+3. \u8FC7\u6EE4\u6761\u4EF6\u3001\u65F6\u95F4\u8303\u56F4\u3001\u72B6\u6001\u7801\u3001\u8868\u5173\u8054\u662F\u5426\u7B26\u5408\u77E5\u8BC6\u5E93/\u8868\u7ED3\u6784\u3002
+4. \u7A7A\u7ED3\u679C\u3001\u622A\u65AD\u3001\u5206\u9875\u3001\u91CD\u590D\u884C\u662F\u5426\u4F1A\u5BFC\u81F4\u7ED3\u8BBA\u9519\u8BEF\u3002
+5. \u5206\u9879\u4E0E\u5408\u8BA1\u3001\u4E0D\u540C\u6B65\u9AA4\u4E4B\u95F4\u662F\u5426\u77DB\u76FE\u3002
+
+\u8F93\u51FA JSON\uFF0C\u4E0D\u8981\u8F93\u51FA\u5176\u4ED6\u5185\u5BB9\uFF1A
+{
+  "verdict": "pass" | "revise" | "replan",
+  "issues": ["\u5177\u4F53\u95EE\u9898"],
+  "feedback": "\u7ED9\u6267\u884C\u8005\u7684\u5177\u4F53\u8865\u5145/\u4FEE\u6B63\u5EFA\u8BAE\uFF0C\u5FC5\u987B\u6307\u51FA\u8865\u67E5\u4EC0\u4E48\u3001\u4FEE\u6B63\u4EC0\u4E48\u6761\u4EF6",
+  "confidence": 0.0
+}
+
+\u89C4\u5219\uFF1A
+- \u53EA\u6709\u660E\u786E\u7684\u6570\u636E\u95EE\u9898\u624D\u8F93\u51FA revise/replan\uFF1B\u4E0D\u786E\u5B9A\u65F6\u8F93\u51FA pass\u3002
+- feedback \u8981\u5177\u4F53\u5230\u8868\u3001\u5B57\u6BB5\u3001\u65F6\u95F4\u8303\u56F4\u6216\u72B6\u6001\u7801\uFF0C\u4E0D\u8981\u6CDB\u6CDB\u800C\u8C08\u3002
+- \u4E0D\u8981\u56E0\u4E3A\u6570\u636E\u5C11\u800C\u8981\u6C42\u65E0\u5173\u7684\u6269\u5C55\u5206\u6790\u3002
+- \u53EA\u56F4\u7ED5\u7528\u6237\u95EE\u9898\u672C\u8EAB\u68C0\u67E5\uFF0C\u7981\u6B62\u6269\u5927\u4EFB\u52A1\u8303\u56F4\u3002
+- \u7981\u6B62\u8981\u6C42\u201C\u6240\u6709\u8868/\u6BCF\u5F20\u8868/\u5168\u5E93/\u9010\u8868\u8BF4\u660E/\u8865\u5168\u5168\u90E8\u6587\u6863/\u8986\u76D6\u6240\u6709\u5B57\u6BB5\u201D\u8FD9\u7C7B\u5927\u89C4\u6A21\u5DE5\u4F5C\uFF1B\u9047\u5230\u8FD9\u7C7B\u95EE\u9898\u76F4\u63A5 pass\uFF0C\u5E76\u5728 issues \u91CC\u63D0\u793A\u56DE\u7B54\u4E2D\u8BF4\u660E\u9650\u5236\u3002
+- revise \u7684 feedback \u6700\u591A\u8981\u6C42 1~3 \u4E2A\u5177\u4F53\u3001\u53EF\u76F4\u63A5\u6267\u884C\u7684\u8865\u5145\u67E5\u8BE2\uFF1B\u4E0D\u8981\u7ED9\u51FA\u65E0\u6CD5\u5728\u5355\u8F6E\u5185\u5B8C\u6210\u7684\u6E05\u5355\u3002`;
+function runtimeOf(config2) {
+  return config2.configurable || {};
+}
+function buildHistory(messages) {
+  return messages.filter((item) => {
+    const type2 = item._getType();
+    return type2 === "human" || type2 === "ai";
+  }).slice(-6).map((item) => `${item._getType() === "human" ? "\u7528\u6237" : "\u52A9\u624B"}\uFF1A${extractText(item.content).slice(0, 300)}`).join("\n");
+}
+function patchStep(plan, stepId, patch) {
+  return {
+    ...plan,
+    steps: plan.steps.map((step) => step.id === stepId ? { ...step, ...patch } : step)
+  };
+}
+function dependencySettled(plan, stepId) {
+  const dependency = plan.steps.find((step) => step.id === stepId);
+  if (!dependency)
+    return true;
+  return dependency.status !== "pending" && dependency.status !== "running";
+}
+function readySteps(plan) {
+  return plan.steps.filter((step) => step.status === "pending" && step.dependsOn.every((dep) => dependencySettled(plan, dep)));
+}
+function afterWaveRoute(state2, plan, cfg) {
+  if (readySteps(plan).length) {
+    return { route: "executor", activeSteps: [], observations: [], feedback: "" };
+  }
+  if (state2.executionMode === "quick") {
+    return { route: "reporter", activeSteps: [], observations: [] };
+  }
+  if (cfg.enableAccuracyCritic && state2.criticRounds <= cfg.maxCriticRounds) {
+    return { route: "critic", activeSteps: [], observations: [] };
+  }
+  return { route: "reporter", activeSteps: [], observations: [] };
+}
+function parseCriticResult(text) {
+  const raw = String(text || "").trim();
+  if (!raw)
+    return null;
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const first = raw.indexOf("{");
+  const last = raw.lastIndexOf("}");
+  const candidates = [
+    raw,
+    fenced && fenced[1] ? fenced[1] : "",
+    first >= 0 && last > first ? raw.slice(first, last + 1) : ""
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      const verdict = parsed.verdict === "revise" || parsed.verdict === "replan" ? parsed.verdict : "pass";
+      const issues = Array.isArray(parsed.issues) ? parsed.issues.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 8) : [];
+      return {
+        verdict,
+        issues,
+        feedback: typeof parsed.feedback === "string" ? parsed.feedback.trim().slice(0, 1200) : "",
+        confidence: Number(parsed.confidence) || 0
+      };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+async function invokeCritic(options) {
+  const { cfg, budget, question, stepResults, plan, send } = options;
+  const model = createChatModel(cfg, { maxTokens: 1200 });
+  checkBudget(budget);
+  const evidence = buildResultSummary(stepResults, plan);
+  const refs = Array.from(new Set(plan.steps.flatMap((step) => step.knowledgeRefs).filter(Boolean))).slice(0, 10);
+  const pack = getKnowledgePack();
+  const searchStartedAt = Date.now();
+  const hits = pack ? pack.search(question, 5) : [];
+  if (hits.length) {
+    send({
+      type: "trace",
+      id: `trace-critic-knowledge-${searchStartedAt}`,
+      phase: "critic",
+      kind: "knowledge_search",
+      title: "\u6821\u9A8C\u68C0\u7D22\u77E5\u8BC6\u5E93",
+      detail: `\u547D\u4E2D ${hits.length} \u7BC7\uFF1A${hits.slice(0, 3).map((hit) => hit.title).join("\u3001")}`,
+      status: "success",
+      durationMs: Date.now() - searchStartedAt,
+      data: {
+        query: question,
+        hits: hits.map((hit) => ({
+          path: hit.path,
+          title: hit.title,
+          heading: hit.heading || "",
+          snippet: hit.snippet.slice(0, 240)
+        }))
+      }
+    });
+  }
+  const knowledgeText = hits.map((hit) => {
+    const location2 = hit.heading ? `${hit.path}#${hit.heading}` : hit.path;
+    return `- ${hit.title}\uFF08${location2}\uFF09\uFF1A${hit.snippet}`;
+  }).join("\n").slice(0, 4e3);
+  try {
+    const response = await model.invoke([
+      new SystemMessage(CRITIC_SYSTEM_PROMPT),
+      new SystemMessage(`\u3010\u7528\u6237\u95EE\u9898\u3011
+${question}
+
+\u3010\u6267\u884C\u7ED3\u679C\u3011
+${evidence}` + (refs.length ? `
+
+\u3010\u77E5\u8BC6\u4F9D\u636E\u3011
+${refs.join("\n")}` : "") + (knowledgeText ? `
+
+\u3010\u77E5\u8BC6\u5E93\u547D\u4E2D\u3011
+${knowledgeText}` : "")),
+      new HumanMessage("\u8BF7\u8BC4\u5BA1\u4E0A\u8FF0\u6267\u884C\u7ED3\u679C\u662F\u5426\u8DB3\u4EE5\u51C6\u786E\u56DE\u7B54\u7528\u6237\u95EE\u9898\uFF0C\u5E76\u8F93\u51FA JSON\u3002")
+    ]);
+    recordUsage(response.usage_metadata, response.response_metadata, budget, cfg.tokenPrices);
+    return parseCriticResult(extractText(response.content)) || {
+      verdict: "pass",
+      issues: [],
+      feedback: "",
+      confidence: 0
+    };
+  } catch (error62) {
+    if (error62 instanceof BudgetExceededError)
+      throw error62;
+    logLine(`critic failed: ${error62 instanceof Error ? error62.message : String(error62)}`);
+    return { verdict: "pass", issues: [], feedback: "", confidence: 0 };
+  }
+}
+async function plannerNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const { cfg, budget, send } = runtime;
+  const history = buildHistory(state2.messages);
+  const planningStartedAt = Date.now();
+  if (state2.executionMode === "quick" && state2.plan) {
+    send({ type: "plan", ...planEventPayload(state2.plan) });
+    send({
+      type: "trace",
+      id: `trace-mode-${planningStartedAt}`,
+      phase: "planning",
+      kind: "route",
+      title: "\u5FEB\u901F\u95EE\u7B54\u6A21\u5F0F",
+      detail: "\u5355\u6B65\u6267\u884C\uFF0C\u4FDD\u7559 SQL/\u7A7A\u7ED3\u679C/\u622A\u65AD\u53CD\u601D\uFF0C\u4E0D\u751F\u6210\u591A\u6B65\u8BA1\u5212\uFF0C\u4E0D\u8DD1 critic",
+      status: "success"
+    });
+    return {
+      plan: state2.plan,
+      activeSteps: [],
+      observations: [],
+      feedback: "",
+      route: "executor"
+    };
+  }
+  if (state2.plan) {
+    const currentPlan = state2.plan;
+    const replanned = await planWithModel(cfg, budget, state2.candidates, {
+      question: state2.question,
+      history,
+      pageContext: state2.pageContext,
+      feedback: state2.feedback,
+      completed: state2.stepResults.filter((item) => item.step.status === "done").map((item) => ({ title: item.step.title, summary: item.step.summary || "" }))
+    }, send);
+    const idMap = new Map(replanned.steps.map((step, index2) => [step.id, `${replanned.planId}-s${index2 + 1}`]));
+    const appended = replanned.steps.map((step, index2) => ({
+      ...step,
+      id: `${replanned.planId}-s${index2 + 1}`,
+      index: currentPlan.steps.length + index2,
+      dependsOn: step.dependsOn.map((dep) => idMap.get(dep)).filter((dep) => Boolean(dep)),
+      status: "pending"
+    }));
+    if (!appended.length)
+      return { route: "reporter" };
+    const steps = [...currentPlan.steps, ...appended];
+    if (state2.reportMode && !steps.some((step) => step.status === "pending" && isReportStep(step))) {
+      steps.push({
+        id: `${replanned.planId}-report`,
+        index: steps.length,
+        title: "\u91CD\u65B0\u751F\u6210 HTML \u62A5\u544A",
+        intent: "\u57FA\u4E8E\u5DF2\u5B8C\u6210\u548C\u8865\u5145\u7684\u6570\u636E\u91CD\u65B0\u751F\u6210\u5B8C\u6574 HTML \u62A5\u544A\uFF0C\u9010\u9879\u6807\u6CE8 coverage\u3002",
+        tables: [],
+        knowledgeRefs: [],
+        successCriteria: "render_html_report \u6210\u529F\u5E76\u8FD4\u56DE coverage",
+        dependsOn: steps.map((step) => step.id),
+        status: "pending"
+      });
+    }
+    const plan2 = {
+      ...currentPlan,
+      revision: currentPlan.revision + 1,
+      steps
+    };
+    send({ type: "replan", ...planEventPayload(plan2), reason: state2.lastFailure || state2.feedback });
+    send({
+      type: "trace",
+      id: `trace-replan-${planningStartedAt}`,
+      phase: "planning",
+      kind: "planner",
+      title: "\u91CD\u65B0\u89C4\u5212",
+      detail: `\u65B0\u589E ${appended.length} \u4E2A\u76EE\u6807\uFF0C\u5171 ${plan2.steps.length} \u4E2A`,
+      status: "success",
+      durationMs: Date.now() - planningStartedAt,
+      data: { goal: plan2.goal, steps: plan2.steps.map((step) => step.title) }
+    });
+    logLine(`replan count=${state2.replanCount} added=${appended.length} reason=${(state2.lastFailure || state2.feedback).slice(0, 120)}`);
+    return {
+      plan: plan2,
+      activeSteps: [],
+      observations: [],
+      feedback: "",
+      route: "executor"
+    };
+  }
+  let plan;
+  if (!state2.reportMode && isLikelySimpleQuestion(state2.question)) {
+    plan = fallbackPlan(state2.question, { maxSteps: cfg.maxPlanSteps });
+  } else {
+    plan = await planWithModel(cfg, budget, state2.candidates, {
+      question: state2.question,
+      history,
+      pageContext: state2.pageContext
+    }, send);
+    if (state2.reportMode) {
+      plan = normalizePlan({
+        goal: plan.goal,
+        simple: false,
+        steps: plan.steps.map((step) => ({
+          title: step.title,
+          intent: step.intent,
+          tables: step.tables,
+          knowledgeRefs: step.knowledgeRefs,
+          successCriteria: step.successCriteria
+        }))
+      }, { reportMode: true, maxSteps: cfg.maxPlanSteps, fallbackQuestion: state2.question });
+    }
+  }
+  send({ type: "plan", ...planEventPayload(plan) });
+  send({
+    type: "trace",
+    id: `trace-plan-result-${planningStartedAt}`,
+    phase: "planning",
+    kind: "planner",
+    title: "\u5236\u5B9A\u6267\u884C\u8BA1\u5212",
+    detail: `\u62C6\u6210 ${plan.steps.length} \u4E2A\u76EE\u6807\uFF1A${plan.steps.map((step) => step.title).join(" \u2192 ")}`,
+    status: "success",
+    durationMs: Date.now() - planningStartedAt,
+    data: { goal: plan.goal, steps: plan.steps.map((step) => step.title) }
+  });
+  logLine(`plan steps=${plan.steps.length} goal=${plan.goal.slice(0, 60)}`);
+  return {
+    plan,
+    activeSteps: [],
+    observations: [],
+    feedback: "",
+    route: "executor"
+  };
+}
+async function executorNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const { cfg, bridge, controller, send, agent } = runtime;
+  const plan = state2.plan;
+  if (!plan)
+    return { route: "finalize" };
+  if (!state2.activeSteps.length && Date.now() >= runtime.control.deadline && readySteps(plan).length > 0) {
+    return { route: "wait" };
+  }
+  const retryIds = state2.activeSteps.filter((id) => plan.steps.find((step) => step.id === id)?.status === "running");
+  const activeIds = retryIds.length ? retryIds : readySteps(plan).slice(0, cfg.maxParallelSteps).map((step) => step.id);
+  if (!activeIds.length)
+    return afterWaveRoute(state2, plan, cfg);
+  let runningPlan = plan;
+  for (const id of activeIds) {
+    const step = runningPlan.steps.find((item) => item.id === id);
+    if (!step || step.status === "running")
+      continue;
+    const startedAt = Date.now();
+    runningPlan = patchStep(runningPlan, id, {
+      status: "running",
+      startedAt,
+      endedAt: void 0,
+      durationMs: 0
+    });
+    send({
+      type: "step_start",
+      stepId: step.id,
+      index: step.index,
+      title: step.title,
+      intent: step.intent,
+      startedAt
+    });
+    logLine(`step start ${step.index + 1}/${runningPlan.steps.length} ` + step.title.slice(0, 40));
+  }
+  const results = await Promise.all(activeIds.map(async (id) => {
+    const step = runningPlan.steps.find((item) => item.id === id);
+    if (!step)
+      return null;
+    const stepAgent = state2.reportMode && !isReportStep(step) ? getRuntime(cfg, false) : agent;
+    const observation = await executeStep({
+      cfg,
+      agent: stepAgent,
+      messages: state2.messages,
+      plan: runningPlan,
+      step,
+      pageContext: state2.pageContext,
+      feedback: state2.stepFeedback[id] || "",
+      completed: state2.stepResults,
+      bridge,
+      controller,
+      stepTimeoutMs: cfg.stepTimeoutMs,
+      onTrace: send
+    });
+    return { id, observation };
+  }));
+  const valid = results.filter((item) => Boolean(item));
+  if (controller.signal.aborted) {
+    return {
+      plan: runningPlan,
+      activeSteps: valid.map((item) => item.id),
+      observations: valid.map((item) => item.observation),
+      stopped: true,
+      route: "finalize"
+    };
+  }
+  return {
+    plan: runningPlan,
+    activeSteps: valid.map((item) => item.id),
+    observations: valid.map((item) => item.observation)
+  };
+}
+async function reflectorNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const { cfg, send, bridge, controller } = runtime;
+  const plan = state2.plan;
+  if (!plan)
+    return { route: "finalize" };
+  const activeIds = state2.activeSteps;
+  const observations = state2.observations;
+  if (!activeIds.length || activeIds.length !== observations.length) {
+    return afterWaveRoute(state2, plan, cfg);
+  }
+  let nextPlan = plan;
+  let checkedCount = state2.checkedCount;
+  let retryCount = state2.retryCount;
+  const replanCount = state2.replanCount;
+  let lastFailure = state2.lastFailure;
+  let clarified = false;
+  let stopped = false;
+  let replanRequested = false;
+  let replanFeedback = "";
+  const completedResults = [];
+  const seen = new Set(state2.seenSql);
+  const retryIds = [];
+  const timedOutIds = [];
+  const stepAttempts = { ...state2.stepAttempts };
+  const stepFeedback = { ...state2.stepFeedback };
+  const stepEmptyRetried = { ...state2.stepEmptyRetried };
+  const stepTruncatedRetried = { ...state2.stepTruncatedRetried };
+  for (let i = 0; i < activeIds.length; i++) {
+    const stepId = activeIds[i];
+    const observation = observations[i];
+    const step = nextPlan.steps.find((item) => item.id === stepId);
+    if (!step)
+      continue;
+    if (observation.clarify) {
+      const endedAt2 = Date.now();
+      nextPlan = patchStep(nextPlan, stepId, {
+        status: "waiting",
+        endedAt: endedAt2,
+        durationMs: endedAt2 - (step.startedAt || endedAt2)
+      });
+      send({
+        type: "reflect",
+        stepId,
+        verdict: "finish",
+        reason: "\u7B49\u5F85\u7528\u6237\u8865\u5145\u4FE1\u606F",
+        issues: [],
+        round: (stepAttempts[stepId] || 0) + 1
+      });
+      send({
+        type: "step_end",
+        stepId,
+        status: "waiting",
+        durationMs: nextPlan.steps.find((item) => item.id === stepId)?.durationMs,
+        summary: "\u7B49\u5F85\u7528\u6237\u8865\u5145\u4FE1\u606F"
+      });
+      logLine(`step end ${step.index + 1}/${plan.steps.length} status=waiting`);
+      clarified = true;
+      continue;
+    }
+    if (observation.visual) {
+      const endedAt2 = Date.now();
+      nextPlan = patchStep(nextPlan, stepId, {
+        status: "done",
+        endedAt: endedAt2,
+        durationMs: endedAt2 - (step.startedAt || endedAt2),
+        summary: summarizeObservation(observation)
+      });
+      const doneStep2 = nextPlan.steps.find((item) => item.id === stepId);
+      if (doneStep2)
+        completedResults.push({ step: doneStep2, observation });
+      observation.sql.forEach((item) => seen.add(item.hash));
+      send({
+        type: "reflect",
+        stepId,
+        verdict: "finish",
+        reason: "\u53EF\u89C6\u5316\u7ED3\u679C\u5DF2\u751F\u6210",
+        issues: [],
+        round: (stepAttempts[stepId] || 0) + 1
+      });
+      send({
+        type: "step_end",
+        stepId,
+        status: "done",
+        durationMs: doneStep2?.durationMs,
+        summary: doneStep2?.summary
+      });
+      logLine(`step end ${step.index + 1}/${plan.steps.length} status=done visual`);
+      if (!isReportStep(step)) {
+        const reusedSteps = nextPlan.steps.filter((item) => item.id !== stepId && item.status === "pending" && isReportStep(item));
+        for (const reused of reusedSteps) {
+          const summary = "\u62A5\u544A\u5DF2\u5728\u4E0A\u4E00\u6B65\u751F\u6210\uFF0C\u672C\u6B65\u9AA4\u590D\u7528\uFF0C\u4E0D\u91CD\u590D\u6E32\u67D3";
+          nextPlan = patchStep(nextPlan, reused.id, {
+            status: "done",
+            endedAt: endedAt2,
+            durationMs: 0,
+            summary
+          });
+          const reusedStep = nextPlan.steps.find((item) => item.id === reused.id);
+          if (reusedStep) {
+            completedResults.push({
+              step: reusedStep,
+              observation: {
+                ...observation,
+                tools: [],
+                sql: [],
+                aiText: "",
+                visual: true,
+                clarify: false,
+                errorMessages: [],
+                budgetBlocked: false,
+                timedOut: false
+              }
+            });
+          }
+          send({
+            type: "trace",
+            id: `trace-report-reuse-${reused.id}`,
+            stepId: reused.id,
+            phase: "step",
+            kind: "report",
+            title: "\u590D\u7528 HTML \u62A5\u544A",
+            detail: "\u4E0A\u4E00\u6B65\u5DF2\u751F\u6210 HTML \u62A5\u544A\uFF0C\u672C\u6B65\u9AA4\u4E0D\u91CD\u590D\u6E32\u67D3",
+            status: "success",
+            durationMs: 0
+          });
+          send({
+            type: "step_end",
+            stepId: reused.id,
+            status: "done",
+            durationMs: 0,
+            summary
+          });
+          logLine(`step end ${reused.index + 1}/${plan.steps.length} status=done reused-report`);
+        }
+      }
+      if (bridge.shouldStop())
+        stopped = true;
+      continue;
+    }
+    if (controller.signal.aborted) {
+      stopped = true;
+      continue;
+    }
+    checkedCount += 1;
+    const attempt = stepAttempts[stepId] || 0;
+    const result = evaluateStep(observation, {
+      attempt,
+      maxRetries: cfg.maxRetriesPerStep,
+      replanCount,
+      maxReplans: state2.executionMode === "quick" ? 0 : cfg.maxReplans,
+      seenSql: seen
+    });
+    observation.sql.forEach((item) => seen.add(item.hash));
+    if (result.issues.length || result.verdict !== "continue") {
+      send({
+        type: "reflect",
+        stepId,
+        verdict: result.verdict,
+        reason: result.reason,
+        issues: result.issues,
+        round: attempt + 1
+      });
+      logLine(`reflect step=${step.index + 1} verdict=${result.verdict} reason=${result.reason.slice(0, 140)}`);
+    } else {
+      send({
+        type: "reflect",
+        stepId,
+        verdict: "continue",
+        reason: "\u68C0\u67E5\u901A\u8FC7",
+        issues: [],
+        round: attempt + 1
+      });
+      logLine(`reflect step=${step.index + 1} verdict=continue reason=\u68C0\u67E5\u901A\u8FC7`);
+    }
+    if (observation.timedOut || result.verdict === "abort") {
+      const endedAt2 = Date.now();
+      nextPlan = patchStep(nextPlan, stepId, {
+        status: "error",
+        endedAt: endedAt2,
+        durationMs: endedAt2 - (step.startedAt || endedAt2),
+        summary: "\u6B65\u9AA4\u6267\u884C\u8D85\u65F6\uFF0C\u7B49\u5F85\u7528\u6237\u51B3\u5B9A\u662F\u5426\u7EE7\u7EED"
+      });
+      const errorStep = nextPlan.steps.find((item) => item.id === stepId);
+      if (errorStep)
+        completedResults.push({ step: errorStep, observation });
+      send({
+        type: "step_end",
+        stepId,
+        status: "error",
+        durationMs: errorStep?.durationMs,
+        summary: "\u6B65\u9AA4\u6267\u884C\u8D85\u65F6\uFF0C\u7B49\u5F85\u7528\u6237\u51B3\u5B9A\u662F\u5426\u7EE7\u7EED"
+      });
+      logLine(`step end ${step.index + 1}/${plan.steps.length} status=timeout`);
+      timedOutIds.push(stepId);
+      continue;
+    }
+    if (result.verdict === "retry" && attempt < cfg.maxRetriesPerStep) {
+      retryIds.push(stepId);
+      retryCount += 1;
+      stepAttempts[stepId] = attempt + 1;
+      stepFeedback[stepId] = result.feedback;
+      stepEmptyRetried[stepId] = stepEmptyRetried[stepId] === true || observation.sql.some((item) => item.rowCount === 0);
+      stepTruncatedRetried[stepId] = stepTruncatedRetried[stepId] === true || observation.sql.some((item) => item.truncated);
+      continue;
+    }
+    if (result.verdict === "replan" && replanCount < cfg.maxReplans) {
+      const endedAt2 = Date.now();
+      nextPlan = patchStep(nextPlan, stepId, {
+        status: "error",
+        endedAt: endedAt2,
+        durationMs: endedAt2 - (step.startedAt || endedAt2),
+        summary: result.reason
+      });
+      const errorStep = nextPlan.steps.find((item) => item.id === stepId);
+      if (errorStep)
+        completedResults.push({ step: errorStep, observation });
+      send({
+        type: "step_end",
+        stepId,
+        status: "error",
+        durationMs: errorStep?.durationMs,
+        summary: result.reason
+      });
+      logLine(`step end ${step.index + 1}/${plan.steps.length} status=error`);
+      replanRequested = true;
+      replanFeedback = result.feedback || result.reason;
+      lastFailure = result.reason;
+      continue;
+    }
+    const status = observation.errorMessages.length ? "error" : "done";
+    const endedAt = Date.now();
+    nextPlan = patchStep(nextPlan, stepId, {
+      status,
+      endedAt,
+      durationMs: endedAt - (step.startedAt || endedAt),
+      summary: summarizeObservation(observation)
+    });
+    const doneStep = nextPlan.steps.find((item) => item.id === stepId);
+    if (doneStep)
+      completedResults.push({ step: doneStep, observation });
+    send({
+      type: "step_end",
+      stepId,
+      status,
+      durationMs: doneStep?.durationMs,
+      summary: doneStep?.summary
+    });
+    logLine(`step end ${step.index + 1}/${plan.steps.length} status=${status}`);
+  }
+  if (clarified || stopped || replanRequested) {
+    for (const step of nextPlan.steps) {
+      if (step.status !== "running")
+        continue;
+      const endedAt = Date.now();
+      const status = replanRequested ? "error" : "skipped";
+      nextPlan = patchStep(nextPlan, step.id, {
+        status,
+        endedAt,
+        durationMs: endedAt - (step.startedAt || endedAt),
+        summary: replanRequested ? "\u5DF2\u89E6\u53D1\u91CD\u65B0\u89C4\u5212" : "\u672C\u8F6E\u5DF2\u6682\u505C"
+      });
+      send({
+        type: "step_end",
+        stepId: step.id,
+        status,
+        durationMs: nextPlan.steps.find((item) => item.id === step.id)?.durationMs,
+        summary: replanRequested ? "\u5DF2\u89E6\u53D1\u91CD\u65B0\u89C4\u5212" : "\u672C\u8F6E\u5DF2\u6682\u505C"
+      });
+    }
+  }
+  if (timedOutIds.length) {
+    for (const id of retryIds) {
+      nextPlan = patchStep(nextPlan, id, {
+        status: "pending",
+        startedAt: void 0,
+        endedAt: void 0,
+        durationMs: 0
+      });
+    }
+  }
+  const update = {
+    plan: nextPlan,
+    stepResults: completedResults,
+    checkedCount,
+    retryCount,
+    replanCount,
+    lastFailure,
+    stepAttempts,
+    stepFeedback,
+    stepEmptyRetried,
+    stepTruncatedRetried,
+    seenSql: Array.from(seen),
+    activeSteps: [],
+    observations: [],
+    clarified,
+    stopped,
+    ...timedOutIds.length ? { timedOutSteps: [...state2.timedOutSteps, ...timedOutIds] } : {}
+  };
+  if (clarified)
+    return { ...update, route: "finalize" };
+  if (stopped)
+    return { ...update, route: "finalize" };
+  if (timedOutIds.length) {
+    return { ...update, activeSteps: [], route: "wait" };
+  }
+  if (retryIds.length && !replanRequested) {
+    return { ...update, activeSteps: retryIds, route: "executor" };
+  }
+  if (replanRequested && replanCount < cfg.maxReplans) {
+    return {
+      ...update,
+      replanCount: replanCount + 1,
+      feedback: replanFeedback,
+      route: "planner"
+    };
+  }
+  return { ...update, ...afterWaveRoute(state2, nextPlan, cfg) };
+}
+async function waitNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const { cfg, send, controller, control } = runtime;
+  const plan = state2.plan;
+  if (!plan)
+    return { route: "finalize" };
+  if (controller.signal.aborted)
+    return { route: "finalize", stopped: true };
+  if (!readySteps(plan).length && !state2.timedOutSteps.length) {
+    return afterWaveRoute(state2, plan, cfg);
+  }
+  send({
+    type: "ask_continue",
+    runId: control.runId,
+    elapsedMs: Date.now() - runtime.turnStartedAt,
+    tokens: runtime.budget.usage,
+    deadlineMs: control.deadline,
+    canContinue: true
+  });
+  const ok = await control.waitForContinue();
+  if (!ok || controller.signal.aborted) {
+    let nextPlan2 = plan;
+    for (const step of nextPlan2.steps) {
+      if (step.status !== "running")
+        continue;
+      const endedAt = Date.now();
+      nextPlan2 = patchStep(nextPlan2, step.id, {
+        status: "skipped",
+        endedAt,
+        durationMs: endedAt - (step.startedAt || endedAt),
+        summary: "\u7528\u6237\u505C\u6B62\u6216\u7B49\u5F85\u8D85\u65F6"
+      });
+      send({
+        type: "step_end",
+        stepId: step.id,
+        status: "skipped",
+        durationMs: nextPlan2.steps.find((item) => item.id === step.id)?.durationMs,
+        summary: "\u7528\u6237\u505C\u6B62\u6216\u7B49\u5F85\u8D85\u65F6"
+      });
+    }
+    return { plan: nextPlan2, route: "finalize", stopped: true, timedOutSteps: [] };
+  }
+  control.extendDeadline();
+  send({ type: "status", message: "\u7EE7\u7EED\u5206\u6790\u2026" });
+  let nextPlan = plan;
+  for (const id of state2.timedOutSteps) {
+    nextPlan = patchStep(nextPlan, id, {
+      status: "pending",
+      startedAt: void 0,
+      endedAt: void 0,
+      durationMs: 0,
+      summary: "\u7B49\u5F85\u7EE7\u7EED\u540E\u91CD\u8BD5"
+    });
+  }
+  return {
+    plan: nextPlan,
+    timedOutSteps: [],
+    activeSteps: [],
+    observations: [],
+    stepFeedback: Object.fromEntries(state2.timedOutSteps.map((id) => [
+      id,
+      "\u4E0A\u4E00\u6B21\u6267\u884C\u8D85\u65F6\uFF0C\u8BF7\u7F29\u5C0F\u67E5\u8BE2\u8303\u56F4\u3001\u51CF\u5C11\u8FD4\u56DE\u884C\u6570\u3001\u4F18\u5148\u7528\u805A\u5408\u67E5\u8BE2\u540E\u518D\u7EE7\u7EED"
+    ])),
+    route: "executor"
+  };
+}
+async function criticNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const { cfg, budget, send } = runtime;
+  const plan = state2.plan;
+  if (!plan || state2.executionMode === "quick" || !cfg.enableAccuracyCritic || !state2.stepResults.length) {
+    return { route: "reporter" };
+  }
+  send({ type: "status", message: "\u6B63\u5728\u8FDB\u884C\u6700\u7EC8\u6570\u636E\u6821\u9A8C\u2026" });
+  logLine(`critic start steps=${plan.steps.length}`);
+  const criticStartedAt = Date.now();
+  const critic = await invokeCritic({
+    cfg,
+    budget,
+    question: state2.question,
+    stepResults: state2.stepResults,
+    plan,
+    send
+  });
+  send({
+    type: "trace",
+    id: `trace-critic-result-${criticStartedAt}`,
+    phase: "critic",
+    kind: "critic",
+    title: "\u6570\u636E\u6821\u9A8C",
+    detail: critic.verdict === "pass" ? "\u6821\u9A8C\u901A\u8FC7" : `\u53D1\u73B0 ${critic.issues.length} \u4E2A\u95EE\u9898\uFF1A${critic.issues.slice(0, 3).join("\uFF1B")}`,
+    status: critic.verdict === "pass" ? "success" : "error",
+    durationMs: Date.now() - criticStartedAt,
+    data: {
+      verdict: critic.verdict,
+      issues: critic.issues,
+      confidence: critic.confidence
+    }
+  });
+  if (!critic.issues.length || critic.verdict === "pass") {
+    logLine(`critic pass confidence=${critic.confidence}`);
+    send({
+      type: "status",
+      message: state2.criticRounds > 0 ? "\u6570\u636E\u6821\u9A8C\u901A\u8FC7\uFF0C\u5DF2\u4FEE\u6B63\u76F8\u5173\u95EE\u9898" : "\u6570\u636E\u6821\u9A8C\u901A\u8FC7"
+    });
+    return { criticVerdict: "pass", criticIssues: critic.issues, route: "reporter" };
+  }
+  if (state2.criticRounds < cfg.maxCriticRounds) {
+    const criticText = `${critic.feedback} ${critic.issues.join(" ")}`;
+    if (/所有表|每张表|全部表|全库|逐表|几百张|全部字段|所有字段/.test(criticText)) {
+      logLine("critic revise downgraded: request too broad");
+      return { criticVerdict: "pass", criticIssues: critic.issues, route: "reporter" };
+    }
+    if (critic.verdict === "replan") {
+      send({
+        type: "status",
+        message: `\u6821\u9A8C\u53D1\u73B0 ${critic.issues.length} \u4E2A\u6570\u636E\u95EE\u9898\uFF0C\u6B63\u5728\u91CD\u65B0\u89C4\u5212\u2026`
+      });
+      logLine(`critic replan issues=${critic.issues.length}`);
+      return {
+        feedback: critic.feedback || critic.issues.join("\uFF1B"),
+        lastFailure: critic.issues.join("\uFF1B"),
+        criticRounds: state2.criticRounds + 1,
+        criticVerdict: "replan",
+        criticIssues: critic.issues,
+        route: "planner"
+      };
+    }
+    const repairFeedback = (critic.feedback || critic.issues.join("\uFF1B")).slice(0, 260);
+    const repair = {
+      id: `${plan.planId}-critic-${state2.criticRounds + 1}`,
+      index: plan.steps.length,
+      title: "\u8865\u5145\u6570\u636E\u6821\u9A8C",
+      intent: `\u9488\u5BF9\u6700\u7EC8\u6821\u9A8C\u53D1\u73B0\u7684\u5173\u952E\u95EE\u9898\u505A 1~3 \u4E2A\u8865\u5145\u67E5\u8BE2\u5E76\u4FEE\u6B63\u53E3\u5F84\uFF1A${repairFeedback}`,
+      tables: [],
+      knowledgeRefs: [],
+      successCriteria: "\u8865\u5145\u5173\u952E\u6570\u636E\u6216\u4FEE\u6B63\u53E3\u5F84\u540E\u80FD\u56DE\u7B54\u7528\u6237\u95EE\u9898\uFF0C\u4E0D\u505A\u5168\u5E93/\u9010\u8868\u6269\u5C55",
+      dependsOn: plan.steps.map((step) => step.id),
+      status: "pending"
+    };
+    const repairPlan = {
+      ...plan,
+      revision: plan.revision + 1,
+      steps: [...plan.steps, repair]
+    };
+    send({
+      type: "replan",
+      ...planEventPayload(repairPlan),
+      reason: critic.issues.join("\uFF1B")
+    });
+    send({
+      type: "status",
+      message: `\u6821\u9A8C\u53D1\u73B0 ${critic.issues.length} \u4E2A\u6570\u636E\u95EE\u9898\uFF0C\u6B63\u5728\u8865\u5145\u67E5\u8BE2\u2026`
+    });
+    logLine(`critic revise issues=${critic.issues.length}`);
+    return {
+      plan: repairPlan,
+      stepFeedback: {
+        [repair.id]: critic.feedback || critic.issues.join("; ")
+      },
+      feedback: critic.feedback || critic.issues.join("\uFF1B"),
+      criticRounds: state2.criticRounds + 1,
+      criticVerdict: "revise",
+      criticIssues: critic.issues,
+      route: "executor"
+    };
+  }
+  logLine(`critic issues remain (max rounds) issues=${critic.issues.length}`);
+  return {
+    criticVerdict: critic.verdict,
+    criticIssues: critic.issues,
+    route: "reporter"
+  };
+}
+async function reporterNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const { cfg, budget, send, controller } = runtime;
+  const plan = state2.plan;
+  if (!plan || state2.stopped || state2.clarified)
+    return { route: "finalize" };
+  const fallbackText = state2.stepResults.length ? state2.stepResults[state2.stepResults.length - 1].observation.aiText : "";
+  if (state2.executionMode === "quick" && fallbackText.trim()) {
+    send({ type: "token", content: fallbackText.trim() });
+    return { route: "finalize" };
+  }
+  await produceAnswer({
+    cfg,
+    budget,
+    question: state2.question,
+    stepResults: state2.stepResults,
+    plan,
+    send,
+    controller,
+    fallbackText,
+    warnings: state2.criticIssues
+  });
+  return { route: "finalize" };
+}
+async function finalizeNode(state2, config2) {
+  const runtime = runtimeOf(config2);
+  const completed = state2.stepResults.filter((item) => item.step.status === "done").length;
+  const total = state2.plan ? state2.plan.steps.length : 0;
+  runtime.send({
+    type: "plan_done",
+    status: state2.clarified ? "waiting" : state2.stopped ? "done" : completed >= total ? "done" : "partial",
+    completed,
+    total,
+    elapsedMs: Date.now() - runtime.turnStartedAt,
+    checked: state2.checkedCount,
+    retries: state2.retryCount,
+    replans: state2.replanCount,
+    criticRounds: state2.criticRounds,
+    criticVerdict: state2.criticVerdict,
+    criticIssues: state2.criticIssues.length
+  });
+  logLine(`plan done completed=${completed}/${total} checked=${state2.checkedCount} retries=${state2.retryCount} replans=${state2.replanCount} critic=${state2.criticVerdict || "skip"}`);
+  return {};
+}
+function buildPlanGraph() {
+  return new StateGraph(PlanGraphState).addNode("planner", plannerNode).addNode("executor", executorNode).addNode("reflector", reflectorNode).addNode("wait", waitNode).addNode("critic", criticNode).addNode("reporter", reporterNode).addNode("finalize", finalizeNode).addEdge(START, "planner").addEdge("planner", "executor").addEdge("executor", "reflector").addConditionalEdges("reflector", (state2) => state2.route, {
+    executor: "executor",
+    planner: "planner",
+    critic: "critic",
+    reporter: "reporter",
+    wait: "wait",
+    finalize: "finalize"
+  }).addConditionalEdges("wait", (state2) => state2.route, {
+    executor: "executor",
+    critic: "critic",
+    reporter: "reporter",
+    finalize: "finalize"
+  }).addConditionalEdges("critic", (state2) => state2.route, {
+    executor: "executor",
+    planner: "planner",
+    reporter: "reporter",
+    finalize: "finalize"
+  }).addEdge("reporter", "finalize").addEdge("finalize", END).compile();
+}
+var graphs = /* @__PURE__ */ new Map();
+var GRAPH_TTL_MS = 30 * 60 * 1e3;
+var MAX_GRAPHS = 8;
+function getPlanGraph(cfg, reportMode) {
+  const now = Date.now();
+  for (const [key2, entry2] of graphs) {
+    if (now - entry2.lastUsed > GRAPH_TTL_MS)
+      graphs.delete(key2);
+  }
+  const key = `${cfg.key}|report=${reportMode ? 1 : 0}`;
+  let entry = graphs.get(key);
+  if (!entry) {
+    entry = { graph: buildPlanGraph(), lastUsed: now };
+    graphs.set(key, entry);
+    if (graphs.size > MAX_GRAPHS) {
+      let oldestKey = null;
+      let oldest = Infinity;
+      for (const [itemKey, value] of graphs) {
+        if (value.lastUsed < oldest) {
+          oldest = value.lastUsed;
+          oldestKey = itemKey;
+        }
+      }
+      if (oldestKey)
+        graphs.delete(oldestKey);
+    }
+  }
+  entry.lastUsed = now;
+  return entry.graph;
+}
+async function runPlanTurn(options) {
+  const { cfg, agent, budget, messages, question, candidates, pageContext, executionMode: requestedMode, reportMode, bridge, send, controller, control } = options;
+  const startedAt = Date.now();
+  const graph = getPlanGraph(cfg, reportMode);
+  const executionMode = requestedMode || (reportMode ? "report" : "analyze");
+  const quickPlan = executionMode === "quick" ? buildQuickPlan(question, [
+    ...pageContext?.tables || [],
+    ...candidates.map((item) => item.table)
+  ]) : null;
+  const finalState = await graph.invoke({
+    messages,
+    question,
+    candidates,
+    pageContext: pageContext || null,
+    reportMode,
+    executionMode,
+    plan: quickPlan,
+    stepResults: [],
+    activeSteps: [],
+    observations: [],
+    stepAttempts: {},
+    stepFeedback: {},
+    stepEmptyRetried: {},
+    stepTruncatedRetried: {},
+    route: "executor",
+    feedback: "",
+    replanCount: 0,
+    retryCount: 0,
+    checkedCount: 0,
+    criticRounds: 0,
+    criticVerdict: "",
+    criticIssues: [],
+    lastFailure: "",
+    seenSql: [],
+    stopped: false,
+    clarified: false,
+    timedOutSteps: []
+  }, {
+    recursionLimit: Math.max(cfg.recursionLimit, cfg.maxPlanSteps * 4 + cfg.maxReplans * 4 + cfg.maxCriticRounds * 4 + 12),
+    signal: controller.signal,
+    configurable: {
+      cfg,
+      budget,
+      send,
+      bridge,
+      controller,
+      agent,
+      turnStartedAt: startedAt,
+      control
+    }
+  });
+  const plan = finalState.plan || null;
+  const total = plan ? plan.steps.length : 0;
+  const completed = finalState.stepResults.filter((item) => item.step.status === "done").length;
+  return {
+    plan,
+    completed,
+    total,
+    clarified: Boolean(finalState.clarified),
+    stopped: Boolean(finalState.stopped),
+    error: String(finalState.lastFailure || "")
+  };
+}
+
+// dist/page-context.js
+import { existsSync as existsSync6, readFileSync as readFileSync7 } from "node:fs";
+import { dirname as dirname5, join as join5, resolve as resolve5 } from "node:path";
+import { fileURLToPath as fileURLToPath5 } from "node:url";
+var currentDir5 = dirname5(fileURLToPath5(import.meta.url));
+var DEFAULT_KNOWLEDGE_DIR = resolve5(currentDir5, "..", "knowledge");
+var MAX_URL = 500;
+var GENERIC_TOKENS = /* @__PURE__ */ new Set([
+  "api",
+  "app",
+  "v1",
+  "v2",
+  "pages",
+  "page",
+  "list",
+  "get",
+  "post",
+  "put",
+  "delete",
+  "query",
+  "search",
+  "info",
+  "detail",
+  "details",
+  "export",
+  "import",
+  "by",
+  "id",
+  "create",
+  "update",
+  "remove",
+  "check",
+  "count"
+]);
+var indexCache = /* @__PURE__ */ new Map();
+function knowledgeRoot() {
+  return getKnowledgePack()?.dir || process.env.AGENT_KNOWLEDGE_DIR || DEFAULT_KNOWLEDGE_DIR;
+}
+function readJson2(file3) {
+  try {
+    if (!existsSync6(file3))
+      return null;
+    return JSON.parse(readFileSync7(file3, "utf8"));
+  } catch {
+    return null;
+  }
+}
+function normalizePath(raw) {
+  let text = String(raw || "").trim().slice(0, MAX_URL);
+  if (!text)
+    return "";
+  text = text.split("#")[0].split("?")[0];
+  try {
+    if (/^https?:\/\//i.test(text))
+      text = new URL(text).pathname;
+  } catch {
+  }
+  const apiAt = text.toLowerCase().indexOf("/api/");
+  if (apiAt > 0)
+    text = text.slice(apiAt);
+  if (!text.startsWith("/"))
+    text = `/${text}`;
+  return text.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
+}
+function normalizeToken(value) {
+  return String(value || "").toLowerCase().replace(/["'`[\]{}]/g, "").replace(/[^a-z0-9_\u3400-\u9fff]+/g, "");
+}
+function pathTokens(path4) {
+  const out = /* @__PURE__ */ new Set();
+  for (const part of path4.split("/")) {
+    if (!part || part.startsWith("{"))
+      continue;
+    const lower = part.toLowerCase();
+    out.add(lower);
+    out.add(lower.replace(/[-_]/g, ""));
+    for (const piece of lower.split(/[-_]/)) {
+      if (piece && !GENERIC_TOKENS.has(piece))
+        out.add(piece);
+    }
+  }
+  return Array.from(out).filter(Boolean);
+}
+function templateRegex(path4) {
+  const escaped = path4.split("/").map((segment) => {
+    if (/^\{[^}]+\}$/.test(segment))
+      return "[^/]+";
+    return segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }).join("/");
+  return new RegExp(`^${escaped}/?$`, "i");
+}
+function buildIndex(knowledgeDir2) {
+  const cached4 = indexCache.get(knowledgeDir2);
+  if (cached4)
+    return cached4;
+  const map3 = readJson2(join5(knowledgeDir2, "api-map.json"));
+  const manifest = readJson2(join5(knowledgeDir2, "manifest.json"));
+  const exact = /* @__PURE__ */ new Map();
+  const byPath = /* @__PURE__ */ new Map();
+  const templates = [];
+  for (const [key, endpoint] of Object.entries(map3?.endpoints || {})) {
+    if (!endpoint || typeof endpoint !== "object")
+      continue;
+    const item = { ...endpoint, key };
+    const method = String(endpoint.method || key.split(" ")[0] || "POST").toUpperCase();
+    const path4 = normalizePath(String(endpoint.path || key.split(" ").slice(1).join(" ")));
+    if (!path4)
+      continue;
+    exact.set(`${method} ${path4}`, item);
+    const pathList = byPath.get(path4) || [];
+    pathList.push(item);
+    byPath.set(path4, pathList);
+    if (path4.includes("{"))
+      templates.push({ regex: templateRegex(path4), endpoint: item });
+  }
+  templates.sort((a, b) => b.regex.source.length - a.regex.source.length);
+  const index2 = { map: map3, manifest, exact, byPath, templates };
+  indexCache.set(knowledgeDir2, index2);
+  return index2;
+}
+function tableFromTokens(path4, manifest) {
+  const tokens = pathTokens(path4);
+  if (!tokens.length || !manifest?.tables)
+    return [];
+  let best = "";
+  let bestScore = 0;
+  for (const [table, info] of Object.entries(manifest.tables)) {
+    const aliases = [table, ...info.aliases || []].map(normalizeToken).filter(Boolean);
+    if (!aliases.length)
+      continue;
+    let score = 0;
+    for (const token of tokens) {
+      const lower = normalizeToken(token);
+      if (!lower)
+        continue;
+      for (const alias of aliases) {
+        if (alias === lower)
+          score += 5;
+        else if (alias.includes(lower) || lower.includes(alias))
+          score += 2;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = table;
+    }
+  }
+  return bestScore >= 2 ? [best] : [];
+}
+function fromEndpoint(endpoint, input2, apiUrl, manifest, source) {
+  const tables = Array.from(new Set((endpoint.tables || []).map(String).filter(Boolean)));
+  const fallbackTables = tables.length ? tables : tableFromTokens(apiUrl, manifest);
+  const usedTokens = !tables.length && fallbackTables.length > 0;
+  return {
+    requestedUrl: String(input2.apiUrl || ""),
+    apiUrl,
+    method: String(endpoint.method || input2.method || "POST").toUpperCase(),
+    matchedKey: endpoint.key,
+    summary: endpoint.summary,
+    tables: fallbackTables,
+    primaryTable: fallbackTables[0],
+    confidence: Number(endpoint.confidence) || (fallbackTables.length ? 0.45 : 0),
+    source: fallbackTables.length ? usedTokens ? "path-tokens" : source : "unresolved",
+    ...fallbackTables.length ? usedTokens ? { reason: "\u63A5\u53E3\u5DF2\u8BC6\u522B\uFF0C\u4F46 Swagger \u6CA1\u6709\u8868\u6620\u5C04\uFF1B\u6309 URL \u5173\u952E\u8BCD\u515C\u5E95" } : {} : {
+      reason: endpoint.external ? "\u8BE5\u63A5\u53E3\u662F\u5916\u90E8\u63A5\u53E3\uFF0C\u77E5\u8BC6\u5305\u6CA1\u6709\u5BF9\u5E94\u8868" : "\u63A5\u53E3\u5DF2\u627E\u5230\uFF0C\u4F46 Swagger/\u77E5\u8BC6\u5E93\u6CA1\u6709\u6620\u5C04\u5230\u8868"
+    }
+  };
+}
+function resolvePageContext(input2, options = {}) {
+  const rawUrl = String(input2?.apiUrl || "").trim();
+  if (!rawUrl)
+    return null;
+  const dir2 = options.knowledgeDir || knowledgeRoot();
+  const index2 = buildIndex(dir2);
+  const apiUrl = normalizePath(rawUrl);
+  const requestedMethod = String(input2?.method || "POST").toUpperCase();
+  if (!apiUrl) {
+    return {
+      requestedUrl: rawUrl,
+      apiUrl: "",
+      method: requestedMethod,
+      tables: [],
+      confidence: 0,
+      source: "unresolved",
+      reason: "\u63A5\u53E3 URL \u4E3A\u7A7A\u6216\u4E0D\u5408\u6CD5"
+    };
+  }
+  const exact = index2.exact.get(`${requestedMethod} ${apiUrl}`);
+  if (exact)
+    return fromEndpoint(exact, input2, apiUrl, index2.manifest, "api-map");
+  const pathMatches = index2.byPath.get(apiUrl) || [];
+  if (pathMatches.length) {
+    const preferred = pathMatches.find((item) => String(item.method).toUpperCase() === requestedMethod) || pathMatches.find((item) => String(item.method).toUpperCase() === "POST") || pathMatches.find((item) => String(item.method).toUpperCase() === "GET") || pathMatches[0];
+    return fromEndpoint(preferred, input2, apiUrl, index2.manifest, "api-map");
+  }
+  for (const template of index2.templates) {
+    if (!template.regex.test(apiUrl))
+      continue;
+    const method = String(template.endpoint.method || "").toUpperCase();
+    if (method && method !== requestedMethod)
+      continue;
+    return fromEndpoint(template.endpoint, input2, apiUrl, index2.manifest, "api-map");
+  }
+  const fallback = tableFromTokens(apiUrl, index2.manifest);
+  if (fallback.length) {
+    return {
+      requestedUrl: rawUrl,
+      apiUrl,
+      method: requestedMethod,
+      tables: fallback,
+      primaryTable: fallback[0],
+      confidence: 0.45,
+      source: "path-tokens",
+      reason: "\u63A5\u53E3\u672A\u5728 Swagger \u6620\u5C04\u4E2D\u547D\u4E2D\uFF0C\u6309 URL \u5173\u952E\u8BCD\u5339\u914D\u5230\u8868\uFF0C\u7F6E\u4FE1\u5EA6\u8F83\u4F4E"
+    };
+  }
+  return {
+    requestedUrl: rawUrl,
+    apiUrl,
+    method: requestedMethod,
+    tables: [],
+    confidence: 0,
+    source: "unresolved",
+    reason: index2.map ? "api-map \u4E2D\u6CA1\u6709\u8BE5\u63A5\u53E3\uFF0C\u4E14 URL \u5173\u952E\u8BCD\u4E5F\u65E0\u6CD5\u5339\u914D\u5230\u8868" : "\u77E5\u8BC6\u5305\u6CA1\u6709 api-map.json\uFF0C\u65E0\u6CD5\u6839\u636E\u63A5\u53E3\u8BC6\u522B\u8868"
+  };
+}
+function isPageContextRelevant(text) {
+  const question = String(text || "").trim();
+  if (!question)
+    return false;
+  return /当前页面|本页|这个页面|当前表格|这个表格|这张表|这个表|当前数据|本页数据|当前接口|这个接口|当前列表|本列表/i.test(question) || isTableIdentificationQuestion(question);
+}
+function isTableIdentificationQuestion(text) {
+  const question = String(text || "").trim();
+  if (!question || question.length > 80)
+    return false;
+  if (/(分析|统计|趋势|报告|导出|汇总|明细|多少|数量|占比|排名|对比|列出|最多|最少|最大|最小|排序|空值|缺失|质量)/.test(question)) {
+    return false;
+  }
+  return /哪张表|哪个表|什么表|表名|表叫什么|对应(?:的)?(?:哪张表|哪个表|什么表)|接口.*(?:哪张表|哪个表|什么表|表名)/i.test(question);
+}
+function formatPageContextAnswer(context2) {
+  if (!context2) {
+    return '\u672C\u8F6E\u6CA1\u6709\u6536\u5230\u5F53\u524D\u9875\u9762\u7684\u5206\u9875\u63A5\u53E3 URL\uFF0C\u65E0\u6CD5\u5224\u65AD\u5BF9\u5E94\u8868\u3002\n\u8BF7\u5728 agentChat \u4F20 `pageContext.apiUrl`\uFF0C\u4F8B\u5982\uFF1A\n`{ apiUrl: "api/app/product/product-pages" }`\u3002';
+  }
+  const lines = [`\u5F53\u524D\u9875\u9762\u5206\u9875\u63A5\u53E3\uFF1A${context2.method} ${context2.apiUrl}`];
+  if (context2.summary)
+    lines.push(`\u63A5\u53E3\u8BF4\u660E\uFF1A${context2.summary}`);
+  if (context2.tables.length) {
+    lines.push(`\u4E3B\u8868\uFF1A${context2.primaryTable || context2.tables[0]}` + (context2.tables.length > 1 ? `
+\u5019\u9009\u8868\uFF1A${context2.tables.slice(1).join("\u3001")}` : ""));
+    const sourceText2 = context2.source === "api-map" ? "\u77E5\u8BC6\u5305 api-map" : context2.source === "path-tokens" ? "URL \u5173\u952E\u8BCD\u63A8\u65AD" : "\u672A\u8BC6\u522B";
+    lines.push(`\u5224\u65AD\u4F9D\u636E\uFF1A${sourceText2}\uFF0C\u7F6E\u4FE1\u5EA6 ${context2.confidence.toFixed(2)}${context2.source === "path-tokens" ? "\uFF08\u5EFA\u8BAE\u786E\u8BA4\u63A5\u53E3\u6620\u5C04\uFF09" : ""}\u3002`);
+    lines.push("\u672C\u8F6E\u53EA\u505A\u63A5\u53E3\u5230\u8868\u7684\u6620\u5C04\uFF0C\u6CA1\u6709\u6267\u884C SQL\u3002");
+  } else {
+    lines.push(`\u672A\u8BC6\u522B\u5230\u5BF9\u5E94\u8868\uFF1A${context2.reason || "\u63A5\u53E3\u672A\u6620\u5C04"}`);
+    lines.push("\u672C\u8F6E\u4E0D\u4F1A\u731C\u6D4B\u8868\u540D\uFF0C\u4E5F\u6CA1\u6709\u6267\u884C SQL\u3002");
+  }
+  return lines.join("\n");
+}
+
+// dist/intent-router.js
+var REPORT_RE2 = /报告|日报|周报|月报|年报|年度|汇报|大屏|看板|面板|可视化页面|可视化报告|网页报告|html/i;
+var ANALYSIS_RE2 = /分析|趋势|同比|环比|对比|分布|排名|异常|原因|诊断|拆解|建议|预测|画像|漏斗|结构|占比|贡献|归因|波动/i;
+var MULTI_DIM_RE = /按.*(?:分组|维度|仓库|物料|分类|状态|月份|日期)|各.*(?:仓库|物料|分类|状态)|分别|多个|逐|分项|拆开|维度/i;
+var SIMPLE_RE2 = /多少|总数|合计|总计|统计|查询|查一下|查下|列出|显示|平均|最大|最小|最近|top\s*\d+|前\s*\d+|明细|列表/i;
+var CHAT_RE = /^(你好|您好|hi|hello|嗨|在吗|谢谢|感谢|辛苦了|你是谁|你能做什么|你可以做什么)[\s!！。,.?？]*$/i;
+function isChatQuestion(text) {
+  return CHAT_RE.test(String(text || "").trim());
+}
+function chatReply(question) {
+  if (/谢谢|感谢|辛苦/.test(question)) {
+    return "\u4E0D\u5BA2\u6C14\u3002\u9700\u8981\u67E5\u6570\u636E\u3001\u505A\u5206\u6790\u6216\u751F\u6210\u62A5\u544A\u65F6\uFF0C\u76F4\u63A5\u544A\u8BC9\u6211\u5C31\u884C\u3002";
+  }
+  if (/你是谁|你能做什么|你可以做什么/.test(question)) {
+    return "\u6211\u662F\u6570\u636E\u5E93\u5206\u6790\u52A9\u624B\u3002\u4F60\u53EF\u4EE5\u76F4\u63A5\u95EE\u6570\u636E\u3001\u5206\u6790\u8D8B\u52BF\u3001\u67E5\u770B\u5F53\u524D\u9875\u9762\u8868\u683C\uFF0C\u6216\u8005\u8BA9\u6211\u751F\u6210 HTML \u62A5\u544A\u3002";
+  }
+  return "\u4F60\u597D\uFF0C\u6211\u662F\u6570\u636E\u5E93\u5206\u6790\u52A9\u624B\u3002\u9700\u8981\u67E5\u6570\u636E\u3001\u505A\u5206\u6790\u6216\u751F\u6210\u62A5\u544A\u65F6\uFF0C\u76F4\u63A5\u544A\u8BC9\u6211\u5C31\u884C\u3002";
+}
+function decision(mode, reason, confidence, overrides = {}) {
+  return {
+    mode,
+    needsSql: mode !== "quick",
+    needsPlan: mode !== "quick",
+    needsReflection: true,
+    needsCritic: mode !== "quick",
+    needsReport: mode === "report",
+    maxSteps: mode === "quick" ? 1 : mode === "report" ? 6 : 5,
+    reason,
+    confidence,
+    ...overrides
+  };
+}
+function routeExecutionMode(question, options = {}) {
+  const text = String(question || "").trim();
+  const wantsReport = options.wantsReport === true || REPORT_RE2.test(text);
+  if (wantsReport) {
+    return decision("report", "\u7528\u6237\u8981\u6C42\u62A5\u544A/HTML/\u770B\u677F\uFF0C\u9700\u8981\u5B8C\u6574 Plan \u548C\u62A5\u544A\u751F\u6210", 0.98, {
+      needsSql: true,
+      needsReport: true,
+      needsCritic: true
+    });
+  }
+  if (ANALYSIS_RE2.test(text) || MULTI_DIM_RE.test(text)) {
+    return decision("analyze", "\u95EE\u9898\u5305\u542B\u5206\u6790\u3001\u8D8B\u52BF\u3001\u5BF9\u6BD4\u6216\u591A\u7EF4\u62C6\u89E3\uFF0C\u9700\u8981\u591A\u6B65\u8BA1\u5212", 0.9, {
+      needsSql: true,
+      needsCritic: true
+    });
+  }
+  if (text.length <= 60 && (SIMPLE_RE2.test(text) || options.pageContext)) {
+    return decision("quick", "\u95EE\u9898\u8F83\u7B80\u5355\uFF0C\u8D70\u5355\u6B65\u67E5\u8BE2\u5E76\u4FDD\u7559\u8F7B\u91CF\u53CD\u601D\uFF0C\u4E0D\u751F\u6210\u5B8C\u6574\u8BA1\u5212", 0.82, {
+      needsSql: SIMPLE_RE2.test(text),
+      needsPlan: false,
+      needsCritic: false,
+      maxSteps: 1
+    });
+  }
+  return decision("analyze", "\u95EE\u9898\u4E0D\u591F\u660E\u786E\u6216\u53EF\u80FD\u6D89\u53CA\u591A\u6B65\uFF0C\u4FDD\u5B88\u4F7F\u7528\u5B8C\u6574 Plan", 0.55, {
+    needsSql: true,
+    needsCritic: true
+  });
+}
+function modeLabel(mode) {
+  if (mode === "quick")
+    return "\u5FEB\u901F\u95EE\u7B54";
+  if (mode === "report")
+    return "\u62A5\u544A\u751F\u6210";
+  return "\u5206\u6790\u6A21\u5F0F";
+}
+
 // dist/index.js
 var app = (0, import_fastify.default)({ logger: true, bodyLimit: 20 * 1024 * 1024 });
 app.addHook("onRequest", async (_request, reply) => {
@@ -169184,6 +171648,7 @@ app.setErrorHandler((error62, request, reply) => {
   reply.send(error62);
 });
 var activeStreams = 0;
+var activeRunControls = /* @__PURE__ */ new Map();
 var noKnowledgeNotified = /* @__PURE__ */ new Set();
 var anonymousKnowledgeNotified = false;
 app.post("/chat/stream", async (request, reply) => {
@@ -169245,7 +171710,81 @@ app.post("/chat/stream", async (request, reply) => {
   }
   const messages = body.messages.map(toMessage);
   const lastUserText = [...body.messages].reverse().find((message) => message.role === "user")?.content || "";
-  const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|出一份|来一份/.test(lastUserText);
+  if (isChatQuestion(lastUserText)) {
+    send({ type: "token", content: chatReply(lastUserText) });
+    send({ type: "done" });
+    raw.end();
+    return;
+  }
+  let pageContext = resolvePageContext(body.pageContext);
+  if (!pageContext) {
+    const inlineUrl = lastUserText.match(/(?:https?:\/\/[^\s，。]+|\/?api\/[^\s，。]+)/i)?.[0];
+    if (inlineUrl)
+      pageContext = resolvePageContext({ apiUrl: inlineUrl });
+  }
+  const pageContextRelevant = Boolean(pageContext && (isPageContextRelevant(lastUserText) || /api\//i.test(lastUserText)));
+  if (pageContext && pageContextRelevant) {
+    const resolvedTable = pageContext.primaryTable ? `\u4E3B\u8868\uFF1A${pageContext.primaryTable}${pageContext.tables.length > 1 ? `\uFF1B\u5019\u9009\uFF1A${pageContext.tables.slice(1).join("\u3001")}` : ""}` : "\u672A\u8BC6\u522B\u5230\u8868";
+    send({
+      type: "trace",
+      id: `trace-page-context-${Date.now()}`,
+      phase: "planning",
+      kind: "page_context",
+      title: "\u8BC6\u522B\u5F53\u524D\u9875\u9762",
+      detail: `${pageContext.method} ${pageContext.apiUrl} \u2192 ${resolvedTable}`,
+      status: pageContext.tables.length ? "success" : "error",
+      data: {
+        apiUrl: pageContext.apiUrl,
+        method: pageContext.method,
+        tables: pageContext.tables,
+        primaryTable: pageContext.primaryTable,
+        confidence: pageContext.confidence,
+        source: pageContext.source,
+        reason: pageContext.reason || ""
+      }
+    });
+    if (!pageContext.tables.length) {
+      send({
+        type: "status",
+        message: `\u672A\u8BC6\u522B\u5F53\u524D\u9875\u9762\u63A5\u53E3\u5BF9\u5E94\u7684\u8868\uFF1A${pageContext.reason || "\u63A5\u53E3\u4E0D\u5728 api-map \u4E2D"}\uFF1B\u5C06\u6309\u666E\u901A\u95EE\u9898\u7EE7\u7EED\u3002`
+      });
+      logLine(`page context unresolved: ${pageContext.apiUrl} ${pageContext.reason || ""}`);
+    } else {
+      logLine(`page context ${pageContext.method} ${pageContext.apiUrl} -> ${pageContext.primaryTable} (${pageContext.source})`);
+    }
+  }
+  if (isTableIdentificationQuestion(lastUserText)) {
+    const answer = formatPageContextAnswer(pageContext);
+    logLine(`page context direct answer: ${pageContext?.primaryTable || "unresolved"}`);
+    send({ type: "token", content: answer });
+    send({ type: "done" });
+    raw.end();
+    return;
+  }
+  const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|看板|面板|可视化页面|可视化报告|网页报告|html/i.test(lastUserText);
+  const route = routeExecutionMode(lastUserText, {
+    wantsReport,
+    pageContext: pageContextRelevant ? pageContext : null
+  });
+  const executionMode = route.mode;
+  send({
+    type: "trace",
+    id: `trace-route-${Date.now()}`,
+    phase: "planning",
+    kind: "route",
+    title: "\u9009\u62E9\u6267\u884C\u6A21\u5F0F",
+    detail: `${modeLabel(executionMode)}\uFF1A${route.reason}`,
+    status: "success",
+    durationMs: 0,
+    data: {
+      mode: executionMode,
+      needsSql: route.needsSql,
+      needsPlan: route.needsPlan,
+      needsCritic: route.needsCritic,
+      needsReport: route.needsReport,
+      confidence: route.confidence
+    }
+  });
   if (wantsReport) {
     const userTurns = body.messages.filter((message) => message.role === "user").length;
     const variant = pickReportVariant({
@@ -169284,8 +171823,11 @@ app.post("/chat/stream", async (request, reply) => {
       logLine(`visual structure dedupe=${lastStructure.join(",")}`);
     }
   }
+  let candidates = [];
   try {
-    const candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8), 12e3, "\u76F8\u5173\u8868\u68C0\u7D22\u8D85\u65F6");
+    candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8, {
+      focusTables: pageContextRelevant ? pageContext?.tables || [] : []
+    }), 12e3, "\u76F8\u5173\u8868\u68C0\u7D22\u8D85\u65F6");
     const block = formatTableCandidates(candidates);
     if (block) {
       const lastUserIndex = messages.reduce((index2, message, i) => message._getType() === "human" ? i : index2, -1);
@@ -169297,30 +171839,78 @@ app.post("/chat/stream", async (request, reply) => {
   } catch (error62) {
     logLine(`table retrieval failed: ${error62 instanceof Error ? error62.message : String(error62)}`);
   }
+  const usePlanMode = executionMode === "quick" || resolved.enablePlanMode && !resolved.requireSqlApproval;
+  const deepPlan = executionMode !== "quick" && usePlanMode;
+  if (!usePlanMode && pageContextRelevant && pageContext?.tables.length) {
+    const pageHint = `\u3010\u5F53\u524D\u9875\u9762\u3011${pageContext.method} ${pageContext.apiUrl}\uFF0C\u4E3B\u8868\uFF1A${pageContext.primaryTable || pageContext.tables[0]}\u3002` + (pageContext.tables.length > 1 ? `\u5019\u9009\u8868\uFF1A${pageContext.tables.join("\u3001")}\u3002` : "") + "\u7528\u6237\u8BF4\u201C\u5F53\u524D\u9875\u9762/\u5F53\u524D\u8868\u683C/\u5F53\u524D\u6570\u636E\u201D\u65F6\u9ED8\u8BA4\u6307\u8FD9\u5F20\u8868\u3002";
+    const lastUserIndex = messages.reduce((index2, message, i) => message._getType() === "human" ? i : index2, -1);
+    if (lastUserIndex >= 0)
+      messages.splice(lastUserIndex, 0, new SystemMessage(pageHint));
+  }
+  const turnLimitMs = wantsReport || deepPlan ? resolved.planTurnTimeoutMs : resolved.turnTimeoutMs;
   const controller = new AbortController();
   let timedOut = false;
   let finished = false;
-  const turnTimer = setTimeout(() => {
-    timedOut = true;
-    controller.abort();
-  }, resolved.turnTimeoutMs);
-  const onClientClose = () => {
-    if (!finished)
+  let turnTimer = null;
+  let waitTimer = null;
+  let continueResolver = null;
+  let currentDeadline = Date.now() + turnLimitMs;
+  const runId = `${conversationKey}:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 8)}`;
+  const resolveContinue = (ok) => {
+    if (waitTimer) {
+      clearTimeout(waitTimer);
+      waitTimer = null;
+    }
+    const resolve6 = continueResolver;
+    continueResolver = null;
+    if (resolve6)
+      resolve6(ok);
+  };
+  const armTurnTimer = (ms) => {
+    if (turnTimer)
+      clearTimeout(turnTimer);
+    turnTimer = setTimeout(() => {
+      timedOut = true;
+      resolveContinue(false);
       controller.abort();
+    }, ms);
+  };
+  const control = {
+    runId,
+    get deadline() {
+      return currentDeadline;
+    },
+    waitForContinue: () => new Promise((resolve6) => {
+      continueResolver = resolve6;
+      waitTimer = setTimeout(() => resolveContinue(false), 12e4);
+    }),
+    extendDeadline: () => {
+      currentDeadline = Date.now() + turnLimitMs;
+      armTurnTimer(turnLimitMs);
+      send({ type: "status", message: "\u5DF2\u5EF6\u957F\u672C\u8F6E\u5206\u6790\u65F6\u95F4" });
+    }
+  };
+  armTurnTimer(turnLimitMs);
+  activeRunControls.set(runId, { resolve: (ok) => resolveContinue(ok) });
+  const onClientClose = () => {
+    if (!finished) {
+      resolveContinue(false);
+      controller.abort();
+    }
   };
   raw.on("close", onClientClose);
   activeStreams += 1;
   const budget = new TurnBudget({
-    // 普通问答仍用前端 limits；报告轮不按 SQL/Schema 条数限制
+    // 普通问答仍用前�?limits；报告轮不按 SQL/Schema 条数限制
     maxSqlQueries: resolved.maxSqlQueries,
     maxSchemaCalls: resolved.maxSchemaCalls,
-    // 报告需要完整聚合结果；普通问答保持原值
-    maxResultChars: wantsReport ? Math.max(resolved.maxResultChars, 2e4) : resolved.maxResultChars,
-    maxTotalToolChars: wantsReport ? Math.max(resolved.maxTotalToolChars, 12e4) : resolved.maxTotalToolChars,
-    maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : resolved.maxTurnTokens,
-    maxModelCalls: wantsReport ? resolved.maxReportModelCalls : resolved.maxModelCalls,
+    // 报告/计划轮需要完整聚合结果；普通问答保持原�?
+    maxResultChars: wantsReport || deepPlan ? Math.max(resolved.maxResultChars, 2e4) : resolved.maxResultChars,
+    maxTotalToolChars: wantsReport || deepPlan ? Math.max(resolved.maxTotalToolChars, 12e4) : resolved.maxTotalToolChars,
+    maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : deepPlan ? resolved.maxPlanTurnTokens : resolved.maxTurnTokens,
+    maxModelCalls: wantsReport ? resolved.maxReportModelCalls : deepPlan ? resolved.maxPlanModelCalls : resolved.maxModelCalls,
     strictNumberCheck: resolved.strictNumberCheck
-  }, { unlimitedQueries: wantsReport });
+  }, { unlimitedQueries: wantsReport || deepPlan });
   let turnError = "";
   const turnStartedAt = Date.now();
   const bridge = createTurnBridge({
@@ -169339,7 +171929,8 @@ app.post("/chat/stream", async (request, reply) => {
   let agent = null;
   await runWithBudget(budget, async () => {
     try {
-      agent = getRuntime(resolved, wantsReport);
+      const runtime = getRuntime(resolved, wantsReport);
+      agent = runtime;
       const approxTokens = countTokensApproximately([new SystemMessage(buildSystemPrompt(resolved, wantsReport)), ...messages], createTools(resolved.db, {
         batchQueries: !resolved.requireSqlApproval,
         reportMode: wantsReport,
@@ -169348,6 +171939,41 @@ app.post("/chat/stream", async (request, reply) => {
       if (approxTokens >= resolved.summaryTriggerTokens) {
         logLine(`context summary expected tokens~${approxTokens}`);
         send({ type: "status", message: "\u4E0A\u4E0B\u6587\u8F83\u957F\uFF0C\u6B63\u5728\u538B\u7F29\u2026" });
+      }
+      if (usePlanMode) {
+        const result = await runPlanTurn({
+          cfg: resolved,
+          agent: runtime,
+          budget,
+          messages,
+          question: lastUserText,
+          candidates,
+          pageContext: pageContextRelevant ? pageContext : null,
+          executionMode,
+          reportMode: wantsReport,
+          bridge,
+          send,
+          controller,
+          control
+        });
+        if (result.clarified) {
+          bridge.sendEnrichment();
+          send({ type: "done" });
+          return;
+        }
+        if (result.stopped) {
+          if (bridge.visualGenerated()) {
+            send({ type: "token", content: "\u62A5\u544A\u5DF2\u751F\u6210\u3002" });
+          } else {
+            send({ type: "status", message: "\u5DF2\u505C\u6B62\uFF0C\u4FDD\u7559\u5DF2\u5B8C\u6210\u7684\u5206\u6790\u7ED3\u679C" });
+          }
+          bridge.sendEnrichment();
+          send({ type: "done" });
+          return;
+        }
+        bridge.sendEnrichment();
+        send({ type: "done" });
+        return;
       }
       const streamConfig = {
         version: "v2",
@@ -169416,7 +172042,10 @@ app.post("/chat/stream", async (request, reply) => {
       send({ type: "error", message });
     } finally {
       finished = true;
-      clearTimeout(turnTimer);
+      if (turnTimer)
+        clearTimeout(turnTimer);
+      resolveContinue(false);
+      activeRunControls.delete(runId);
       clearInterval(heartbeat);
       raw.off("close", onClientClose);
       activeStreams -= 1;
@@ -169430,6 +172059,16 @@ app.post("/chat/stream", async (request, reply) => {
       raw.end();
     }
   });
+});
+app.post("/chat/continue", async (request, reply) => {
+  const body = request.body;
+  const entry = body?.runId ? activeRunControls.get(body.runId) : null;
+  if (!entry) {
+    reply.code(404).send({ ok: false, error: "\u5206\u6790\u5DF2\u7ED3\u675F\u6216\u5DF2\u8FC7\u671F\uFF0C\u8BF7\u91CD\u65B0\u53D1\u8D77" });
+    return;
+  }
+  entry.resolve(true);
+  reply.send({ ok: true });
 });
 app.post("/chat/resume", async (request, reply) => {
   const body = request.body;
@@ -169691,18 +172330,18 @@ app.post("/config/check", async (request, reply) => {
   reply.send(result);
 });
 function withTimeout(p, ms, message) {
-  return new Promise((resolve5, reject) => {
+  return new Promise((resolve6, reject) => {
     const timer = setTimeout(() => reject(new Error(message)), ms);
     p.then((value) => {
       clearTimeout(timer);
-      resolve5(value);
+      resolve6(value);
     }, (err) => {
       clearTimeout(timer);
       reject(err);
     });
   });
 }
-function toRecord(value) {
+function toRecord2(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
 function safeParseObject(text) {
@@ -169711,6 +172350,14 @@ function safeParseObject(text) {
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
   } catch {
     return null;
+  }
+}
+function safeParseArray(text) {
+  try {
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
   }
 }
 var TOOL_LABELS = {
@@ -169808,9 +172455,17 @@ function summarizeToolOutput(name, output2) {
     layout: "",
     visualStyle: "",
     warnings,
-    error: typeof parsed.error === "string" ? parsed.error : ""
+    error: typeof parsed.error === "string" ? parsed.error : "",
+    detail: "",
+    hitCount: 0,
+    hits: [],
+    skillCount: 0,
+    skills: [],
+    chars: 0,
+    path: "",
+    skillName: ""
   };
-  if (name === "run_sql") {
+  if (name === "run_sql" || name === "run_saved_query") {
     summary.rowCount = Number(parsed.rowCount) || (Array.isArray(parsed.rows) ? parsed.rows.length : 0);
     summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
     summary.truncated = parsed.truncated === true;
@@ -169837,10 +172492,43 @@ function summarizeToolOutput(name, output2) {
     summary.template = typeof parsed.template === "string" ? parsed.template : "";
     summary.layout = typeof parsed.layout === "string" ? parsed.layout : "";
     summary.visualStyle = typeof parsed.visualStyle === "string" ? parsed.visualStyle : "";
+  } else if (name === "search_knowledge") {
+    const list = safeParseArray(output2);
+    summary.hitCount = list.length;
+    summary.hits = list.map((item) => {
+      const row = item && typeof item === "object" ? item : {};
+      return typeof row.title === "string" ? row.title : String(row.path || "");
+    }).filter(Boolean).slice(0, 5);
+    summary.detail = list.length ? `\u547D\u4E2D ${list.length} \u7BC7\uFF1A${summary.hits.slice(0, 3).join("\u3001")}` : "\u672A\u547D\u4E2D\u77E5\u8BC6\u6587\u6863";
+  } else if (name === "list_skills") {
+    const list = Array.isArray(parsed.skills) ? parsed.skills : [];
+    summary.skillCount = list.length;
+    summary.skills = list.map((item) => {
+      const row = item && typeof item === "object" ? item : {};
+      return typeof row.name === "string" ? row.name : "";
+    }).filter(Boolean).slice(0, 8);
+    summary.detail = list.length ? `${list.length} \u4E2A\u6280\u80FD\uFF1A${summary.skills.slice(0, 4).join("\u3001")}` : "\u6CA1\u6709\u5339\u914D\u7684\u6280\u80FD";
+  } else if (name === "read_knowledge") {
+    summary.path = typeof parsed.path === "string" ? parsed.path : "";
+    summary.chars = typeof parsed.content === "string" ? parsed.content.length : 0;
+    summary.detail = summary.path ? `${summary.path}\uFF08${summary.chars} \u5B57\uFF09` : `${summary.chars} \u5B57`;
+  } else if (name === "read_skill") {
+    summary.skillName = typeof parsed.name === "string" ? parsed.name : "";
+    summary.chars = typeof parsed.content === "string" ? parsed.content.length : 0;
+    summary.detail = summary.skillName ? `${summary.skillName}\uFF08${summary.chars} \u5B57\uFF09` : `${summary.chars} \u5B57`;
+  } else if (name === "read_skill_file") {
+    summary.skillName = typeof parsed.name === "string" ? parsed.name : "";
+    summary.path = typeof parsed.path === "string" ? parsed.path : "";
+    summary.chars = typeof parsed.content === "string" ? parsed.content.length : 0;
+    summary.detail = [summary.skillName, summary.path, `${summary.chars} \u5B57`].filter(Boolean).join(" \xB7 ");
+  } else if (name === "search_tables") {
+    const list = safeParseArray(output2);
+    summary.tableCount = list.length;
+    summary.detail = list.length ? `${list.length} \u5F20\u5019\u9009\u8868` : "\u672A\u547D\u4E2D\u8868";
   }
   return summary;
 }
-function extractText(content) {
+function extractText2(content) {
   if (typeof content === "string")
     return content;
   if (Array.isArray(content)) {
@@ -169854,7 +172542,7 @@ function extractText(content) {
     }).join("");
   }
   if (content && typeof content === "object" && "content" in content) {
-    return extractText(content.content);
+    return extractText2(content.content);
   }
   return "";
 }
@@ -169931,10 +172619,12 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       }
     });
   };
-  const handle = (event) => {
+  const handle = (event, options = {}) => {
     if (event.event === "on_chat_model_stream") {
+      if (options.emitTokens === false)
+        return;
       const chunk = event.data?.chunk;
-      const text = extractText(chunk?.content);
+      const text = extractText2(chunk?.content);
       if (text)
         send({ type: "token", content: text });
       return;
@@ -169961,6 +172651,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       send({
         type: "tool_start",
         id: runId,
+        stepId: options.stepId,
         name,
         label: toolLabel(name),
         input: compactToolInput(name, input2),
@@ -169972,8 +172663,8 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       const name = event.name || "tool";
       const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
       const rawOutput = event.data?.output;
-      const output2 = extractText(rawOutput);
-      const artifact = toRecord(toRecord(rawOutput)?.artifact);
+      const output2 = extractText2(rawOutput);
+      const artifact = toRecord2(toRecord2(rawOutput)?.artifact);
       const summary = summarizeToolOutput(name, output2);
       const started = toolStarts.get(runId);
       if (summary.table)
@@ -170024,6 +172715,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       send({
         type: "tool_end",
         id: runId,
+        stepId: options.stepId,
         name,
         label: toolLabel(name),
         ok: summary.success && !visualError,
@@ -170040,26 +172732,35 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
           layout: summary.layout,
           visualStyle: summary.visualStyle,
           warnings: summary.warnings,
-          error: summary.error || visualError
+          error: summary.error || visualError,
+          detail: summary.detail,
+          hitCount: summary.hitCount,
+          hits: summary.hits,
+          skillCount: summary.skillCount,
+          skills: summary.skills,
+          chars: summary.chars,
+          path: summary.path,
+          skillName: summary.skillName
         }
       });
       if (clarifyEvent) {
         clarifyPending = true;
-        send({ type: "clarify", ...clarifyEvent });
+        send({ type: "clarify", ...clarifyEvent, stepId: options.stepId });
       }
       if (spec) {
-        send({ type: "visual", ...spec, toolId: runId });
+        send({ type: "visual", ...spec, toolId: runId, stepId: options.stepId });
         if (isTerminalVisualTool(name))
           stopAfterVisual = true;
       } else if (isVisual) {
         send({
           type: "tool_result",
           id: runId,
+          stepId: options.stepId,
           name,
           output: output2 || JSON.stringify({ success: false, error: visualError })
         });
       } else {
-        send({ type: "tool_result", id: runId, name, output: output2 });
+        send({ type: "tool_result", id: runId, stepId: options.stepId, name, output: output2 });
       }
       return;
     }
@@ -170072,6 +172773,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       send({
         type: "tool_end",
         id: runId,
+        stepId: options.stepId,
         name,
         label: toolLabel(name),
         ok: false,
@@ -170089,7 +172791,8 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
     sendEnrichment,
     stats,
     shouldStop: () => stopAfterVisual || clarifyPending,
-    clarifyPending: () => clarifyPending
+    clarifyPending: () => clarifyPending,
+    visualGenerated: () => stopAfterVisual
   };
 }
 async function collectInterrupts(agent, threadId) {

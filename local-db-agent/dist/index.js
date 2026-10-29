@@ -16,6 +16,9 @@ import { generateSuggestions } from './suggest.js';
 import { getKnowledgeStatus } from './knowledge.js';
 import { getSkillStatus } from './skills.js';
 import { formatTableCandidates, retrieveTables } from './schema-cache.js';
+import { runPlanTurn } from './plan-graph.js';
+import { formatPageContextAnswer, isPageContextRelevant, isTableIdentificationQuestion, resolvePageContext, } from './page-context.js';
+import { chatReply, isChatQuestion, modeLabel, routeExecutionMode } from './intent-router.js';
 // 图片以 dataURL 随消息上传，默认 1MB body 限制不够用
 const app = Fastify({ logger: true, bodyLimit: 20 * 1024 * 1024 });
 app.addHook('onRequest', async (_request, reply) => {
@@ -132,6 +135,7 @@ app.setErrorHandler((error, request, reply) => {
     reply.send(error);
 });
 let activeStreams = 0;
+const activeRunControls = new Map();
 const noKnowledgeNotified = new Set();
 let anonymousKnowledgeNotified = false;
 app.post('/chat/stream', async (request, reply) => {
@@ -200,7 +204,87 @@ app.post('/chat/stream', async (request, reply) => {
     const messages = body.messages.map(toMessage);
     // 报告版式轮换：在模型选模板前先按用户措辞推断类型，再结合上一份版式避开重复。
     const lastUserText = [...body.messages].reverse().find((message) => message.role === 'user')?.content || '';
-    const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|出一份|来一份/.test(lastUserText);
+    if (isChatQuestion(lastUserText)) {
+        send({ type: 'token', content: chatReply(lastUserText) });
+        send({ type: 'done' });
+        raw.end();
+        return;
+    }
+    let pageContext = resolvePageContext(body.pageContext);
+    if (!pageContext) {
+        const inlineUrl = lastUserText.match(/(?:https?:\/\/[^\s，。]+|\/?api\/[^\s，。]+)/i)?.[0];
+        if (inlineUrl)
+            pageContext = resolvePageContext({ apiUrl: inlineUrl });
+    }
+    const pageContextRelevant = Boolean(pageContext && (isPageContextRelevant(lastUserText) || /api\//i.test(lastUserText)));
+    if (pageContext && pageContextRelevant) {
+        const resolvedTable = pageContext.primaryTable
+            ? `主表：${pageContext.primaryTable}${pageContext.tables.length > 1 ? `；候选：${pageContext.tables.slice(1).join('、')}` : ''}`
+            : '未识别到表';
+        send({
+            type: 'trace',
+            id: `trace-page-context-${Date.now()}`,
+            phase: 'planning',
+            kind: 'page_context',
+            title: '识别当前页面',
+            detail: `${pageContext.method} ${pageContext.apiUrl} → ${resolvedTable}`,
+            status: pageContext.tables.length ? 'success' : 'error',
+            data: {
+                apiUrl: pageContext.apiUrl,
+                method: pageContext.method,
+                tables: pageContext.tables,
+                primaryTable: pageContext.primaryTable,
+                confidence: pageContext.confidence,
+                source: pageContext.source,
+                reason: pageContext.reason || '',
+            },
+        });
+        if (!pageContext.tables.length) {
+            send({
+                type: 'status',
+                message: `未识别当前页面接口对应的表：${pageContext.reason || '接口不在 api-map 中'}；将按普通问题继续。`,
+            });
+            logLine(`page context unresolved: ${pageContext.apiUrl} ${pageContext.reason || ''}`);
+        }
+        else {
+            logLine(`page context ${pageContext.method} ${pageContext.apiUrl} -> ` +
+                `${pageContext.primaryTable} (${pageContext.source})`);
+        }
+    }
+    // 只问“当前页面接口对应哪张表”时，直接用本地映射回答。
+    // 不进入 planner / SQL / 反思 / critic，避免简单问表消耗大量 token。
+    if (isTableIdentificationQuestion(lastUserText)) {
+        const answer = formatPageContextAnswer(pageContext);
+        logLine(`page context direct answer: ${pageContext?.primaryTable || 'unresolved'}`);
+        send({ type: 'token', content: answer });
+        send({ type: 'done' });
+        raw.end();
+        return;
+    }
+    const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|看板|面板|可视化页面|可视化报告|网页报告|html/i.test(lastUserText);
+    const route = routeExecutionMode(lastUserText, {
+        wantsReport,
+        pageContext: pageContextRelevant ? pageContext : null,
+    });
+    const executionMode = route.mode;
+    send({
+        type: 'trace',
+        id: `trace-route-${Date.now()}`,
+        phase: 'planning',
+        kind: 'route',
+        title: '选择执行模式',
+        detail: `${modeLabel(executionMode)}：${route.reason}`,
+        status: 'success',
+        durationMs: 0,
+        data: {
+            mode: executionMode,
+            needsSql: route.needsSql,
+            needsPlan: route.needsPlan,
+            needsCritic: route.needsCritic,
+            needsReport: route.needsReport,
+            confidence: route.confidence,
+        },
+    });
     if (wantsReport) {
         const userTurns = body.messages.filter((message) => message.role === 'user').length;
         const variant = pickReportVariant({
@@ -248,8 +332,11 @@ app.post('/chat/stream', async (request, reply) => {
         }
     }
     // 相关表检索：本轮先给 Top 8 紧凑目录，模型不需要全量 list_tables。
+    let candidates = [];
     try {
-        const candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8), 12000, '相关表检索超时');
+        candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8, {
+            focusTables: pageContextRelevant ? pageContext?.tables || [] : [],
+        }), 12000, '相关表检索超时');
         const block = formatTableCandidates(candidates);
         if (block) {
             const lastUserIndex = messages.reduce((index, message, i) => (message._getType() === 'human' ? i : index), -1);
@@ -263,35 +350,98 @@ app.post('/chat/stream', async (request, reply) => {
         logLine(`table retrieval failed: ${error instanceof Error ? error.message : String(error)}`);
     }
     // 单轮总时长上限 + 客户端断开即中止（避免挂起、持续烧 token / 占着数据库）
+    const usePlanMode = executionMode === 'quick' ||
+        (resolved.enablePlanMode && !resolved.requireSqlApproval);
+    const deepPlan = executionMode !== 'quick' && usePlanMode;
+    if (!usePlanMode && pageContextRelevant && pageContext?.tables.length) {
+        const pageHint = `【当前页面】${pageContext.method} ${pageContext.apiUrl}，主表：${pageContext.primaryTable || pageContext.tables[0]}。` +
+            (pageContext.tables.length > 1
+                ? `候选表：${pageContext.tables.join('、')}。`
+                : '') +
+            '用户说“当前页面/当前表格/当前数据”时默认指这张表。';
+        const lastUserIndex = messages.reduce((index, message, i) => (message._getType() === 'human' ? i : index), -1);
+        if (lastUserIndex >= 0)
+            messages.splice(lastUserIndex, 0, new SystemMessage(pageHint));
+    }
+    const turnLimitMs = wantsReport || deepPlan ? resolved.planTurnTimeoutMs : resolved.turnTimeoutMs;
     const controller = new AbortController();
     let timedOut = false;
     let finished = false;
-    const turnTimer = setTimeout(() => {
-        timedOut = true;
-        controller.abort();
-    }, resolved.turnTimeoutMs);
+    let turnTimer = null;
+    let waitTimer = null;
+    let continueResolver = null;
+    let currentDeadline = Date.now() + turnLimitMs;
+    const runId = `${conversationKey}:${Date.now().toString(36)}:${Math.random()
+        .toString(36)
+        .slice(2, 8)}`;
+    const resolveContinue = (ok) => {
+        if (waitTimer) {
+            clearTimeout(waitTimer);
+            waitTimer = null;
+        }
+        const resolve = continueResolver;
+        continueResolver = null;
+        if (resolve)
+            resolve(ok);
+    };
+    const armTurnTimer = (ms) => {
+        if (turnTimer)
+            clearTimeout(turnTimer);
+        turnTimer = setTimeout(() => {
+            timedOut = true;
+            resolveContinue(false);
+            controller.abort();
+        }, ms);
+    };
+    const control = {
+        runId,
+        get deadline() {
+            return currentDeadline;
+        },
+        waitForContinue: () => new Promise(resolve => {
+            continueResolver = resolve;
+            waitTimer = setTimeout(() => resolveContinue(false), 120_000);
+        }),
+        extendDeadline: () => {
+            currentDeadline = Date.now() + turnLimitMs;
+            armTurnTimer(turnLimitMs);
+            send({ type: 'status', message: '已延长本轮分析时间' });
+        },
+    };
+    armTurnTimer(turnLimitMs);
+    activeRunControls.set(runId, { resolve: (ok) => resolveContinue(ok) });
     // 仅当客户端提前断开时才中止（正常结束时 finished=true）
     const onClientClose = () => {
-        if (!finished)
+        if (!finished) {
+            resolveContinue(false);
             controller.abort();
+        }
     };
     raw.on('close', onClientClose);
     activeStreams += 1;
     const budget = new TurnBudget({
-        // 普通问答仍用前端 limits；报告轮不按 SQL/Schema 条数限制
+        // 普通问答仍用前�?limits；报告轮不按 SQL/Schema 条数限制
         maxSqlQueries: resolved.maxSqlQueries,
         maxSchemaCalls: resolved.maxSchemaCalls,
-        // 报告需要完整聚合结果；普通问答保持原值
-        maxResultChars: wantsReport
+        // 报告/计划轮需要完整聚合结果；普通问答保持原�?
+        maxResultChars: wantsReport || deepPlan
             ? Math.max(resolved.maxResultChars, 20000)
             : resolved.maxResultChars,
-        maxTotalToolChars: wantsReport
+        maxTotalToolChars: wantsReport || deepPlan
             ? Math.max(resolved.maxTotalToolChars, 120000)
             : resolved.maxTotalToolChars,
-        maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : resolved.maxTurnTokens,
-        maxModelCalls: wantsReport ? resolved.maxReportModelCalls : resolved.maxModelCalls,
+        maxTurnTokens: wantsReport
+            ? resolved.maxReportTurnTokens
+            : deepPlan
+                ? resolved.maxPlanTurnTokens
+                : resolved.maxTurnTokens,
+        maxModelCalls: wantsReport
+            ? resolved.maxReportModelCalls
+            : deepPlan
+                ? resolved.maxPlanModelCalls
+                : resolved.maxModelCalls,
         strictNumberCheck: resolved.strictNumberCheck,
-    }, { unlimitedQueries: wantsReport });
+    }, { unlimitedQueries: wantsReport || deepPlan });
     let turnError = '';
     const turnStartedAt = Date.now();
     const bridge = createTurnBridge({
@@ -314,7 +464,8 @@ app.post('/chat/stream', async (request, reply) => {
     let agent = null;
     await runWithBudget(budget, async () => {
         try {
-            agent = getRuntime(resolved, wantsReport);
+            const runtime = getRuntime(resolved, wantsReport);
+            agent = runtime;
             // 用 LangChain 自带的近似 token 统计判断本轮是否会触发摘要。
             // 只用于给前端一个轻量提示，不参与上下文裁剪。
             const approxTokens = countTokensApproximately([new SystemMessage(buildSystemPrompt(resolved, wantsReport)), ...messages], createTools(resolved.db, {
@@ -328,6 +479,42 @@ app.post('/chat/stream', async (request, reply) => {
             }
             // LangChain 的 summarizationMiddleware 会给内部摘要调用打 nostream 标签；
             // 用 streamEvents 自带的 excludeTags 过滤，不把内部摘要转发给用户。
+            if (usePlanMode) {
+                const result = await runPlanTurn({
+                    cfg: resolved,
+                    agent: runtime,
+                    budget,
+                    messages,
+                    question: lastUserText,
+                    candidates,
+                    pageContext: pageContextRelevant ? pageContext : null,
+                    executionMode,
+                    reportMode: wantsReport,
+                    bridge,
+                    send,
+                    controller,
+                    control,
+                });
+                if (result.clarified) {
+                    bridge.sendEnrichment();
+                    send({ type: 'done' });
+                    return;
+                }
+                if (result.stopped) {
+                    if (bridge.visualGenerated()) {
+                        send({ type: 'token', content: '报告已生成。' });
+                    }
+                    else {
+                        send({ type: 'status', message: '已停止，保留已完成的分析结果' });
+                    }
+                    bridge.sendEnrichment();
+                    send({ type: 'done' });
+                    return;
+                }
+                bridge.sendEnrichment();
+                send({ type: 'done' });
+                return;
+            }
             const streamConfig = {
                 version: 'v2',
                 recursionLimit: resolved.recursionLimit,
@@ -403,7 +590,10 @@ app.post('/chat/stream', async (request, reply) => {
         }
         finally {
             finished = true;
-            clearTimeout(turnTimer);
+            if (turnTimer)
+                clearTimeout(turnTimer);
+            resolveContinue(false);
+            activeRunControls.delete(runId);
             clearInterval(heartbeat);
             raw.off('close', onClientClose);
             activeStreams -= 1;
@@ -425,6 +615,16 @@ app.post('/chat/stream', async (request, reply) => {
     });
 });
 // SQL 审批恢复：配合 /chat/stream 的 interrupt 事件，用 LangChain Command 继续执行
+app.post('/chat/continue', async (request, reply) => {
+    const body = request.body;
+    const entry = body?.runId ? activeRunControls.get(body.runId) : null;
+    if (!entry) {
+        reply.code(404).send({ ok: false, error: '分析已结束或已过期，请重新发起' });
+        return;
+    }
+    entry.resolve(true);
+    reply.send({ ok: true });
+});
 app.post('/chat/resume', async (request, reply) => {
     const body = request.body;
     reply.hijack();
@@ -738,6 +938,15 @@ function safeParseObject(text) {
         return null;
     }
 }
+function safeParseArray(text) {
+    try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : [];
+    }
+    catch {
+        return [];
+    }
+}
 const TOOL_LABELS = {
     list_tables: '浏览数据表',
     get_table_schema: '查看表结构',
@@ -847,8 +1056,16 @@ function summarizeToolOutput(name, output) {
         visualStyle: '',
         warnings,
         error: typeof parsed.error === 'string' ? parsed.error : '',
+        detail: '',
+        hitCount: 0,
+        hits: [],
+        skillCount: 0,
+        skills: [],
+        chars: 0,
+        path: '',
+        skillName: '',
     };
-    if (name === 'run_sql') {
+    if (name === 'run_sql' || name === 'run_saved_query') {
         summary.rowCount =
             Number(parsed.rowCount) || (Array.isArray(parsed.rows) ? parsed.rows.length : 0);
         summary.columns = Array.isArray(parsed.columns) ? parsed.columns.length : 0;
@@ -885,6 +1102,59 @@ function summarizeToolOutput(name, output) {
         summary.template = typeof parsed.template === 'string' ? parsed.template : '';
         summary.layout = typeof parsed.layout === 'string' ? parsed.layout : '';
         summary.visualStyle = typeof parsed.visualStyle === 'string' ? parsed.visualStyle : '';
+    }
+    else if (name === 'search_knowledge') {
+        const list = safeParseArray(output);
+        summary.hitCount = list.length;
+        summary.hits = list
+            .map(item => {
+            const row = item && typeof item === 'object' ? item : {};
+            return typeof row.title === 'string' ? row.title : String(row.path || '');
+        })
+            .filter(Boolean)
+            .slice(0, 5);
+        summary.detail = list.length
+            ? `命中 ${list.length} 篇：${summary.hits.slice(0, 3).join('、')}`
+            : '未命中知识文档';
+    }
+    else if (name === 'list_skills') {
+        const list = Array.isArray(parsed.skills) ? parsed.skills : [];
+        summary.skillCount = list.length;
+        summary.skills = list
+            .map(item => {
+            const row = item && typeof item === 'object' ? item : {};
+            return typeof row.name === 'string' ? row.name : '';
+        })
+            .filter(Boolean)
+            .slice(0, 8);
+        summary.detail = list.length
+            ? `${list.length} 个技能：${summary.skills.slice(0, 4).join('、')}`
+            : '没有匹配的技能';
+    }
+    else if (name === 'read_knowledge') {
+        summary.path = typeof parsed.path === 'string' ? parsed.path : '';
+        summary.chars = typeof parsed.content === 'string' ? parsed.content.length : 0;
+        summary.detail = summary.path ? `${summary.path}（${summary.chars} 字）` : `${summary.chars} 字`;
+    }
+    else if (name === 'read_skill') {
+        summary.skillName = typeof parsed.name === 'string' ? parsed.name : '';
+        summary.chars = typeof parsed.content === 'string' ? parsed.content.length : 0;
+        summary.detail = summary.skillName
+            ? `${summary.skillName}（${summary.chars} 字）`
+            : `${summary.chars} 字`;
+    }
+    else if (name === 'read_skill_file') {
+        summary.skillName = typeof parsed.name === 'string' ? parsed.name : '';
+        summary.path = typeof parsed.path === 'string' ? parsed.path : '';
+        summary.chars = typeof parsed.content === 'string' ? parsed.content.length : 0;
+        summary.detail = [summary.skillName, summary.path, `${summary.chars} 字`]
+            .filter(Boolean)
+            .join(' · ');
+    }
+    else if (name === 'search_tables') {
+        const list = safeParseArray(output);
+        summary.tableCount = list.length;
+        summary.detail = list.length ? `${list.length} 张候选表` : '未命中表';
     }
     return summary;
 }
@@ -989,8 +1259,10 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             },
         });
     };
-    const handle = (event) => {
+    const handle = (event, options = {}) => {
         if (event.event === 'on_chat_model_stream') {
+            if (options.emitTokens === false)
+                return;
             const chunk = event.data?.chunk;
             const text = extractText(chunk?.content);
             if (text)
@@ -1023,6 +1295,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             send({
                 type: 'tool_start',
                 id: runId,
+                stepId: options.stepId,
                 name,
                 label: toolLabel(name),
                 input: compactToolInput(name, input),
@@ -1101,6 +1374,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             send({
                 type: 'tool_end',
                 id: runId,
+                stepId: options.stepId,
                 name,
                 label: toolLabel(name),
                 ok: summary.success && !visualError,
@@ -1118,14 +1392,22 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
                     visualStyle: summary.visualStyle,
                     warnings: summary.warnings,
                     error: summary.error || visualError,
+                    detail: summary.detail,
+                    hitCount: summary.hitCount,
+                    hits: summary.hits,
+                    skillCount: summary.skillCount,
+                    skills: summary.skills,
+                    chars: summary.chars,
+                    path: summary.path,
+                    skillName: summary.skillName,
                 },
             });
             if (clarifyEvent) {
                 clarifyPending = true;
-                send({ type: 'clarify', ...clarifyEvent });
+                send({ type: 'clarify', ...clarifyEvent, stepId: options.stepId });
             }
             if (spec) {
-                send({ type: 'visual', ...spec, toolId: runId });
+                send({ type: 'visual', ...spec, toolId: runId, stepId: options.stepId });
                 // 报告已是本轮最终产物：不再让模型重新读取整份 HTML 参数去补一句结尾
                 if (isTerminalVisualTool(name))
                     stopAfterVisual = true;
@@ -1134,12 +1416,13 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
                 send({
                     type: 'tool_result',
                     id: runId,
+                    stepId: options.stepId,
                     name,
                     output: output || JSON.stringify({ success: false, error: visualError }),
                 });
             }
             else {
-                send({ type: 'tool_result', id: runId, name, output });
+                send({ type: 'tool_result', id: runId, stepId: options.stepId, name, output });
             }
             return;
         }
@@ -1156,6 +1439,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
             send({
                 type: 'tool_end',
                 id: runId,
+                stepId: options.stepId,
                 name,
                 label: toolLabel(name),
                 ok: false,
@@ -1174,6 +1458,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
         stats,
         shouldStop: () => stopAfterVisual || clarifyPending,
         clarifyPending: () => clarifyPending,
+        visualGenerated: () => stopAfterVisual,
     };
 }
 async function collectInterrupts(agent, threadId) {

@@ -12,6 +12,8 @@
     "dbcheck": "tsx scripts/db-check.ts",
     "kbcheck": "tsx scripts/kb-check.ts",
     "knowledge:index": "node scripts/knowledge-index.mjs",
+    "knowledge:abp": "node scripts/abp-knowledge.mjs",
+    "knowledge:swagger": "node scripts/swagger-knowledge.mjs",
     "skills:index": "tsx scripts/skills-index.ts",
     "index-advisor": "tsx scripts/index-advisor.ts",
     "eval": "tsx scripts/eval.ts",

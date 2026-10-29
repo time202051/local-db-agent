@@ -1,0 +1,8 @@
+{
+  "name": "wms-kingbase",
+  "backend": "D:\\ljp-h\\WMS金仓版",
+  "frontend": "D:\\ljp\\hangfa\\PC",
+  "swagger": "D:\\ljp\\hangfa\\PC\\swagger\\swagger.json",
+  "prefix": "WMS_",
+  "dbType": "kingbase"
+}

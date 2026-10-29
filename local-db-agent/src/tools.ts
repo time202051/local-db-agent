@@ -1779,6 +1779,7 @@ export function createTools(db: DbRuntime, options: CreateToolsOptions = {}) {
             hits.map((hit) => ({
               path: hit.path,
               title: hit.title,
+              heading: hit.heading,
               kind: hit.kind,
               snippet: hit.snippet,
             })),
@@ -1801,9 +1802,13 @@ export function createTools(db: DbRuntime, options: CreateToolsOptions = {}) {
         },
       ),
       tool(
-        async ({ path }) => {
+        async ({ path, section }) => {
           const budget = currentBudget();
-          const content = knowledge.read(String(path || ''), 6000);
+          const content = knowledge.read(
+            String(path || ''),
+            8000,
+            section ? String(section) : undefined,
+          );
           if (!content)
             return JSON.stringify({ success: false, error: '知识文档不存在或路径不允许' });
           const json = JSON.stringify({ path, content });
@@ -1817,10 +1822,11 @@ export function createTools(db: DbRuntime, options: CreateToolsOptions = {}) {
         {
           name: 'read_knowledge',
           description:
-            '读取知识包中的一篇文档（Markdown），单次最多 6000 字符。' +
+            '读取知识包中的一篇文档（Markdown），单次最多 8000 字符；可只读某一节。' +
             '先用 search_knowledge 找到 path，再按需读取。',
           schema: z.object({
             path: z.string().describe('知识包内相对路径，例如 docs/业务术语.md'),
+            section: z.string().optional().describe('可选：只读取该标题下的章节'),
           }),
         },
       ),

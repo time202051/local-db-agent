@@ -23,6 +23,7 @@ export interface KnowledgeRelationship {
 export interface KnowledgeTable {
   comment?: string;
   aliases?: string[];
+  columnAliases?: Record<string, string[]>;
   keyColumns?: string[];
   indexedColumns?: string[];
   relationships?: KnowledgeRelationship[];
@@ -55,18 +56,25 @@ export interface SavedQuery {
   note?: string;
 }
 
+export interface KnowledgeSection {
+  heading: string;
+  content: string;
+}
+
 export interface KnowledgeDoc {
   path: string;
   title: string;
   headings: string[];
   kind: 'doc' | 'report';
   content: string;
+  sections: KnowledgeSection[];
 }
 
 export interface KnowledgeHit {
   path: string;
   title: string;
   kind: 'doc' | 'report';
+  heading?: string;
   snippet: string;
   score: number;
 }
@@ -79,7 +87,7 @@ export interface KnowledgePack {
   queries: SavedQuery[];
   indexText: string;
   search: (query: string, limit?: number) => KnowledgeHit[];
-  read: (path: string, maxChars?: number) => string | null;
+  read: (path: string, maxChars?: number, section?: string) => string | null;
   getQuery: (key: string) => SavedQuery | undefined;
 }
 
@@ -91,8 +99,8 @@ export interface KnowledgeStatus {
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DIR = resolve(currentDir, '..', 'knowledge');
-const MAX_DOC_BYTES = 512 * 1024;
-const MAX_READ_CHARS = 6000;
+const MAX_DOC_BYTES = 2 * 1024 * 1024;
+const MAX_READ_CHARS = 8000;
 const MAX_INDEX_DOCS = 20;
 
 let cached: KnowledgePack | null | undefined;
@@ -122,6 +130,24 @@ function listFiles(dir: string, ext: string): string[] {
   return out.sort();
 }
 
+function listRootMarkdown(dir: string): string[] {
+  if (!existsSync(dir)) return [];
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (!entry.name.toLowerCase().endsWith('.md')) continue;
+    if (/^readme/i.test(entry.name)) continue;
+    const full = join(dir, entry.name);
+    try {
+      if (statSync(full).size > MAX_DOC_BYTES) continue;
+    } catch {
+      continue;
+    }
+    out.push(full);
+  }
+  return out.sort();
+}
+
 function titleOf(content: string, fallback: string): string {
   const line = content
     .split(/\r?\n/)
@@ -139,6 +165,30 @@ function headingsOf(content: string): string[] {
     .filter(Boolean);
 }
 
+function sectionsOf(content: string): KnowledgeSection[] {
+  const lines = content.split(/\r?\n/);
+  const sections: KnowledgeSection[] = [];
+  let heading = '';
+  let buffer: string[] = [];
+  const flush = () => {
+    const text = buffer.join('\n').trim();
+    if (heading || text) sections.push({ heading: heading || '正文', content: text });
+    buffer = [];
+  };
+  for (const line of lines) {
+    const match = /^(#{1,4})\s+(.+)$/.exec(line.trim());
+    if (match) {
+      flush();
+      heading = match[2].trim();
+      buffer.push(line);
+      continue;
+    }
+    buffer.push(line);
+  }
+  flush();
+  return sections.filter(section => section.content.length > 0);
+}
+
 function readDoc(packDir: string, full: string, kind: 'doc' | 'report'): KnowledgeDoc | null {
   let content: string;
   try {
@@ -154,6 +204,7 @@ function readDoc(packDir: string, full: string, kind: 'doc' | 'report'): Knowled
     headings: headingsOf(content),
     kind,
     content,
+    sections: sectionsOf(content),
   };
 }
 
@@ -234,7 +285,11 @@ function snippetOf(content: string, terms: string[]): string {
 
 function buildIndexText(manifest: KnowledgeManifest, docs: KnowledgeDoc[], reports: KnowledgeDoc[], queries: SavedQuery[]): string {
   const lines = [`【知识包】${manifest.name}${manifest.description ? `：${manifest.description}` : ''}`];
-  const docList = [...docs, ...reports];
+  const rank = (path: string): number =>
+    /tables\//.test(path) ? 0 : /metrics\//.test(path) ? 1 : /enums\//.test(path) ? 2 : 3;
+  const docList = [...docs, ...reports].sort(
+    (a, b) => rank(a.path) - rank(b.path) || a.title.localeCompare(b.title),
+  );
   if (docList.length) {
     lines.push('可用文档（需要细节用 search_knowledge / read_knowledge）：');
     for (const doc of docList.slice(0, MAX_INDEX_DOCS)) {
@@ -265,20 +320,29 @@ function safeReadPath(packDir: string, requested: string): string | null {
 
 function buildPack(packDir: string): { pack: KnowledgePack | null; status: KnowledgeStatus } {
   const manifestFile = join(packDir, 'manifest.json');
-  if (!existsSync(manifestFile)) {
-    return { pack: null, status: { loaded: false, reason: 'manifest.json 不存在' } };
-  }
+  const hasManifest = existsSync(manifestFile);
   let manifest: KnowledgeManifest;
-  try {
-    manifest = JSON.parse(readFileSync(manifestFile, 'utf8')) as KnowledgeManifest;
-  } catch {
-    return { pack: null, status: { loaded: false, reason: 'manifest.json 不是合法 JSON' } };
-  }
-  if (!manifest || typeof manifest.name !== 'string') {
-    return { pack: null, status: { loaded: false, reason: 'manifest.name 缺失' } };
+  if (hasManifest) {
+    try {
+      manifest = JSON.parse(readFileSync(manifestFile, 'utf8')) as KnowledgeManifest;
+    } catch {
+      return { pack: null, status: { loaded: false, reason: 'manifest.json 不是合法 JSON' } };
+    }
+    if (!manifest || typeof manifest.name !== 'string') {
+      return { pack: null, status: { loaded: false, reason: 'manifest.name 缺失' } };
+    }
+  } else {
+    manifest = { name: 'manual', version: 1, description: '数据库说明书' };
   }
 
-  const docs = listFiles(join(packDir, 'docs'), '.md')
+  const docFiles = Array.from(
+    new Set([
+      ...listFiles(join(packDir, 'docs'), '.md'),
+      ...listFiles(join(packDir, 'manual'), '.md'),
+      ...listRootMarkdown(packDir),
+    ]),
+  );
+  const docs = docFiles
     .map(file => readDoc(packDir, file, 'doc'))
     .filter((doc): doc is KnowledgeDoc => Boolean(doc));
   const reports = listFiles(join(packDir, 'reports'), '.md')
@@ -315,30 +379,59 @@ function buildPack(packDir: string): { pack: KnowledgePack | null; status: Knowl
     }
     const hits: KnowledgeHit[] = [];
     for (const doc of [...docs, ...reports]) {
-      const title = `${doc.title} ${doc.headings.join(' ')}`.toLowerCase();
-      const body = doc.content.toLowerCase();
-      let score = 0;
-      for (const term of terms) {
-        if (title.includes(term)) score += 4;
-        else if (body.includes(term)) score += 1;
+      const docTitle = doc.title.toLowerCase();
+      const sections = doc.sections.length
+        ? doc.sections
+        : [{ heading: '', content: doc.content }];
+      for (const section of sections) {
+        const heading = String(section.heading || '').toLowerCase();
+        const body = section.content.toLowerCase();
+        let score = 0;
+        for (const term of terms) {
+          if (docTitle.includes(term)) score += 4;
+          else if (heading.includes(term)) score += 3;
+          else if (body.includes(term)) score += 1;
+        }
+        if (!score) continue;
+        hits.push({
+          path: doc.path,
+          title: doc.title,
+          kind: doc.kind,
+          heading: section.heading && section.heading !== '正文' ? section.heading : undefined,
+          snippet: snippetOf(section.content, terms),
+          score,
+        });
       }
-      if (!score) continue;
-      hits.push({
-        path: doc.path,
-        title: doc.title,
-        kind: doc.kind,
-        snippet: snippetOf(doc.content, terms),
-        score,
-      });
     }
     return hits.sort((a, b) => b.score - a.score).slice(0, limit);
   };
 
-  const read = (requested: string, maxChars = MAX_READ_CHARS): string | null => {
-    const full = safeReadPath(packDir, requested);
+  const read = (
+    requested: string,
+    maxChars = MAX_READ_CHARS,
+    sectionName?: string,
+  ): string | null => {
+    const rawRequested = String(requested || '');
+    const hashIndex = rawRequested.indexOf('#');
+    const requestedPath = hashIndex >= 0 ? rawRequested.slice(0, hashIndex) : rawRequested;
+    const full = safeReadPath(packDir, requestedPath);
     if (!full || !existsSync(full)) return null;
     try {
       const content = readFileSync(full, 'utf8');
+      const inlineSection = hashIndex >= 0 ? rawRequested.slice(hashIndex + 1) : '';
+      const wanted = String(sectionName || inlineSection || '').trim().toLowerCase();
+      if (wanted) {
+        const doc = [...docs, ...reports].find(
+          item => item.path.toLowerCase() === requestedPath.replace(/\\/g, '/').toLowerCase(),
+        );
+        const section = doc?.sections.find(item => {
+          const heading = item.heading.toLowerCase();
+          return heading === wanted || heading.includes(wanted);
+        });
+        if (section) {
+          return `## ${section.heading}\n${section.content}`.slice(0, maxChars);
+        }
+      }
       return content.slice(0, maxChars);
     } catch {
       return null;

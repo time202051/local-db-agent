@@ -1,0 +1,3863 @@
+{
+  "name": "wms-kingbase",
+  "version": 1,
+  "description": "由 ABP/.NET 源码自动生成的知识包：WMS金仓版",
+  "appliesTo": {},
+  "priorityTables": [
+    "WMS_Stocks",
+    "WMS_StockHistorys",
+    "WMS_Products",
+    "WMS_ProductClasss",
+    "WMS_ProductBatchs",
+    "WMS_StockIns",
+    "WMS_StockInDetails",
+    "WMS_StockOuts",
+    "WMS_StockOutDetails",
+    "WMS_PickTasks",
+    "WMS_Picks",
+    "WMS_Warehouses",
+    "WMS_Owners",
+    "WMS_Containers",
+    "WMS_Suppliers",
+    "WMS_StockTransfers",
+    "WMS_StockTransferDetails",
+    "WMS_StockDiffAdjustments",
+    "WMS_StockDiffAdjustmentDetails",
+    "WMS_CargoLocationContainerTypes",
+    "WMS_ContainerQtys",
+    "WMS_ContainerTypes",
+    "WMS_DMPickRecords",
+    "WMS_FlushOrders",
+    "WMS_HomeWarehouseInfos",
+    "WMS_InboundApplicationDetails",
+    "WMS_InboundApplications",
+    "WMS_InspectionInboundDetails",
+    "WMS_InspectionInbounds",
+    "WMS_InventoryAnomalyInfos"
+  ],
+  "tables": [
+    "WMS_UserLogins",
+    "WMS_UserTokens",
+    "WMS_OperationLogs",
+    "WMS_BusinessNodes",
+    "WMS_BusinessNodeApplicationTypes",
+    "WMS_BussinessTasks",
+    "WMS_BackgroundWorkerConfigs",
+    "WMS_BusinessTaskTypeAgvConfig",
+    "WMS_BusinessTaskTypeConfig",
+    "WMS_",
+    "WMS_DataSyncRecords",
+    "WMS_Costs",
+    "WMS_CustomTables",
+    "WMS_CustomTableFields",
+    "WMS_CustomTableSchemaChangeLogs",
+    "WMS_DataReportConfigs",
+    "WMS_FilterFields",
+    "WMS_SelectedColumns",
+    "WMS_DeliveryShipments",
+    "WMS_DeliveryShipmentDetails",
+    "WMS_DictDatas",
+    "WMS_DictTypes",
+    "WMS_DocumentCenters",
+    "WMS_FileAttachment",
+    "WMS_FlushOrders",
+    "WMS_HomeDocuments",
+    "WMS_HomeNotices",
+    "WMS_HomePublicNotices",
+    "WMS_HomeTodos",
+    "WMS_HomeWarehouseInfos",
+    "WMS_CheckRecords",
+    "WMS_ILTs",
+    "WMS_ILTDetails",
+    "WMS_ApiInterfaceConfigs",
+    "WMS_MenuSearchSettings",
+    "WMS_NonPurchaseInboundOrders",
+    "WMS_NonPurchaseInboundDetails",
+    "WMS_OfflineJob",
+    "WMS_OilSealOrders",
+    "WMS_OrderUseRecords",
+    "WMS_ContainerPhotos",
+    "WMS_DMPickRecords",
+    "WMS_PickPhotos",
+    "WMS_ProductPhotos",
+    "WMS_YLPhotos",
+    "WMS_PrintConfigs",
+    "WMS_BatchIsolations",
+    "WMS_MeteringClasss",
+    "WMS_Owners",
+    "WMS_Products",
+    "WMS_ProductOwners",
+    "WMS_ProductBatchs",
+    "WMS_ProductClasss",
+    "WMS_ProductCounts",
+    "WMS_ProductPidInfos",
+    "WMS_ProductRegulars",
+    "WMS_ProductTableNumbers",
+    "WMS_Projects",
+    "WMS_DataTemplates",
+    "WMS_Dictionariess",
+    "WMS_ArrivalRegistrations",
+    "WMS_ArrivalRegistrationDetails",
+    "WMS_InboundApplications",
+    "WMS_InboundApplicationDetails",
+    "WMS_InspectionInbounds",
+    "WMS_InspectionInboundDetails",
+    "WMS_QualityInspections",
+    "WMS_ShelvingRecords",
+    "WMS_WcsEquipMentStatistics",
+    "WMS_ScreenMessage",
+    "WMS_ScreenConfiguration",
+    "WMS_SerialNumbers",
+    "WMS_SpecialEquipments",
+    "WMS_SpecialEquipmentDetails",
+    "WMS_SrmProductAcceptManages",
+    "WMS_SrmProductAcceptDetails",
+    "WMS_SrmProductDeliverReceives",
+    "WMS_SrmProductDeliverReceiveLines",
+    "WMS_SrmBoms",
+    "WMS_SrmEntityMessages",
+    "WMS_SrmEntityEdits",
+    "WMS_SrmFlows",
+    "WMS_SrmFlowCheckRecords",
+    "WMS_SrmParts",
+    "WMS_StockDiffAdjustments",
+    "WMS_StockDiffAdjustmentDetails",
+    "WMS_BillTypes",
+    "WMS_DMBindRecords",
+    "WMS_InventoryAnomalyInfos",
+    "WMS_InventoryOrder",
+    "WMS_InventoryOrderDetail",
+    "WMS_Stocks",
+    "WMS_StockHistorys",
+    "WMS_BindRecords",
+    "WMS_StockIns",
+    "WMS_StockInDetails",
+    "WMS_DeviceExceptions",
+    "WMS_Picks",
+    "WMS_PickTasks",
+    "WMS_StockOuts",
+    "WMS_StockOutDetails",
+    "WMS_StockOutDetailChecks",
+    "WMS_StockProjectTransfers",
+    "WMS_StockProjectTransferDetails",
+    "WMS_StockTransfers",
+    "WMS_StockTransferDetails",
+    "WMS_StockTransferOperateRecords",
+    "WMS_TemplateConfigs",
+    "WMS_TemplateConfigDefaultValues",
+    "WMS_TemplateConfigDetails",
+    "WMS_UserFieldConfigurations",
+    "WMS_Areas",
+    "WMS_Area_SapStorageLocation",
+    "WMS_AutoPrintConfigs",
+    "WMS_CargoLocations",
+    "WMS_CargoLocationContainerTypes",
+    "WMS_CargoLocationDepths",
+    "WMS_Containers",
+    "WMS_ContainerQtys",
+    "WMS_ContainerTypes",
+    "WMS_Grades",
+    "WMS_LogisticsCompanies",
+    "WMS_Points",
+    "WMS_PrintTempletes",
+    "WMS_RecordWorkStations",
+    "WMS_Regions",
+    "WMS_RoadWays",
+    "WMS_Shelves",
+    "WMS_Shippers",
+    "WMS_Stagings",
+    "WMS_SubContainers",
+    "WMS_Suppliers",
+    "WMS_Warehouses",
+    "WMS_Menus"
+  ],
+  "docs": [
+    {
+      "path": "docs/generated/api/api-index.md",
+      "title": "API 索引",
+      "headings": [
+        "API 索引",
+        "AbpApiDefinition",
+        "AbpApplicationConfiguration",
+        "AbpApplicationLocalization",
+        "AccountUser",
+        "Agv",
+        "ApiDescription",
+        "AreaSapStorageLocation",
+        "AuditLogging",
+        "BatchIsolation",
+        "BillType",
+        "Bpm",
+        "BusinessNode",
+        "BusinessTask",
+        "CacheAdmin",
+        "CollectPiecePlan",
+        "Config",
+        "ContainerLocationChangeRecord",
+        "Cost",
+        "DatabaseEditor",
+        "DatabaseTable",
+        "DataReport",
+        "DataSync",
+        "DeliveryShipment",
+        "DictData",
+        "DictType",
+        "DocumentCenter",
+        "EngineSn",
+        "FileAttachment",
+        "HomeDocument",
+        "HomeNotice",
+        "HomePublicNotice",
+        "HomeTodo",
+        "HomeWarehouseInfo",
+        "Identity",
+        "IdentityRole",
+        "IdentityUser",
+        "ILT",
+        "MenuSearchSetting",
+        "Mes",
+        "NonPurchaseInbound",
+        "OfflineJob",
+        "OilSeal",
+        "OrganizationUnit",
+        "PdaOffline",
+        "PdaOilSeal",
+        "PdaPurchaseInbound",
+        "PdaStockOut",
+        "PdaStockTransferAppServie",
+        "Permission",
+        "Print",
+        "PrintTemplete",
+        "Product",
+        "Project",
+        "PublicAggregate",
+        "PublicEnum",
+        "PurchaseInbound",
+        "RegionContainerType",
+        "SapMatDoc",
+        "SapPurchaseOrder",
+        "SapSaleOrder",
+        "SapStorageLocation",
+        "SapWbs",
+        "Screen",
+        "ScreenDashboard",
+        "SearchScheme",
+        "SpecialEquipment",
+        "Srm",
+        "SrmOracleSync",
+        "Stock",
+        "StockDiffAdjustment",
+        "StockIn",
+        "StockOut",
+        "StockProjectTransfer",
+        "StockTransfer",
+        "SysServer",
+        "TemplateConfig",
+        "Tenant",
+        "TestBack",
+        "Tv",
+        "UserFieldConfig",
+        "Warehouse",
+        "Wcs",
+        "WebMenu",
+        "WebMenuPermission",
+        "WebSystem",
+        "WebSystemPermission",
+        "WmsTvMsg"
+      ],
+      "kind": "doc",
+      "snippet": "# API 索引 > 由本地 Swagger 生成：JWT Token Authentication API v1 > 接口 956 个；已映射 856 个；外部接口 57 个；未映射 43 个。 ## AbpApiDefinition - GET /api/abp/api-definition → 未映射 ## AbpApplicationConfiguration - GET /api/abp/application-configu"
+    },
+    {
+      "path": "docs/generated/enums/AbnormalTypeEnum.md",
+      "title": "AbnormalTypeEnum 异常类型",
+      "headings": [
+        "AbnormalTypeEnum 异常类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AbnormalTypeEnum 异常类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\StockStateEnum.cs` ## 说明 异常类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 品质 | | | 2 | 标实不符 | | | 3 | summary | | | 2 | QUALITY_NO_MATCH |"
+    },
+    {
+      "path": "docs/generated/enums/AgvTaskStausEnum.md",
+      "title": "AgvTaskStausEnum AGV任务状态",
+      "headings": [
+        "AgvTaskStausEnum AGV任务状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AgvTaskStausEnum AGV任务状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\TaskEnum.cs` ## 说明 AGV任务状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 未开始 | | | 2 | summary | | | 1 | TaskWait | 未开始 | | 4 | su"
+    },
+    {
+      "path": "docs/generated/enums/AllocationBussinessTypeEnum.md",
+      "title": "AllocationBussinessTypeEnum 调拨业务类型",
+      "headings": [
+        "AllocationBussinessTypeEnum 调拨业务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AllocationBussinessTypeEnum 调拨业务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 调拨业务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 调拨出库 | | | 2 | summary | | | 1 | Out | 调拨"
+    },
+    {
+      "path": "docs/generated/enums/AllocationDStatusEnum.md",
+      "title": "AllocationDStatusEnum 调拨明细状态",
+      "headings": [
+        "AllocationDStatusEnum 调拨明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AllocationDStatusEnum 调拨明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 调拨明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待处理 | | | 2 | summary | | | 1 | NotBegin | 待处理 "
+    },
+    {
+      "path": "docs/generated/enums/AllocationTypeEnum.md",
+      "title": "AllocationTypeEnum 调拨类型",
+      "headings": [
+        "AllocationTypeEnum 调拨类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AllocationTypeEnum 调拨类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 调拨类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 库外调拨 | | | 2 | summary | | | 1 | Out | 库外调拨 | | 4 | su"
+    },
+    {
+      "path": "docs/generated/enums/AreaEnum.md",
+      "title": "AreaEnum 库存枚举",
+      "headings": [
+        "AreaEnum 库存枚举",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AreaEnum 库存枚举 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\RegionEnum.cs` ## 说明 库存枚举 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 机械臂库区 | | | 2 | summary | | | 2001 | JXB | 机械臂库区 | | 4 | summary |"
+    },
+    {
+      "path": "docs/generated/enums/ArrivalCheckingStatusEnum.md",
+      "title": "ArrivalCheckingStatusEnum PC端到货清点状态",
+      "headings": [
+        "ArrivalCheckingStatusEnum PC端到货清点状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ArrivalCheckingStatusEnum PC端到货清点状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ArrivalCheckingStatusEnum.cs` ## 说明 PC端到货清点状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待清点 | | | 2 | summary | | | "
+    },
+    {
+      "path": "docs/generated/enums/ArrivalRegistrationDetailStatusEnum.md",
+      "title": "ArrivalRegistrationDetailStatusEnum 到货登记单明细状态",
+      "headings": [
+        "ArrivalRegistrationDetailStatusEnum 到货登记单明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ArrivalRegistrationDetailStatusEnum 到货登记单明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ArrivalRegistrationDetailStatusEnum.cs` ## 说明 到货登记单明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待登记 | | "
+    },
+    {
+      "path": "docs/generated/enums/ArrivalRegistrationSourceEnum.md",
+      "title": "ArrivalRegistrationSourceEnum 到货登记单数据来源",
+      "headings": [
+        "ArrivalRegistrationSourceEnum 到货登记单数据来源",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ArrivalRegistrationSourceEnum 到货登记单数据来源 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ArrivalRegistrationSourceEnum.cs` ## 说明 到货登记单数据来源 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 采购订单 | | | 2 | summa"
+    },
+    {
+      "path": "docs/generated/enums/ArrivalRegistrationStatusEnum.md",
+      "title": "ArrivalRegistrationStatusEnum 到货登记单据状态",
+      "headings": [
+        "ArrivalRegistrationStatusEnum 到货登记单据状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ArrivalRegistrationStatusEnum 到货登记单据状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ArrivalRegistrationStatusEnum.cs` ## 说明 到货登记单据状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary |"
+    },
+    {
+      "path": "docs/generated/enums/AssemblyDeliveryRequestStatusEnum.md",
+      "title": "AssemblyDeliveryRequestStatusEnum 集件配送请求状态",
+      "headings": [
+        "AssemblyDeliveryRequestStatusEnum 集件配送请求状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AssemblyDeliveryRequestStatusEnum 集件配送请求状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\AssemblyDelivery\\AssemblyDeliveryRequestStatusEnum.cs` ## 说明 集件配送请求状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待处理 | | | 2 |"
+    },
+    {
+      "path": "docs/generated/enums/AssignTypeEnum.md",
+      "title": "AssignTypeEnum 指派状态",
+      "headings": [
+        "AssignTypeEnum 指派状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AssignTypeEnum 指派状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockOutInfo\\AssignTypeEnum.cs` ## 说明 指派状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待指派 | | | 2 | summary | | | 0 | WaitAssign | 待指派 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/AuthTypeEnum.md",
+      "title": "AuthTypeEnum",
+      "headings": [
+        "AuthTypeEnum"
+      ],
+      "kind": "doc",
+      "snippet": "# AuthTypeEnum > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\InterfaceInfo\\AuthTypeEnum.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | None | | | 1 | 无需认证 | | | 1 | Basic | | | 3 | HTTP | | | 4 | Basic | | | 5 | 认证 | | | 6 | WebAPI | |"
+    },
+    {
+      "path": "docs/generated/enums/AutoPrintConfigPeriodEnum.md",
+      "title": "AutoPrintConfigPeriodEnum 自动打印配置周期",
+      "headings": [
+        "AutoPrintConfigPeriodEnum 自动打印配置周期",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# AutoPrintConfigPeriodEnum 自动打印配置周期 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\AutoPrintConfigPeriodEnum.cs` ## 说明 自动打印配置周期 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 周日 | | | 2 | summary | | |"
+    },
+    {
+      "path": "docs/generated/enums/BillCategoryEnum.md",
+      "title": "BillCategoryEnum 单据类别枚举",
+      "headings": [
+        "BillCategoryEnum 单据类别枚举",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# BillCategoryEnum 单据类别枚举 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\BillCategoryEnum.cs` ## 说明 单据类别枚举 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 入库 | | | 2 | summary | | | 0 | In | 入库 | | 4 | summary | 入"
+    },
+    {
+      "path": "docs/generated/enums/BindCancleTypeEnum.md",
+      "title": "BindCancleTypeEnum 情盘撤销类型",
+      "headings": [
+        "BindCancleTypeEnum 情盘撤销类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# BindCancleTypeEnum 情盘撤销类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInInfo\\BindRecordEnum.cs` ## 说明 情盘撤销类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 单行撤销 | | | 2 | summary | | | 1 | ONE | 单行撤销 | | 4 | summ"
+    },
+    {
+      "path": "docs/generated/enums/BindStateEnum.md",
+      "title": "BindStateEnum 码盘状态",
+      "headings": [
+        "BindStateEnum 码盘状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# BindStateEnum 码盘状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInInfo\\BindRecordEnum.cs` ## 说明 码盘状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待上架 | | | 2 | summary | | | 0 | WaitAction | 待上架 | | 4 | summary "
+    },
+    {
+      "path": "docs/generated/enums/BorrowPriorityEnum.md",
+      "title": "BorrowPriorityEnum 任务等级",
+      "headings": [
+        "BorrowPriorityEnum 任务等级",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# BorrowPriorityEnum 任务等级 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\BorrowPriorityEnum.cs` ## 说明 任务等级 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 正常 | | | 2 | summary | | | 1 | Average | 正常 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/BusinessTypeEnum.md",
+      "title": "BusinessTypeEnum 业务类型",
+      "headings": [
+        "BusinessTypeEnum 业务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# BusinessTypeEnum 业务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\TaskEnum.cs` ## 说明 业务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 收货上架 | | | 2 | summary | | | 100 | a | 收货上架 | | 4 | summary | 收"
+    },
+    {
+      "path": "docs/generated/enums/BussinessTypeEnum.md",
+      "title": "BussinessTypeEnum 业务类型",
+      "headings": [
+        "BussinessTypeEnum 业务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# BussinessTypeEnum 业务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\BussinessTypeEnum.cs` ## 说明 业务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 拣货 | | | 2 | summary | | | 1 | stockOut | 拣货 | | 4 | "
+    },
+    {
+      "path": "docs/generated/enums/CargoLocationColorEnum.md",
+      "title": "CargoLocationColorEnum 库位颜色",
+      "headings": [
+        "CargoLocationColorEnum 库位颜色",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# CargoLocationColorEnum 库位颜色 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockOutInfo\\WaveEnum.cs` ## 说明 库位颜色 | 值 | 名称 | 含义 | |---|---|---| | 1 | Red | 红 | | 2 | Green | 绿 | | 3 | White | 白 | | 4 | Blue | 蓝 | "
+    },
+    {
+      "path": "docs/generated/enums/CheckResultEnum.md",
+      "title": "CheckResultEnum 到货登记明细清点结果",
+      "headings": [
+        "CheckResultEnum 到货登记明细清点结果",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# CheckResultEnum 到货登记明细清点结果 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\CheckResultEnum.cs` ## 说明 到货登记明细清点结果 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待清点 | | | 2 | summary | | | 0 | Wait | 待清点 | |"
+    },
+    {
+      "path": "docs/generated/enums/CommonSelectEnum.md",
+      "title": "CommonSelectEnum 下拉类型",
+      "headings": [
+        "CommonSelectEnum 下拉类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# CommonSelectEnum 下拉类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ConfigInfo\\CommonSelectEnum.cs` ## 说明 下拉类型 | 值 | 名称 | 含义 | |---|---|---| | 1 | Product | 物料 | | 2 | Wbs | Wbs | | 3 | User | 用户 | | 4 | Supplier | 供应商 | | 5 |"
+    },
+    {
+      "path": "docs/generated/enums/ContainerShapeTypeEnum.md",
+      "title": "ContainerShapeTypeEnum 容器形状类型",
+      "headings": [
+        "ContainerShapeTypeEnum 容器形状类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ContainerShapeTypeEnum 容器形状类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\ContainerShapeTypeEnum.cs` ## 说明 容器形状类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 托盘 | | | 2 | summary | | | 0 | Palle"
+    },
+    {
+      "path": "docs/generated/enums/ContainerTypeEnum.md",
+      "title": "ContainerTypeEnum 容器类型尺寸",
+      "headings": [
+        "ContainerTypeEnum 容器类型尺寸",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ContainerTypeEnum 容器类型尺寸 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\ContainerShapeTypeEnum.cs` ## 说明 容器类型尺寸 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 小 | | | 2 | summary | | | 195 | Small | 1"
+    },
+    {
+      "path": "docs/generated/enums/ContainerUsageRateEnum.md",
+      "title": "ContainerUsageRateEnum 容器使用率",
+      "headings": [
+        "ContainerUsageRateEnum 容器使用率",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ContainerUsageRateEnum 容器使用率 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\ContainerUsageRateEnum.cs` ## 说明 容器使用率 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | summary | | | 20 | TwentyPercent | 20%"
+    },
+    {
+      "path": "docs/generated/enums/CustomTableFieldControlType.md",
+      "title": "CustomTableFieldControlType 自定义字段前端控件类型",
+      "headings": [
+        "CustomTableFieldControlType 自定义字段前端控件类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# CustomTableFieldControlType 自定义字段前端控件类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\CustomTableInfo\\CustomTableEnums.cs` ## 说明 自定义字段前端控件类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 单行输入框 | | | 2 | summary | | | 1"
+    },
+    {
+      "path": "docs/generated/enums/CustomTableFieldDataType.md",
+      "title": "CustomTableFieldDataType 自定义字段数据库类型",
+      "headings": [
+        "CustomTableFieldDataType 自定义字段数据库类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# CustomTableFieldDataType 自定义字段数据库类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\CustomTableInfo\\CustomTableEnums.cs` ## 说明 自定义字段数据库类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 短文本 | | | 2 | summary | | | 1 | Varc"
+    },
+    {
+      "path": "docs/generated/enums/CustomTableSchemaChangeAction.md",
+      "title": "CustomTableSchemaChangeAction 自定义表结构变更动作",
+      "headings": [
+        "CustomTableSchemaChangeAction 自定义表结构变更动作",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# CustomTableSchemaChangeAction 自定义表结构变更动作 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\CustomTableInfo\\CustomTableEnums.cs` ## 说明 自定义表结构变更动作 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 创建表 | | | 2 | summary | | | 1 |"
+    },
+    {
+      "path": "docs/generated/enums/DeliveryShipmentDetailStatusEnum.md",
+      "title": "DeliveryShipmentDetailStatusEnum 交付发运单明细状态",
+      "headings": [
+        "DeliveryShipmentDetailStatusEnum 交付发运单明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# DeliveryShipmentDetailStatusEnum 交付发运单明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain\\DeliveryShipmentInfo\\DeliveryShipmentDetail.cs` ## 说明 交付发运单明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待收货 | | | 2 | summary | | "
+    },
+    {
+      "path": "docs/generated/enums/DeliveryShipmentStatusEnum.md",
+      "title": "DeliveryShipmentStatusEnum 交付发运单状态",
+      "headings": [
+        "DeliveryShipmentStatusEnum 交付发运单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# DeliveryShipmentStatusEnum 交付发运单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain\\DeliveryShipmentInfo\\DeliveryShipment.cs` ## 说明 交付发运单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待收货 | | | 2 | summary | | | 0 | PendingRec"
+    },
+    {
+      "path": "docs/generated/enums/DestionEnum.md",
+      "title": "DestionEnum 目的地",
+      "headings": [
+        "DestionEnum 目的地",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# DestionEnum 目的地 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 目的地 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 一层出库口 | | | 2 | summary | | | 1 | OneOutOne | 一层出库口 | | 4 | summary | 一层出库口 | | 5 "
+    },
+    {
+      "path": "docs/generated/enums/DeviceStatusEnum.md",
+      "title": "DeviceStatusEnum 设备状态",
+      "headings": [
+        "DeviceStatusEnum 设备状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# DeviceStatusEnum 设备状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\IdentityInfo\\DeviceStatus.cs` ## 说明 设备状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 正常 | | | 2 | summary | | | 0 | Common | 正常 | | 4 | summary | 正常"
+    },
+    {
+      "path": "docs/generated/enums/DictionaryEnum.md",
+      "title": "DictionaryEnum",
+      "headings": [
+        "DictionaryEnum"
+      ],
+      "kind": "doc",
+      "snippet": "# DictionaryEnum > 由 ABP 源码自动生成：`OLD.WMS.Domain\\PublicAggregate\\DictionaryEnum.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 扫描序列号长度 | | | 2 | summary | | | 1001 | ScanLength | 扫描序列号长度 | "
+    },
+    {
+      "path": "docs/generated/enums/DownBoxDestinationEnum.md",
+      "title": "DownBoxDestinationEnum 手动出库目的地",
+      "headings": [
+        "DownBoxDestinationEnum 手动出库目的地",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# DownBoxDestinationEnum 手动出库目的地 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\EmptyOutDestination.cs` ## 说明 手动出库目的地 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 一号工作台 | | | 2 | summary | | | 1 | P1 "
+    },
+    {
+      "path": "docs/generated/enums/EmptyDestionEnum.md",
+      "title": "EmptyDestionEnum 空托盘目的地",
+      "headings": [
+        "EmptyDestionEnum 空托盘目的地",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# EmptyDestionEnum 空托盘目的地 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 空托盘目的地 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 一巷道拆叠盘机 | | | 2 | summary | | | 1012 | OneEmptyOne | 一巷道拆叠盘机 | | 4 | su"
+    },
+    {
+      "path": "docs/generated/enums/EmptyOutDestinationEnum.md",
+      "title": "EmptyOutDestinationEnum 空料笱出库目的地",
+      "headings": [
+        "EmptyOutDestinationEnum 空料笱出库目的地",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# EmptyOutDestinationEnum 空料笱出库目的地 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\EmptyOutDestination.cs` ## 说明 空料笱出库目的地 | 值 | 名称 | 含义 | |---|---|---| | 1 | P1 | 一号工作台 | | 2 | P2 | 二号工作台 | | 3 | P3 | 三号工作台 | |"
+    },
+    {
+      "path": "docs/generated/enums/EmptyOutStackerDestinationEnum.md",
+      "title": "EmptyOutStackerDestinationEnum 空网笼出库目的地",
+      "headings": [
+        "EmptyOutStackerDestinationEnum 空网笼出库目的地",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# EmptyOutStackerDestinationEnum 空网笼出库目的地 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\EmptyOutDestination.cs` ## 说明 空网笼出库目的地 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 出库口 | | | 2 | summary | | |"
+    },
+    {
+      "path": "docs/generated/enums/EndpointConfiguration.md",
+      "title": "EndpointConfiguration",
+      "headings": [
+        "EndpointConfiguration"
+      ],
+      "kind": "doc",
+      "snippet": "# EndpointConfiguration > 由 ABP 源码自动生成：`OLD.WMS.Thirdparties.HttpApi\\Connected Services\\UsageDecision\\Reference.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | HTTP_Port | | | 1 | HTTPS_Port | | "
+    },
+    {
+      "path": "docs/generated/enums/EntranceEnum.md",
+      "title": "EntranceEnum 出入库口",
+      "headings": [
+        "EntranceEnum 出入库口",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# EntranceEnum 出入库口 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 出入库口 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 楼1号出库口 | | | 2 | summary | | | 1009 | OneOutOne | 一巷道出库口 | | 4 | summary | 1楼1号"
+    },
+    {
+      "path": "docs/generated/enums/ExcelBody.md",
+      "title": "ExcelBody",
+      "headings": [
+        "ExcelBody"
+      ],
+      "kind": "doc",
+      "snippet": "# ExcelBody > 由 ABP 源码自动生成：`Core\\Volo.Abp.Extension.Core\\NPOI\\ExcelBody.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | Title | | | 1 | Body | | "
+    },
+    {
+      "path": "docs/generated/enums/GroundShelfTypeEnum.md",
+      "title": "GroundShelfTypeEnum 上架类型",
+      "headings": [
+        "GroundShelfTypeEnum 上架类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# GroundShelfTypeEnum 上架类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInInfo\\BindRecordEnum.cs` ## 说明 上架类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 平库上架 | | | 2 | summary | | | 0 | Common | 平库上架 | | 4 | summ"
+    },
+    {
+      "path": "docs/generated/enums/HistoryReportTypeEnum.md",
+      "title": "HistoryReportTypeEnum 流水报表类型",
+      "headings": [
+        "HistoryReportTypeEnum 流水报表类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# HistoryReportTypeEnum 流水报表类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\HistoryTypeEnum.cs` ## 说明 流水报表类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 年报表 | | | 2 | summary | | | 0 | Year | 年报表 | | 4 | sum"
+    },
+    {
+      "path": "docs/generated/enums/HistoryTypeEnum.md",
+      "title": "HistoryTypeEnum 库存流水类别",
+      "headings": [
+        "HistoryTypeEnum 库存流水类别",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# HistoryTypeEnum 库存流水类别 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\HistoryTypeEnum.cs` ## 说明 库存流水类别 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 上架 | | | 2 | summary | | | 1 | In | 上架 | | 4 | summary | 上架 "
+    },
+    {
+      "path": "docs/generated/enums/IdentityClaimValueType.md",
+      "title": "IdentityClaimValueType",
+      "headings": [
+        "IdentityClaimValueType"
+      ],
+      "kind": "doc",
+      "snippet": "# IdentityClaimValueType > 由 ABP 源码自动生成：`Identity\\IdentityManagement.Domain.Shared\\Identity\\IdentityClaimValueType.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | String | | | 1 | Int | | | 2 | Boolean | | | 3 | DateTime | | "
+    },
+    {
+      "path": "docs/generated/enums/IltStateEnum.md",
+      "title": "IltStateEnum 盘点单据状态",
+      "headings": [
+        "IltStateEnum 盘点单据状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# IltStateEnum 盘点单据状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 盘点单据状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待盘点 | | | 2 | summary | | | 1 | NoILT | 待盘点 | | 4 | summary | 待盘点 | | 5 | 盘"
+    },
+    {
+      "path": "docs/generated/enums/IltTypeEnum.md",
+      "title": "IltTypeEnum 盘点结果",
+      "headings": [
+        "IltTypeEnum 盘点结果",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# IltTypeEnum 盘点结果 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ILTInfo\\IltTypeEnum.cs` ## 说明 盘点结果 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 盘亏 | | | 2 | summary | | | 0 | a | 盘亏 | | 4 | summary | 盘亏 | | 5 | 盘盈 | 盘亏"
+    },
+    {
+      "path": "docs/generated/enums/InDestionEnum.md",
+      "title": "InDestionEnum 入库口",
+      "headings": [
+        "InDestionEnum 入库口",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InDestionEnum 入库口 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 入库口 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 二巷道入库口 | | | 2 | summary | | | 1006 | OneInTwo | 二巷道入库口 | | 4 | summary | 二巷道入库口"
+    },
+    {
+      "path": "docs/generated/enums/InType.md",
+      "title": "InType 入库类型",
+      "headings": [
+        "InType 入库类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InType 入库类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain\\FourLocation\\DTO\\LocationStrategyContext.cs` ## 说明 入库类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 收货上架 | | | 2 | summary | | | 3 | Production | 收货上架 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/InboundApplicationDetailStatusEnum.md",
+      "title": "InboundApplicationDetailStatusEnum 入库申请单明细状态",
+      "headings": [
+        "InboundApplicationDetailStatusEnum 入库申请单明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InboundApplicationDetailStatusEnum 入库申请单明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\InboundApplicationDetailStatusEnum.cs` ## 说明 入库申请单明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2"
+    },
+    {
+      "path": "docs/generated/enums/InboundApplicationSourceEnum.md",
+      "title": "InboundApplicationSourceEnum 入库申请单订单类型",
+      "headings": [
+        "InboundApplicationSourceEnum 入库申请单订单类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InboundApplicationSourceEnum 入库申请单订单类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\InboundApplicationSourceEnum.cs` ## 说明 入库申请单订单类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 采购入库 | | | 2 | 走到货登记 |"
+    },
+    {
+      "path": "docs/generated/enums/InboundApplicationStatusEnum.md",
+      "title": "InboundApplicationStatusEnum 入库申请单状态",
+      "headings": [
+        "InboundApplicationStatusEnum 入库申请单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InboundApplicationStatusEnum 入库申请单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\InboundApplicationStatusEnum.cs` ## 说明 入库申请单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary | | |"
+    },
+    {
+      "path": "docs/generated/enums/InboundStockTypeEnum.md",
+      "title": "InboundStockTypeEnum 存货类型",
+      "headings": [
+        "InboundStockTypeEnum 存货类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InboundStockTypeEnum 存货类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\InventoryTypeEnum.cs` ## 说明 存货类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | Q | | | 2 | 项目库存 | | | 3 | summary | | | 0 | Q | Q "
+    },
+    {
+      "path": "docs/generated/enums/InspectionInboundSourceEnum.md",
+      "title": "InspectionInboundSourceEnum 检验入库单订单类型",
+      "headings": [
+        "InspectionInboundSourceEnum 检验入库单订单类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InspectionInboundSourceEnum 检验入库单订单类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\InspectionInboundSourceEnum.cs` ## 说明 检验入库单订单类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 采购入库 | | | 2 | 走到货登记 | |"
+    },
+    {
+      "path": "docs/generated/enums/InspectionInboundStatusEnum.md",
+      "title": "InspectionInboundStatusEnum 入库单状态",
+      "headings": [
+        "InspectionInboundStatusEnum 入库单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InspectionInboundStatusEnum 入库单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\InspectionInboundStatusEnum.cs` ## 说明 入库单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary | | | 0 | D"
+    },
+    {
+      "path": "docs/generated/enums/InteractiveSystemEnum.md",
+      "title": "InteractiveSystemEnum 交互系统",
+      "headings": [
+        "InteractiveSystemEnum 交互系统",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InteractiveSystemEnum 交互系统 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\TaskEnum.cs` ## 说明 交互系统 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 四向车 | | | 2 | summary | | | 0 | SXC | 四向车 | | 4 | summary "
+    },
+    {
+      "path": "docs/generated/enums/InterfaceTypeEnum.md",
+      "title": "InterfaceTypeEnum",
+      "headings": [
+        "InterfaceTypeEnum"
+      ],
+      "kind": "doc",
+      "snippet": "# InterfaceTypeEnum > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\InterfaceInfo\\InterfaceTypeEnum.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | WebAPI | | | 1 | 对应 | | | 2 | ASP | | | 3 | NET | | | 4 | WebAPI | | | 5 | RESTful | | | 1"
+    },
+    {
+      "path": "docs/generated/enums/InventoryDimensionEnum.md",
+      "title": "InventoryDimensionEnum 盘点维度",
+      "headings": [
+        "InventoryDimensionEnum 盘点维度",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InventoryDimensionEnum 盘点维度 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ILTInfo\\InventoryDimensionEnum.cs` ## 说明 盘点维度 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 库位维度 | | | 2 | 按库位筛选 | | | 3 | 该库位下发生过选中的动盘类型即纳入盘点范围"
+    },
+    {
+      "path": "docs/generated/enums/InventoryModeEnum.md",
+      "title": "InventoryModeEnum 盘点模式",
+      "headings": [
+        "InventoryModeEnum 盘点模式",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InventoryModeEnum 盘点模式 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ILTInfo\\InventoryModeEnum.cs` ## 说明 盘点模式 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 明盘 | | | 2 | 拣货员执行拣货任务界面可看到在库量 | | | 3 | summary | | | 1 | Ope"
+    },
+    {
+      "path": "docs/generated/enums/InventoryTypeEnum.md",
+      "title": "InventoryTypeEnum 盘点类型",
+      "headings": [
+        "InventoryTypeEnum 盘点类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# InventoryTypeEnum 盘点类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ILTInfo\\InventoryTypeEnum.cs` ## 说明 盘点类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 抽盘 | | | 2 | summary | | | 1 | Partial | 抽盘 | | 4 | summary | "
+    },
+    {
+      "path": "docs/generated/enums/KeyTypeEnum.md",
+      "title": "KeyTypeEnum 自定义查询入参",
+      "headings": [
+        "KeyTypeEnum 自定义查询入参",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# KeyTypeEnum 自定义查询入参 > 由 ABP 源码自动生成：`Core\\Volo.Abp.Extension.Core\\Manager\\CustomQuery.cs` ## 说明 自定义查询入参 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 字符串类型 | | | 2 | summary | | | 1 | Str | 字符串类型 | | 4 | summary"
+    },
+    {
+      "path": "docs/generated/enums/LabelDeliveryStateEnum.md",
+      "title": "LabelDeliveryStateEnum 标签集货状态",
+      "headings": [
+        "LabelDeliveryStateEnum 标签集货状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# LabelDeliveryStateEnum 标签集货状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockOutInfo\\WaveEnum.cs` ## 说明 标签集货状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 未组托 | | | 2 | summary | | | 1 | NotGroup | 未组托 | | 4 | su"
+    },
+    {
+      "path": "docs/generated/enums/LoadStatusEnum.md",
+      "title": "LoadStatusEnum 载货状态",
+      "headings": [
+        "LoadStatusEnum 载货状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# LoadStatusEnum 载货状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\LoadStatusEnum.cs` ## 说明 载货状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 空闲 | | | 2 | summary | | | 0 | Free | 空闲 | | 4 | summary | 空闲 | | 5 | 在用 | 空"
+    },
+    {
+      "path": "docs/generated/enums/LocationTypeEnum.md",
+      "title": "LocationTypeEnum 库位类型",
+      "headings": [
+        "LocationTypeEnum 库位类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# LocationTypeEnum 库位类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\LocationTypeEnum.cs` ## 说明 库位类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 仓库存储库位 | | | 2 | summary | | | 0 | storage | 仓库存储库位 "
+    },
+    {
+      "path": "docs/generated/enums/MRStatusEnum.md",
+      "title": "MRStatusEnum 维保状态",
+      "headings": [
+        "MRStatusEnum 维保状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# MRStatusEnum 维保状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\MRStatusEnum.cs` ## 说明 维保状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 已过期 | | | 2 | summary | | | 1 | a | 已过期 | | 4 | summary | 已过期 | | 5 | "
+    },
+    {
+      "path": "docs/generated/enums/MenuTypeEnum.md",
+      "title": "MenuTypeEnum 菜单类型",
+      "headings": [
+        "MenuTypeEnum 菜单类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# MenuTypeEnum 菜单类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInInfo\\MenuKeyValue.cs` ## 说明 菜单类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 物料编码 | | | 2 | summary | | | 1 | ProductCode | 物料编码 | | 4 | summary "
+    },
+    {
+      "path": "docs/generated/enums/MoveBillDetailStateEnum.md",
+      "title": "MoveBillDetailStateEnum 移库单明细状态",
+      "headings": [
+        "MoveBillDetailStateEnum 移库单明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# MoveBillDetailStateEnum 移库单明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\RelocationInfo\\MoveBillDetailStateEnum.cs` ## 说明 移库单明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待处理 | | | 2 | summary | | | 0 | Wait "
+    },
+    {
+      "path": "docs/generated/enums/MoveBillStateEnum.md",
+      "title": "MoveBillStateEnum 移库单状态",
+      "headings": [
+        "MoveBillStateEnum 移库单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# MoveBillStateEnum 移库单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\RelocationInfo\\MoveBillStateEnum.cs` ## 说明 移库单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 等待 | | | 2 | summary | | | 0 | Wait | 请选择 | | 4 | sum"
+    },
+    {
+      "path": "docs/generated/enums/MoveBillTypeEnum.md",
+      "title": "MoveBillTypeEnum 移库单类型",
+      "headings": [
+        "MoveBillTypeEnum 移库单类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# MoveBillTypeEnum 移库单类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\RelocationInfo\\MoveBillTypeEnum.cs` ## 说明 移库单类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 库内作业 | | | 2 | summary | | | 0 | StockInWork | 库内作业 | |"
+    },
+    {
+      "path": "docs/generated/enums/MoveTypeEnum.md",
+      "title": "MoveTypeEnum 移动类型",
+      "headings": [
+        "MoveTypeEnum 移动类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# MoveTypeEnum 移动类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\RelocationInfo\\MoveTypeEnum.cs` ## 说明 移动类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 移入 | | | 2 | summary | | | 0 | YR | 移入 | | 4 | summary | 移入 | | 5"
+    },
+    {
+      "path": "docs/generated/enums/NeedStop.md",
+      "title": "NeedStop 停止位属性：0不需要停止，1经过必须停止",
+      "headings": [
+        "NeedStop 停止位属性：0不需要停止，1经过必须停止",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# NeedStop 停止位属性：0不需要停止，1经过必须停止 > 由 ABP 源码自动生成：`OLD.WMS.Domain\\FourLocation\\DTO\\map.cs` ## 说明 停止位属性：0不需要停止，1经过必须停止 | 值 | 名称 | 含义 | |---|---|---| | 1 | Yes | 是 | | 0 | No | 否 | "
+    },
+    {
+      "path": "docs/generated/enums/NonPurchaseInboundStatusEnum.md",
+      "title": "NonPurchaseInboundStatusEnum 非采购入库单状态",
+      "headings": [
+        "NonPurchaseInboundStatusEnum 非采购入库单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# NonPurchaseInboundStatusEnum 非采购入库单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\NonPurchaseInbound\\NonPurchaseInboundStatusEnum.cs` ## 说明 非采购入库单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary "
+    },
+    {
+      "path": "docs/generated/enums/OfflineJobStatus.md",
+      "title": "OfflineJobStatus 离线作业执行状态枚举",
+      "headings": [
+        "OfflineJobStatus 离线作业执行状态枚举",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OfflineJobStatus 离线作业执行状态枚举 > 由 ABP 源码自动生成：`OLD.WMS.Domain\\OfflineJobInfo\\OfflineJobStatus.cs` ## 说明 离线作业执行状态枚举 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待执行 | | | 2 | summary | | | 0 | Pending | 待执行 | | 4 "
+    },
+    {
+      "path": "docs/generated/enums/OilSealUnitTypeEnum.md",
+      "title": "OilSealUnitTypeEnum",
+      "headings": [
+        "OilSealUnitTypeEnum"
+      ],
+      "kind": "doc",
+      "snippet": "# OilSealUnitTypeEnum > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\OilSealUnitTypeEnum.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | Inner | 内部部门 | | 1 | Outter | 外部公司 | "
+    },
+    {
+      "path": "docs/generated/enums/OperationWarningEnum.md",
+      "title": "OperationWarningEnum 操作提示",
+      "headings": [
+        "OperationWarningEnum 操作提示",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OperationWarningEnum 操作提示 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\UseLifeUnitEnum.cs` ## 说明 操作提示 | 值 | 名称 | 含义 | |---|---|---| | 0 | Wcz | 无操作 | | 1 | Vb | 维保 | | 2 | Bj | 班检 | | 3 | Dj | 冻结 | | 4 | Ch | 催还 | |"
+    },
+    {
+      "path": "docs/generated/enums/OrderDetailStateEnum.md",
+      "title": "OrderDetailStateEnum 出库单明细状态",
+      "headings": [
+        "OrderDetailStateEnum 出库单明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OrderDetailStateEnum 出库单明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 出库单明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待过账 | | | 2 | summary | | | 10 | 待过账 | 待过账 | | 4 | summary | 待过账 "
+    },
+    {
+      "path": "docs/generated/enums/OrderMarkStateEnum.md",
+      "title": "OrderMarkStateEnum 分配状态",
+      "headings": [
+        "OrderMarkStateEnum 分配状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OrderMarkStateEnum 分配状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 分配状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待分配 | | | 2 | summary | | | 0 | WaitMark | 待分配 | | 4 | summary | 待分配 | | "
+    },
+    {
+      "path": "docs/generated/enums/OrderSourceStateEnum.md",
+      "title": "OrderSourceStateEnum 单据来源",
+      "headings": [
+        "OrderSourceStateEnum 单据来源",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OrderSourceStateEnum 单据来源 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 单据来源 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 未制单 | | | 2 | summary | | | 1 | SAP | SAP | | 4 | summary | 未制单 | | 5 |"
+    },
+    {
+      "path": "docs/generated/enums/OrderStateEnum.md",
+      "title": "OrderStateEnum 出库单状态",
+      "headings": [
+        "OrderStateEnum 出库单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OrderStateEnum 出库单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 出库单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 已制单 | | | 2 | summary | | | 10 | 已制单 | 已制单 | | 4 | summary | 已制单 | | 5 | 用户"
+    },
+    {
+      "path": "docs/generated/enums/OutDestionEnum.md",
+      "title": "OutDestionEnum 出库口",
+      "headings": [
+        "OutDestionEnum 出库口",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OutDestionEnum 出库口 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 出库口 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 一巷道出库口 | | | 2 | summary | | | 1009 | OneOutOne | 一巷道出库口 | | 4 | summary | 一巷道出"
+    },
+    {
+      "path": "docs/generated/enums/OverdueDateEnum.md",
+      "title": "OverdueDateEnum 过期时间范围",
+      "headings": [
+        "OverdueDateEnum 过期时间范围",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# OverdueDateEnum 过期时间范围 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\OverdueWarningInput.cs` ## 说明 过期时间范围 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 所有 | | | 2 | summary | | | 100 | All | 所有 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/PackingDetailStatusEnum.md",
+      "title": "PackingDetailStatusEnum 装箱明细状态",
+      "headings": [
+        "PackingDetailStatusEnum 装箱明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PackingDetailStatusEnum 装箱明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PackingEnums.cs` ## 说明 装箱明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 正常 | | | 2 | 装箱明细正常有效 | | | 3 | summary | | | 0 | Normal | 正常 | |"
+    },
+    {
+      "path": "docs/generated/enums/PackingStatusEnum.md",
+      "title": "PackingStatusEnum 装箱单状态",
+      "headings": [
+        "PackingStatusEnum 装箱单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PackingStatusEnum 装箱单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PackingEnums.cs` ## 说明 装箱单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 装箱中 | | | 2 | 装箱单已创建 | | | 3 | 正在进行装箱操作 | | | 4 | summary | | | 0 | Packi"
+    },
+    {
+      "path": "docs/generated/enums/PackingTypeEnum.md",
+      "title": "PackingTypeEnum 装箱类型",
+      "headings": [
+        "PackingTypeEnum 装箱类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PackingTypeEnum 装箱类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PackingEnums.cs` ## 说明 装箱类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 实体容器装箱 | | | 2 | 使用真实的物理托盘 | | | 3 | 容器 | | | 4 | summary | | | 0 | Physical "
+    },
+    {
+      "path": "docs/generated/enums/PalletTypeEnum.md",
+      "title": "PalletTypeEnum 托盘类型",
+      "headings": [
+        "PalletTypeEnum 托盘类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PalletTypeEnum 托盘类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\ContainerShapeTypeEnum.cs` ## 说明 托盘类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 托盘 | | | 2 | summary | | | 0 | IronPallet | 1.2*"
+    },
+    {
+      "path": "docs/generated/enums/PickRegionEnum.md",
+      "title": "PickRegionEnum 拣货区域",
+      "headings": [
+        "PickRegionEnum 拣货区域",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PickRegionEnum 拣货区域 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 拣货区域 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 平库 | | | 2 | summary | | | 1 | PK | 平库 | | 4 | summary | 平库 | | 5 | 立库 | 平库 |"
+    },
+    {
+      "path": "docs/generated/enums/PickStateEnum.md",
+      "title": "PickStateEnum 拣货单状态",
+      "headings": [
+        "PickStateEnum 拣货单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PickStateEnum 拣货单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 拣货单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待拣货 | | | 2 | summary | | | 10 | NoPick | 待拣货 | | 4 | summary | 待拣货 | | 5 | "
+    },
+    {
+      "path": "docs/generated/enums/PointType.md",
+      "title": "PointType 多车方向",
+      "headings": [
+        "PointType 多车方向",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PointType 多车方向 > 由 ABP 源码自动生成：`OLD.WMS.Domain\\FourLocation\\DTO\\map.cs` ## 说明 多车方向 | 值 | 名称 | 含义 | |---|---|---| | 0 | Location | 货位点 | | 1 | LoopLocation | 环线载货通道点 | | 2 | OtherLoopLocation | 其它载货通道点 | | 3 | ElevatorLo"
+    },
+    {
+      "path": "docs/generated/enums/PointTypeEnum.md",
+      "title": "PointTypeEnum 点位性质",
+      "headings": [
+        "PointTypeEnum 点位性质",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# PointTypeEnum 点位性质 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\PointTypeEnum.cs` ## 说明 点位性质 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 分拣 | | | 2 | summary | | | 0 | sorting | 分拣 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/ProductBigClassEnum.md",
+      "title": "ProductBigClassEnum 物料大类",
+      "headings": [
+        "ProductBigClassEnum 物料大类",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ProductBigClassEnum 物料大类 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\ProductBigClassEnum.cs` ## 说明 物料大类 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 零件 | | | 2 | summary | | | 1 | a | 零件 | | 4 | summary | "
+    },
+    {
+      "path": "docs/generated/enums/ProductClassTypeEnum.md",
+      "title": "ProductClassTypeEnum 物料分类类型",
+      "headings": [
+        "ProductClassTypeEnum 物料分类类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ProductClassTypeEnum 物料分类类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ProductInfo\\ProductEnum.cs` ## 说明 物料分类类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 零组件 | | | 2 | summary | | | 1 | SpareParts | 零组件 | | 4 | "
+    },
+    {
+      "path": "docs/generated/enums/ProductLevelEnum.md",
+      "title": "ProductLevelEnum ABC标识",
+      "headings": [
+        "ProductLevelEnum ABC标识",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ProductLevelEnum ABC标识 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ProductInfo\\Enums\\ProductLevelEnum.cs` ## 说明 ABC标识 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 高频 | | | 2 | summary | | | 0 | A | A | | 4 | summary"
+    },
+    {
+      "path": "docs/generated/enums/ProductPickTypeEnum.md",
+      "title": "ProductPickTypeEnum 拣货方式",
+      "headings": [
+        "ProductPickTypeEnum 拣货方式",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ProductPickTypeEnum 拣货方式 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ProductInfo\\ProductEnum.cs` ## 说明 拣货方式 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 捆包件 | | | 2 | summary | | | 1 | packing | 捆包件 | | 4 | summary "
+    },
+    {
+      "path": "docs/generated/enums/ProductSizeEnum.md",
+      "title": "ProductSizeEnum 物料尺寸",
+      "headings": [
+        "ProductSizeEnum 物料尺寸",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ProductSizeEnum 物料尺寸 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ProductInfo\\Enums\\ProductSizeEnum.cs` ## 说明 物料尺寸 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 普通件 | | | 2 | summary | | | 0 | FinishProduct | 普通件 | | "
+    },
+    {
+      "path": "docs/generated/enums/ProductTypeEnum.md",
+      "title": "ProductTypeEnum 存货类别",
+      "headings": [
+        "ProductTypeEnum 存货类别",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ProductTypeEnum 存货类别 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ProductInfo\\Enums\\ProductTypeEnum.cs` ## 说明 存货类别 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 适航件 | | | 2 | summary | | | 0 | Air | 适航件 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/QualityInspectionStatusEnum.md",
+      "title": "QualityInspectionStatusEnum 质检登记状态",
+      "headings": [
+        "QualityInspectionStatusEnum 质检登记状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# QualityInspectionStatusEnum 质检登记状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\QualityInspectionStatusEnum.cs` ## 说明 质检登记状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待质检 | | | 2 | summary | | | 0 "
+    },
+    {
+      "path": "docs/generated/enums/ReceivingConclusionEnum.md",
+      "title": "ReceivingConclusionEnum 收货结论",
+      "headings": [
+        "ReceivingConclusionEnum 收货结论",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ReceivingConclusionEnum 收货结论 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ReceivingConclusionEnum.cs` ## 说明 收货结论 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 收货 | | | 2 | summary | | | 0 | Received | "
+    },
+    {
+      "path": "docs/generated/enums/RegionEnum.md",
+      "title": "RegionEnum 区域属性",
+      "headings": [
+        "RegionEnum 区域属性",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# RegionEnum 区域属性 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\RegionEnum.cs` ## 说明 区域属性 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 综合库 | | | 2 | 堆垛机 | | | 3 | summary | | | 8001 | MultipleThreadi"
+    },
+    {
+      "path": "docs/generated/enums/RegionTypeEnum.md",
+      "title": "RegionTypeEnum 区域属性",
+      "headings": [
+        "RegionTypeEnum 区域属性",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# RegionTypeEnum 区域属性 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\RegionTypeEnum.cs` ## 说明 区域属性 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 平库区域 | | | 2 | summary | | | 10005 | FLAT | 平库区域 | | 4 |"
+    },
+    {
+      "path": "docs/generated/enums/RenovateStateEnum.md",
+      "title": "RenovateStateEnum 翻包状态",
+      "headings": [
+        "RenovateStateEnum 翻包状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# RenovateStateEnum 翻包状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInInfo\\RenovateStateEnum.cs` ## 说明 翻包状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 无需翻包 | | | 2 | summary | | | 1 | Not | 无需翻包 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/RotatingBussinessType.md",
+      "title": "RotatingBussinessType 旋转柜类型",
+      "headings": [
+        "RotatingBussinessType 旋转柜类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# RotatingBussinessType 旋转柜类型 > 由 ABP 源码自动生成：`OLD.WMS.Application.Contracts\\PDA\\StockOut\\RotatingCabinet\\RotatingCabinetResult.cs` ## 说明 旋转柜类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 普通拣选 | | | 2 | summary "
+    },
+    {
+      "path": "docs/generated/enums/RowOperationType.md",
+      "title": "RowOperationType 行操作类型",
+      "headings": [
+        "RowOperationType 行操作类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# RowOperationType 行操作类型 > 由 ABP 源码自动生成：`OLD.WMS.Application.Contracts\\ConfigInfo\\TableInfoDto.cs` ## 说明 行操作类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 更新 | | | 2 | summary | | | 0 | Update | 更新 | | 4 | summ"
+    },
+    {
+      "path": "docs/generated/enums/SapStatusEnum.md",
+      "title": "SapStatusEnum SAP过账状态",
+      "headings": [
+        "SapStatusEnum SAP过账状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# SapStatusEnum SAP过账状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ShelvingStatusEnum.cs` ## 说明 SAP过账状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待过账 | | | 2 | summary | | | 10 | Wait | 待过账 | | 4 |"
+    },
+    {
+      "path": "docs/generated/enums/ScreenServiceTypeEnum.md",
+      "title": "ScreenServiceTypeEnum 大屏服务类别",
+      "headings": [
+        "ScreenServiceTypeEnum 大屏服务类别",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ScreenServiceTypeEnum 大屏服务类别 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ScreenInfo\\ScreenServiceTypeEnum.cs` ## 说明 大屏服务类别 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 程序服务 | | | 2 | summary | | | 1 | code | 程序服务 | "
+    },
+    {
+      "path": "docs/generated/enums/SelectRegionEnum.md",
+      "title": "SelectRegionEnum 移库区域选择",
+      "headings": [
+        "SelectRegionEnum 移库区域选择",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# SelectRegionEnum 移库区域选择 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\RegionEnum.cs` ## 说明 移库区域选择 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 多穿车区域 | | | 2 | summary | | | 8001 | MultipleThreading"
+    },
+    {
+      "path": "docs/generated/enums/ShelfDirectionEnum.md",
+      "title": "ShelfDirectionEnum 货架方向",
+      "headings": [
+        "ShelfDirectionEnum 货架方向",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ShelfDirectionEnum 货架方向 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\ShelfDirectionEnum.cs` ## 说明 货架方向 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 左 | | | 2 | summary | | | 0 | Left | 左 | | 4 | s"
+    },
+    {
+      "path": "docs/generated/enums/ShelvingRecordStatusEnum.md",
+      "title": "ShelvingRecordStatusEnum 上架记录上架状态",
+      "headings": [
+        "ShelvingRecordStatusEnum 上架记录上架状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ShelvingRecordStatusEnum 上架记录上架状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ShelvingStatusEnum.cs` ## 说明 上架记录上架状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待上架 | | | 2 | summary | | | 10 | Pendi"
+    },
+    {
+      "path": "docs/generated/enums/ShelvingStatusEnum.md",
+      "title": "ShelvingStatusEnum 上架状态",
+      "headings": [
+        "ShelvingStatusEnum 上架状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ShelvingStatusEnum 上架状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\ShelvingStatusEnum.cs` ## 说明 上架状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待清点 | | | 2 | summary | | | 0 | AwaitCheck | 待清点 | |"
+    },
+    {
+      "path": "docs/generated/enums/ShipperTypeEnum.md",
+      "title": "ShipperTypeEnum 出货方类型",
+      "headings": [
+        "ShipperTypeEnum 出货方类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ShipperTypeEnum 出货方类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\ShipperTypeEnum.cs` ## 说明 出货方类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 托盘 | | | 2 | summary | | | 0 | Pallet | 客户 | | 4 | s"
+    },
+    {
+      "path": "docs/generated/enums/SortEnum.md",
+      "title": "SortEnum 出入库排序",
+      "headings": [
+        "SortEnum 出入库排序",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# SortEnum 出入库排序 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\LocationTypeEnum.cs` ## 说明 出入库排序 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 正序 | | | 2 | summary | | | 1 | ASC | 正序 | | 4 | summary | "
+    },
+    {
+      "path": "docs/generated/enums/SourceBillTypeEnum.md",
+      "title": "SourceBillTypeEnum 上架来源单据类型",
+      "headings": [
+        "SourceBillTypeEnum 上架来源单据类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# SourceBillTypeEnum 上架来源单据类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PurchaseInbound\\SourceBillTypeEnum.cs` ## 说明 上架来源单据类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 采购入库 | | | 2 | summary | | | 0 | InspectionI"
+    },
+    {
+      "path": "docs/generated/enums/SourceTypeEnum.md",
+      "title": "SourceTypeEnum 数据来源类型",
+      "headings": [
+        "SourceTypeEnum 数据来源类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# SourceTypeEnum 数据来源类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTypeEnum.cs` ## 说明 数据来源类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | Api | API接口 | | 1 | SqlView | 数据库视图 | "
+    },
+    {
+      "path": "docs/generated/enums/SpecialEquipmentStatusEnum.md",
+      "title": "SpecialEquipmentStatusEnum 特种设备状态枚举",
+      "headings": [
+        "SpecialEquipmentStatusEnum 特种设备状态枚举",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# SpecialEquipmentStatusEnum 特种设备状态枚举 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\SpecialEquipmentInfo\\SpecialEquipmentStatusEnum.cs` ## 说明 特种设备状态枚举 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary | "
+    },
+    {
+      "path": "docs/generated/enums/StagingTypeEnum.md",
+      "title": "StagingTypeEnum 柜体类型",
+      "headings": [
+        "StagingTypeEnum 柜体类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StagingTypeEnum 柜体类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\StagingTypeEnum.cs` ## 说明 柜体类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 旋转柜 | | | 2 | summary | | | 0 | HZG | 旋转柜 | | 4 | summ"
+    },
+    {
+      "path": "docs/generated/enums/StockDiffAdjustmentStateEnum.md",
+      "title": "StockDiffAdjustmentStateEnum 盘点差异调整单状态",
+      "headings": [
+        "StockDiffAdjustmentStateEnum 盘点差异调整单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockDiffAdjustmentStateEnum 盘点差异调整单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockDiffAdjustmentInfo\\StockDiffAdjustmentStateEnum.cs` ## 说明 盘点差异调整单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | s"
+    },
+    {
+      "path": "docs/generated/enums/StockDiffAdjustmentTypeEnum.md",
+      "title": "StockDiffAdjustmentTypeEnum 盘点差异调整类型",
+      "headings": [
+        "StockDiffAdjustmentTypeEnum 盘点差异调整类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockDiffAdjustmentTypeEnum 盘点差异调整类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockDiffAdjustmentInfo\\StockDiffAdjustmentTypeEnum.cs` ## 说明 盘点差异调整类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 盘盈 | | | 2 | summa"
+    },
+    {
+      "path": "docs/generated/enums/StockFlagEnum.md",
+      "title": "StockFlagEnum 冻结标识",
+      "headings": [
+        "StockFlagEnum 冻结标识",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockFlagEnum 冻结标识 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\StockFlagEnum.cs` ## 说明 冻结标识 | 值 | 名称 | 含义 | |---|---|---| | 0 | Normal | 正常 | | 1 | Frozen | 冻结 | "
+    },
+    {
+      "path": "docs/generated/enums/StockInBusinessTypeEnum.md",
+      "title": "StockInBusinessTypeEnum 入库业务类型",
+      "headings": [
+        "StockInBusinessTypeEnum 入库业务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockInBusinessTypeEnum 入库业务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 入库业务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 无条件入库 | | | 2 | summary | | | 0 | ZJRK | 无条件入"
+    },
+    {
+      "path": "docs/generated/enums/StockInOrderStateEnum.md",
+      "title": "StockInOrderStateEnum 入库订单状态",
+      "headings": [
+        "StockInOrderStateEnum 入库订单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockInOrderStateEnum 入库订单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInInfo\\StockInEnum.cs` ## 说明 入库订单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待确认 | | | 2 | summary | | | 0 | WaitConfirm | 待确认 | | 4 "
+    },
+    {
+      "path": "docs/generated/enums/StockLockStateEnum.md",
+      "title": "StockLockStateEnum 库存锁定状态",
+      "headings": [
+        "StockLockStateEnum 库存锁定状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockLockStateEnum 库存锁定状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\StockLockStateEnum.cs` ## 说明 库存锁定状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 可用 | | | 2 | summary | | | 0 | Use | 可用 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/StockOutBusinessTypeEnum.md",
+      "title": "StockOutBusinessTypeEnum 出库业务类型",
+      "headings": [
+        "StockOutBusinessTypeEnum 出库业务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockOutBusinessTypeEnum 出库业务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 出库业务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 生产领用 | | | 2 | summary | | | 1 | SCLY | 生产领用"
+    },
+    {
+      "path": "docs/generated/enums/StockOutPickEnum.md",
+      "title": "StockOutPickEnum 制单优先匹配规则",
+      "headings": [
+        "StockOutPickEnum 制单优先匹配规则",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockOutPickEnum 制单优先匹配规则 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 制单优先匹配规则 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 先平库后立库 | | | 2 | summary | | | 0 | PKYX | 先平库后立库"
+    },
+    {
+      "path": "docs/generated/enums/StockReportEnum.md",
+      "title": "StockReportEnum 库存报表类型",
+      "headings": [
+        "StockReportEnum 库存报表类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockReportEnum 库存报表类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ReportInfo\\StockReportEnum.cs` ## 说明 库存报表类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 未开始 | | | 2 | summary | | | 1 | DayReport | 日报表 | | 4 | sum"
+    },
+    {
+      "path": "docs/generated/enums/StockStateEnum.md",
+      "title": "StockStateEnum 库存状态",
+      "headings": [
+        "StockStateEnum 库存状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockStateEnum 库存状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\StockStateEnum.cs` ## 说明 库存状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 在库 | | | 2 | 合格 | | | 3 | summary | | | 0 | Stock | 在库 | | 5 | sum"
+    },
+    {
+      "path": "docs/generated/enums/StockTakingSourceEnum.md",
+      "title": "StockTakingSourceEnum 盘点来源类型",
+      "headings": [
+        "StockTakingSourceEnum 盘点来源类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTakingSourceEnum 盘点来源类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\ILTInfo\\StockTakingSourceEnum.cs` ## 说明 盘点来源类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 动态盘点 | | | 2 | summary | | | 1 | Dynamic | 动态盘点 | "
+    },
+    {
+      "path": "docs/generated/enums/StockTransferBusinessTypeEnum.md",
+      "title": "StockTransferBusinessTypeEnum 库存调拨业务类型",
+      "headings": [
+        "StockTransferBusinessTypeEnum 库存调拨业务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTransferBusinessTypeEnum 库存调拨业务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 库存调拨业务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 库存地点调拨 | | | 2 | summary | | | 1 | KCDDDB | 库存地点调拨 | |"
+    },
+    {
+      "path": "docs/generated/enums/StockTransferDetailStateEnum.md",
+      "title": "StockTransferDetailStateEnum 库存调拨单明细状态",
+      "headings": [
+        "StockTransferDetailStateEnum 库存调拨单明细状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTransferDetailStateEnum 库存调拨单明细状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 库存调拨单明细状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待下架 | | | 2 | summary | | | 1 | WaitDown | 待下架 | | 4 "
+    },
+    {
+      "path": "docs/generated/enums/StockTransferOperateTypeEnum.md",
+      "title": "StockTransferOperateTypeEnum 库存调拨上下架操作类型",
+      "headings": [
+        "StockTransferOperateTypeEnum 库存调拨上下架操作类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTransferOperateTypeEnum 库存调拨上下架操作类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockTransferInfo\\StockTransferOperateTypeEnum.cs` ## 说明 库存调拨上下架操作类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 下架 | | | 2 | sum"
+    },
+    {
+      "path": "docs/generated/enums/StockTransferStateEnum.md",
+      "title": "StockTransferStateEnum 库存调拨单状态",
+      "headings": [
+        "StockTransferStateEnum 库存调拨单状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTransferStateEnum 库存调拨单状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 库存调拨单状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary | | | 1 | 暂存 | 暂存 | | 4 | summary | 暂存 | |"
+    },
+    {
+      "path": "docs/generated/enums/StockTransferTypeEnum.md",
+      "title": "StockTransferTypeEnum 库存调拨类型",
+      "headings": [
+        "StockTransferTypeEnum 库存调拨类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTransferTypeEnum 库存调拨类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 库存调拨类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 库存地点转换 | | | 2 | summary | | | 1 | KCDDZH | 库存地点转换 | | 4 | summary"
+    },
+    {
+      "path": "docs/generated/enums/StockTypeEnum.md",
+      "title": "StockTypeEnum 库存类别",
+      "headings": [
+        "StockTypeEnum 库存类别",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StockTypeEnum 库存类别 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\StockStateEnum.cs` ## 说明 库存类别 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 库外 | | | 2 | summary | | | 1 | OutHouse | 库外 | | 4 | summary | 库外 |"
+    },
+    {
+      "path": "docs/generated/enums/StowageTypeEnum.md",
+      "title": "StowageTypeEnum 集货类型",
+      "headings": [
+        "StowageTypeEnum 集货类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# StowageTypeEnum 集货类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockOutInfo\\WaveEnum.cs` ## 说明 集货类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 按运输计划单号分配集货位 | | | 2 | summary | | | 1 | TypeA | 按运输计划单号分配集货位 | | 4 "
+    },
+    {
+      "path": "docs/generated/enums/TaskNatureEnum.md",
+      "title": "TaskNatureEnum 任务性质",
+      "headings": [
+        "TaskNatureEnum 任务性质",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TaskNatureEnum 任务性质 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\TaskEnum.cs` ## 说明 任务性质 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 入库 | | | 2 | summary | | | 1 | In | 入库 | | 4 | summary | 入库 | | 5"
+    },
+    {
+      "path": "docs/generated/enums/TaskReponseEnum.md",
+      "title": "TaskReponseEnum 响应结果",
+      "headings": [
+        "TaskReponseEnum 响应结果",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TaskReponseEnum 响应结果 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\PublicAggregate\\BusinessTypeEnum.cs` ## 说明 响应结果 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待发送 | | | 2 | summary | | | 0 | waitRequest | 待发送 | | 4 |"
+    },
+    {
+      "path": "docs/generated/enums/TaskStatusEnum.md",
+      "title": "TaskStatusEnum 任务状态",
+      "headings": [
+        "TaskStatusEnum 任务状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TaskStatusEnum 任务状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\TaskEnum.cs` ## 说明 任务状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待处理 | | | 2 | summary | | | 0 | waitAction | 待处理 | | 4 | summary "
+    },
+    {
+      "path": "docs/generated/enums/TaskSystemEnum.md",
+      "title": "TaskSystemEnum 交互系统",
+      "headings": [
+        "TaskSystemEnum 交互系统",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TaskSystemEnum 交互系统 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTaskInfo\\TaskEnum.cs` ## 说明 交互系统 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 双深度堆垛机 | | | 2 | summary | | | 100 | WCS | SSDDJ | | 4 | summary "
+    },
+    {
+      "path": "docs/generated/enums/TodoPriorityEnum.md",
+      "title": "TodoPriorityEnum 待办优先级",
+      "headings": [
+        "TodoPriorityEnum 待办优先级",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TodoPriorityEnum 待办优先级 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\HomePageInfo\\TodoPriorityEnum.cs` ## 说明 待办优先级 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 重要 | | | 2 | summary | | | 0 | Important | 重要 | | 4 | sum"
+    },
+    {
+      "path": "docs/generated/enums/TokenExceptionType.md",
+      "title": "TokenExceptionType TOKEN异常类型",
+      "headings": [
+        "TokenExceptionType TOKEN异常类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TokenExceptionType TOKEN异常类型 > 由 ABP 源码自动生成：`OLD.BasicProject.Infrastructure\\JwtBearer\\TokenExceptionType.cs` ## 说明 TOKEN异常类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | TOKEN过期 | | | 2 | summary | | | 0 | Ov"
+    },
+    {
+      "path": "docs/generated/enums/TransferOperationTypeEnum.md",
+      "title": "TransferOperationTypeEnum PDA库存调拨操作类型枚举",
+      "headings": [
+        "TransferOperationTypeEnum PDA库存调拨操作类型枚举",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TransferOperationTypeEnum PDA库存调拨操作类型枚举 > 由 ABP 源码自动生成：`OLD.WMS.Application.Contracts\\StockTransferInfo\\ScanProductCodeCheckInput.cs` ## 说明 PDA库存调拨操作类型枚举 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 下架 | | | 2"
+    },
+    {
+      "path": "docs/generated/enums/TransferStatusEnum.md",
+      "title": "TransferStatusEnum 单据状态",
+      "headings": [
+        "TransferStatusEnum 单据状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# TransferStatusEnum 单据状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockProjectTransferInfo\\TransferStatusEnum.cs` ## 说明 单据状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 暂存 | | | 2 | summary | | | 0 | Draft | 暂存 |"
+    },
+    {
+      "path": "docs/generated/enums/UsageStatusEnum.md",
+      "title": "UsageStatusEnum 使用状态",
+      "headings": [
+        "UsageStatusEnum 使用状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# UsageStatusEnum 使用状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\UsageStatusEnum.cs` ## 说明 使用状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 空闲 | | | 2 | summary | | | 0 | Free | 空闲 | | 4 | summary | 空闲 | | 5 | 入库单占"
+    },
+    {
+      "path": "docs/generated/enums/UseLifeUnitEnum.md",
+      "title": "UseLifeUnitEnum 使用寿命单位",
+      "headings": [
+        "UseLifeUnitEnum 使用寿命单位",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# UseLifeUnitEnum 使用寿命单位 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\UseLifeUnitEnum.cs` ## 说明 使用寿命单位 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 小时 | | | 2 | summary | | | 1 | Hour | 小时 | | 4 | summary | 小"
+    },
+    {
+      "path": "docs/generated/enums/UseRegionEnum.md",
+      "title": "UseRegionEnum 区域属性，四向多穿",
+      "headings": [
+        "UseRegionEnum 区域属性，四向多穿",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# UseRegionEnum 区域属性，四向多穿 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\RegionEnum.cs` ## 说明 区域属性，四向多穿 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 多穿车区域 | | | 2 | summary | | | 8001 | MultipleThread"
+    },
+    {
+      "path": "docs/generated/enums/VerifyStateEnum.md",
+      "title": "VerifyStateEnum 复核状态",
+      "headings": [
+        "VerifyStateEnum 复核状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# VerifyStateEnum 复核状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\OrderTypeEnum.cs` ## 说明 复核状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 待复核 | | | 2 | summary | | | 10 | NoVerify | 待复核 | | 4 | summary | 待复核 | | 5 "
+    },
+    {
+      "path": "docs/generated/enums/WareSystemEnum.md",
+      "title": "WareSystemEnum 报警系统",
+      "headings": [
+        "WareSystemEnum 报警系统",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WareSystemEnum 报警系统 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockOutInfo\\WareSystemEnum.cs` ## 说明 报警系统 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | AGV系统 | | | 2 | summary | | | 1001 | AGV | AGV系统 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/WarehouseTypeEnum.md",
+      "title": "WarehouseTypeEnum 仓库类型",
+      "headings": [
+        "WarehouseTypeEnum 仓库类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WarehouseTypeEnum 仓库类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\RelocationInfo\\WarehouseTypeEnum.cs` ## 说明 仓库类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 港华燃气仓 | | | 2 | summary | | | 0 | StockInWork | 港华燃气仓 |"
+    },
+    {
+      "path": "docs/generated/enums/WavePickAllocationEnum.md",
+      "title": "WavePickAllocationEnum 波次拣货分配状态",
+      "headings": [
+        "WavePickAllocationEnum 波次拣货分配状态",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WavePickAllocationEnum 波次拣货分配状态 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockOutInfo\\WaveEnum.cs` ## 说明 波次拣货分配状态 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 未拣货 | | | 2 | summary | | | 0 | NotPick | 未拣货 | | 4 |"
+    },
+    {
+      "path": "docs/generated/enums/WayTaskTypeEnum.md",
+      "title": "WayTaskTypeEnum 通道任务类型",
+      "headings": [
+        "WayTaskTypeEnum 通道任务类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WayTaskTypeEnum 通道任务类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\WarehouseInfo\\Enums\\PublicEnum.cs` ## 说明 通道任务类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 入库任务 | | | 2 | summary | | | 1 | In | 入库 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/WebMenuType.md",
+      "title": "WebMenuType 网页菜单类型",
+      "headings": [
+        "WebMenuType 网页菜单类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WebMenuType 网页菜单类型 > 由 ABP 源码自动生成：`WebMenu\\SystemManagement.Domain.Shared\\WebMenuType.cs` ## 说明 网页菜单类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 菜单 | | | 2 | summary | | | 0 | Menu | 菜单 | | 4 | summary | 菜单"
+    },
+    {
+      "path": "docs/generated/enums/WebSystemType.md",
+      "title": "WebSystemType 网页系统类型",
+      "headings": [
+        "WebSystemType 网页系统类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WebSystemType 网页系统类型 > 由 ABP 源码自动生成：`WebMenu\\SystemManagement.Domain.Shared\\WebSystemType.cs` ## 说明 网页系统类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 配置中心 | | | 2 | 终端系统 | | | 3 | summary | | | 0 | C | 配置中心（"
+    },
+    {
+      "path": "docs/generated/enums/WifiOffInOutEnum.md",
+      "title": "WifiOffInOutEnum",
+      "headings": [
+        "WifiOffInOutEnum"
+      ],
+      "kind": "doc",
+      "snippet": "# WifiOffInOutEnum > 由 ABP 源码自动生成：`OLD.WMS.Application.Contracts\\StockInfo\\PcWifiOffInput.cs` | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 入库 | | | 2 | summary | | | 1 | In | 入库 | | 4 | summary | 入库 | | 5 | 出库 |"
+    },
+    {
+      "path": "docs/generated/enums/WorkTypeEnum.md",
+      "title": "WorkTypeEnum 作业类型",
+      "headings": [
+        "WorkTypeEnum 作业类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# WorkTypeEnum 作业类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\StockInfo\\StockStateEnum.cs` ## 说明 作业类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 在库异常 | | | 2 | summary | | | 0 | AbnormalError | 在库异常 | | 4 | summar"
+    },
+    {
+      "path": "docs/generated/enums/ZatTypeEnum.md",
+      "title": "ZatTypeEnum 操作类型",
+      "headings": [
+        "ZatTypeEnum 操作类型",
+        "说明"
+      ],
+      "kind": "doc",
+      "snippet": "# ZatTypeEnum 操作类型 > 由 ABP 源码自动生成：`OLD.WMS.Domain.Shared\\BusinessTypeEnum.cs` ## 说明 操作类型 | 值 | 名称 | 含义 | |---|---|---| | 0 | summary | | | 1 | 入库 | | | 2 | summary | | | 1 | a | 入库 | | 4 | summary | 入库 | | 5 | 出库冲销 | 入库 "
+    },
+    {
+      "path": "docs/generated/tables/WMS_.md",
+      "title": "WMS_ 查询方案",
+      "headings": [
+        "WMS_ 查询方案",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ 查询方案 > 由 ABP 源码自动生成 ## 用途 查询方案 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | SysMenuId | string | 否 | 菜单主键 | | UserId | Guid | 否 | 用户主键 | | SchemeName | string | 否 | 方案名称 | | IsDefault | bool | 否 | 是否默认方案 | | Fi"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ApiInterfaceConfigs.md",
+      "title": "WMS_ApiInterfaceConfigs",
+      "headings": [
+        "WMS_ApiInterfaceConfigs",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ApiInterfaceConfigs > 由 ABP 源码自动生成 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | InterfaceName | string | 否 | 接口名称 | | Environment | string | 否 | 接口环境 | | InterfaceType | InterfaceTypeEnum | 否 | 接口类型 | | Endpoint"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Area_SapStorageLocation.md",
+      "title": "WMS_Area_SapStorageLocation 库区与SAP库存地点关联",
+      "headings": [
+        "WMS_Area_SapStorageLocation 库区与SAP库存地点关联",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Area_SapStorageLocation 库区与SAP库存地点关联 > 由 ABP 源码自动生成 ## 用途 库区与SAP库存地点关联 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | AreaId | Guid | 否 | 库区ID | | SapStorageLocationId | Guid | 否 | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Areas.md",
+      "title": "WMS_Areas 库区",
+      "headings": [
+        "WMS_Areas 库区",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Areas 库区 > 由 ABP 源码自动生成 ## 用途 库区 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | CreatedUser | string | 否 | 创建人 | | WarehouseId | Guid | 否 | 仓库ID | | IncludeAvailableQuantity | bool "
+    },
+    {
+      "path": "docs/generated/tables/WMS_ArrivalRegistrationDetails.md",
+      "title": "WMS_ArrivalRegistrationDetails 到货登记明细",
+      "headings": [
+        "WMS_ArrivalRegistrationDetails 到货登记明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ArrivalRegistrationDetails 到货登记明细 > 由 ABP 源码自动生成 ## 用途 到货登记明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | ArrivalRegistrationId | Guid | 否 | 到货登记单ID | | LineNo | int | 否 | 行号 | | Prod"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ArrivalRegistrations.md",
+      "title": "WMS_ArrivalRegistrations 到货登记单",
+      "headings": [
+        "WMS_ArrivalRegistrations 到货登记单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ArrivalRegistrations 到货登记单 > 由 ABP 源码自动生成 ## 用途 到货登记单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | BillNo | string | 否 | 到货登记单号 | | RegistrationTime | DateTime | 否 | 到货登记时间 | | Status "
+    },
+    {
+      "path": "docs/generated/tables/WMS_AutoPrintConfigs.md",
+      "title": "WMS_AutoPrintConfigs 自动打印配置",
+      "headings": [
+        "WMS_AutoPrintConfigs 自动打印配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_AutoPrintConfigs 自动打印配置 > 由 ABP 源码自动生成 ## 用途 自动打印配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | PrintPcIp | string | 否 | 打印电脑IP | | PrintDeviceName | string | 否 | 打印设备名称 | | Tabl"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BackgroundWorkerConfigs.md",
+      "title": "WMS_BackgroundWorkerConfigs 后台工作配置",
+      "headings": [
+        "WMS_BackgroundWorkerConfigs 后台工作配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BackgroundWorkerConfigs 后台工作配置 > 由 ABP 源码自动生成 ## 用途 后台工作配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | JobCode | string | 否 | 任务编码 | | JobName | string | 否 | 任务名称 | | Enabled | b"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BatchIsolations.md",
+      "title": "WMS_BatchIsolations",
+      "headings": [
+        "WMS_BatchIsolations",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BatchIsolations > 由 ABP 源码自动生成 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Werks | string | 否 | 工厂 | | DrawingNo | string | 否 | 图号 | | SupplierBatch | string | 否 | 供应商批次 | | IsolationFlag | bool | 否 | 隔离标识 | | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_BillTypes.md",
+      "title": "WMS_BillTypes 单据类型",
+      "headings": [
+        "WMS_BillTypes 单据类型",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BillTypes 单据类型 > 由 ABP 源码自动生成 ## 用途 单据类型 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | BillTypeCode | string | 否 | 编码 | | BillTypeName | string | 否 | 描述 | | BillCategory | BillCategoryEnum | 否 | 策略 | ## 继承/审计字段 -"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BindRecords.md",
+      "title": "WMS_BindRecords 组盘记录",
+      "headings": [
+        "WMS_BindRecords 组盘记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BindRecords 组盘记录 > 由 ABP 源码自动生成 ## 用途 组盘记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | OrginalBillNo | string | 否 | 来源单号 | | StockInDetailId | Guid? | 是 | 入库单明细ID | | LPN | strin"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BusinessNodeApplicationTypes.md",
+      "title": "WMS_BusinessNodeApplicationTypes 业务节点申请类型表",
+      "headings": [
+        "WMS_BusinessNodeApplicationTypes 业务节点申请类型表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BusinessNodeApplicationTypes 业务节点申请类型表 > 由 ABP 源码自动生成 ## 用途 业务节点申请类型表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | SubBusinessNodeId | Guid | 否 | 所属二级子业务节点ID | | Code | string | 否 | 申请类型编码；同一二级子业务节点下唯一 | | Descr"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BusinessNodes.md",
+      "title": "WMS_BusinessNodes 业务节点基础资料表",
+      "headings": [
+        "WMS_BusinessNodes 业务节点基础资料表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BusinessNodes 业务节点基础资料表 > 由 ABP 源码自动生成 ## 用途 业务节点基础资料表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ParentId | Guid? | 是 | 父级业务节点ID；为空表示一级业务节点 | | Code | string | 否 | 业务节点编码；同一父级下唯一 | | Name | string | 否 | 业务节点名"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BusinessTaskTypeAgvConfig.md",
+      "title": "WMS_BusinessTaskTypeAgvConfig AGV任务配置",
+      "headings": [
+        "WMS_BusinessTaskTypeAgvConfig AGV任务配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BusinessTaskTypeAgvConfig AGV任务配置 > 由 ABP 源码自动生成 ## 用途 AGV任务配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | AgvTaskTypeCode | string | 否 | AGV任务模板编码 | | IsRequsetContainerType | bool | 否 | 是否需要传载具类型 | | AgvCode "
+    },
+    {
+      "path": "docs/generated/tables/WMS_BusinessTaskTypeConfig.md",
+      "title": "WMS_BusinessTaskTypeConfig 任务类型配置",
+      "headings": [
+        "WMS_BusinessTaskTypeConfig 任务类型配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BusinessTaskTypeConfig 任务类型配置 > 由 ABP 源码自动生成 ## 用途 任务类型配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TypeCode | int | 否 | 任务类型编码 | | TypeName | string | 否 | 任务类型名称 | | TaskNatureEnum | TaskNatureEnum | 否 | 出入库"
+    },
+    {
+      "path": "docs/generated/tables/WMS_BussinessTasks.md",
+      "title": "WMS_BussinessTasks 设备任务",
+      "headings": [
+        "WMS_BussinessTasks 设备任务",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_BussinessTasks 设备任务 > 由 ABP 源码自动生成 ## 用途 设备任务 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ContainerPhotoId | Guid? | 是 | 容器图片ID | | WcsPhotoId | Guid? | 是 | WCS图片ID | | TenantId | Guid? | 是 | 租户ID | | TaskNo | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_CargoLocationContainerTypes.md",
+      "title": "WMS_CargoLocationContainerTypes",
+      "headings": [
+        "WMS_CargoLocationContainerTypes",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CargoLocationContainerTypes > 由 ABP 源码自动生成 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | CargoLocationId | Guid | 否 | 库位外键 | | ContainerTypeId | Guid | 否 | 容器尺寸外键 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户） - "
+    },
+    {
+      "path": "docs/generated/tables/WMS_CargoLocationDepths.md",
+      "title": "WMS_CargoLocationDepths 库位深度",
+      "headings": [
+        "WMS_CargoLocationDepths 库位深度",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CargoLocationDepths 库位深度 > 由 ABP 源码自动生成 ## 用途 库位深度 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | Code | string | 否 | 唯一编码 | | Key | string | 否 | 分类标识Key | | TaskNature | TaskNature"
+    },
+    {
+      "path": "docs/generated/tables/WMS_CargoLocations.md",
+      "title": "WMS_CargoLocations 库位",
+      "headings": [
+        "WMS_CargoLocations 库位",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CargoLocations 库位 > 由 ABP 源码自动生成 ## 用途 库位 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | WarehouseLocationName | string | 否 | 库位名称 | | FloorNum | int | 否 | 排号 | | AreaId | Guid? | 是"
+    },
+    {
+      "path": "docs/generated/tables/WMS_CheckRecords.md",
+      "title": "WMS_CheckRecords 盘点记录",
+      "headings": [
+        "WMS_CheckRecords 盘点记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CheckRecords 盘点记录 > 由 ABP 源码自动生成 ## 用途 盘点记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | BillNo | string | 否 | 盘点单号 | | WarehouseName | string | 否 | 仓库名称 | | WarehouseId | Guid? |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ContainerPhotos.md",
+      "title": "WMS_ContainerPhotos 容器图片",
+      "headings": [
+        "WMS_ContainerPhotos 容器图片",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ContainerPhotos 容器图片 > 由 ABP 源码自动生成 ## 用途 容器图片 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ImgSavePath | string? | 是 | 图片保存路径 | | SLImg1 | string? | 是 | 图片1 | | SLImg2 | string? "
+    },
+    {
+      "path": "docs/generated/tables/WMS_ContainerQtys.md",
+      "title": "WMS_ContainerQtys",
+      "headings": [
+        "WMS_ContainerQtys",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ContainerQtys > 由 ABP 源码自动生成 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ContainerId | Guid | 否 | | | MarkQty | int | 否 | | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户） - `IsDeleted`：软删除标记，默认查询应排除 - `CreationTi"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ContainerTypes.md",
+      "title": "WMS_ContainerTypes 容器类型",
+      "headings": [
+        "WMS_ContainerTypes 容器类型",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ContainerTypes 容器类型 > 由 ABP 源码自动生成 ## 用途 容器类型 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ContainerTypeCode | string | 否 | 容器类型编码 | | ContainerTypeName | string | 否 | 容器类型名称 | | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Containers.md",
+      "title": "WMS_Containers 容器",
+      "headings": [
+        "WMS_Containers 容器",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Containers 容器 > 由 ABP 源码自动生成 ## 用途 容器 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | UsageStatus | UsageStatusEnum | 否 | 使用状态 | | LoadStatus | LoadStatusEnum | 否 | 承载状态 | | Enabled "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Costs.md",
+      "title": "WMS_Costs 成本中心",
+      "headings": [
+        "WMS_Costs 成本中心",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Costs 成本中心 > 由 ABP 源码自动生成 ## 用途 成本中心 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | MANDT | string | 否 | 集团 | | KOKRS | string | 否 | 控制范围 | | KOSTL | string | 否 | 成本中心 | | DATBI | string | 否 | 有效截至日期 | | DATAB | s"
+    },
+    {
+      "path": "docs/generated/tables/WMS_CustomTableFields.md",
+      "title": "WMS_CustomTableFields 自定义表字段元数据",
+      "headings": [
+        "WMS_CustomTableFields 自定义表字段元数据",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CustomTableFields 自定义表字段元数据 > 由 ABP 源码自动生成 ## 用途 自定义表字段元数据 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | CustomTableId | Guid | 否 | 所属自定义表Id | | FieldName | string | 否 | 字段英文编码 | | DisplayName | string | 否 | 字段中文"
+    },
+    {
+      "path": "docs/generated/tables/WMS_CustomTableSchemaChangeLogs.md",
+      "title": "WMS_CustomTableSchemaChangeLogs 自定义表结构变更日志",
+      "headings": [
+        "WMS_CustomTableSchemaChangeLogs 自定义表结构变更日志",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CustomTableSchemaChangeLogs 自定义表结构变更日志 > 由 ABP 源码自动生成 ## 用途 自定义表结构变更日志 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Action | CustomTableSchemaChangeAction | 否 | 结构变更动作 | | CustomTableId | Guid? | 是 | 自定义表Id | | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_CustomTables.md",
+      "title": "WMS_CustomTables 自定义表元数据",
+      "headings": [
+        "WMS_CustomTables 自定义表元数据",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_CustomTables 自定义表元数据 > 由 ABP 源码自动生成 ## 用途 自定义表元数据 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TableName | string | 否 | 表英文编码，不包含ct_前缀 | | PhysicalTableName | string | 否 | 物理表名，格式为custom.ct_xxx | | DisplayName |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DMBindRecords.md",
+      "title": "WMS_DMBindRecords 组盘记录",
+      "headings": [
+        "WMS_DMBindRecords 组盘记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DMBindRecords 组盘记录 > 由 ABP 源码自动生成 ## 用途 组盘记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | OrginalBillNo | string? | 是 | 来源单号 | | DMStockDetailId | Guid? | 是 | 入库单明细外键 | | LPN | st"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DMPickRecords.md",
+      "title": "WMS_DMPickRecords 拣货记录",
+      "headings": [
+        "WMS_DMPickRecords 拣货记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DMPickRecords 拣货记录 > 由 ABP 源码自动生成 ## 用途 拣货记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | StockOutBillNo | string | 否 | 出库单号 | | StockOutLineId | int? | 是 | 出库单行号 | | ProductId | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_DataReportConfigs.md",
+      "title": "WMS_DataReportConfigs 数据报表配置",
+      "headings": [
+        "WMS_DataReportConfigs 数据报表配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DataReportConfigs 数据报表配置 > 由 ABP 源码自动生成 ## 用途 数据报表配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ReportCode | string | 否 | 报表编码 | | ReportName | string | 否 | 报表名称 | | QuerySql | string | 否 | 查询SQL | ## 继承/审计字段 "
+    },
+    {
+      "path": "docs/generated/tables/WMS_DataSyncRecords.md",
+      "title": "WMS_DataSyncRecords 数据同步记录",
+      "headings": [
+        "WMS_DataSyncRecords 数据同步记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DataSyncRecords 数据同步记录 > 由 ABP 源码自动生成 ## 用途 数据同步记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | SyncTableName | string | 否 | 同步表名 | | LastSyncTime | DateTime | 否 | 最后同步时间 | | FullSyncCursorValue | string | 否 | 全"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DataTemplates.md",
+      "title": "WMS_DataTemplates 数据模板",
+      "headings": [
+        "WMS_DataTemplates 数据模板",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DataTemplates 数据模板 > 由 ABP 源码自动生成 ## 用途 数据模板 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Code | string | 否 | 编码 | | DisplayName | string | 否 | 模板名称 | | IsSystem | bool | 否 | 系统模板 | | FileName | string? | 是 | 文件"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DeliveryShipmentDetails.md",
+      "title": "WMS_DeliveryShipmentDetails 交付发运单明细",
+      "headings": [
+        "WMS_DeliveryShipmentDetails 交付发运单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DeliveryShipmentDetails 交付发运单明细 > 由 ABP 源码自动生成 ## 用途 交付发运单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | DeliveryShipmentId | Guid | 否 | 交付发运单Id | | LineNo | int | 否 | 行号 | | ProductCode | string | 否 | 物料编码 | |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DeliveryShipments.md",
+      "title": "WMS_DeliveryShipments 交付发运单",
+      "headings": [
+        "WMS_DeliveryShipments 交付发运单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DeliveryShipments 交付发运单 > 由 ABP 源码自动生成 ## 用途 交付发运单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户Id | | DeliveryShipmentNo | string | 否 | 交付发运单号 | | Status | DeliveryShipmentStatusEnum | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_DeviceExceptions.md",
+      "title": "WMS_DeviceExceptions 设备异常",
+      "headings": [
+        "WMS_DeviceExceptions 设备异常",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DeviceExceptions 设备异常 > 由 ABP 源码自动生成 ## 用途 设备异常 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | WareSystem | WareSystemEnum | 否 | 告警系统 | | DeviceNo | string? | 是 | 设备编号 | | ErrorBeginTime | DateTime? | 是 | 告警开始时间 |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DictDatas.md",
+      "title": "WMS_DictDatas 字典数据",
+      "headings": [
+        "WMS_DictDatas 字典数据",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DictDatas 字典数据 > 由 ABP 源码自动生成 ## 用途 字典数据 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | DictTypeId | Guid | 否 | 字典类型ID | | Code | string | 否 | 字典编码 | | Name | string | 否 | 字典名称 | | Value | int | 否 | 字典值 | | TagTyp"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DictTypes.md",
+      "title": "WMS_DictTypes 字典类型",
+      "headings": [
+        "WMS_DictTypes 字典类型",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DictTypes 字典类型 > 由 ABP 源码自动生成 ## 用途 字典类型 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Code | string | 否 | 类型编码 | | Name | string | 否 | 类型名称 | | IsEnum | bool | 否 | 是否枚举 | | IsCustom | bool | 否 | 是否自定义 | | OrderN"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Dictionariess.md",
+      "title": "WMS_Dictionariess 数据字典",
+      "headings": [
+        "WMS_Dictionariess 数据字典",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Dictionariess 数据字典 > 由 ABP 源码自动生成 ## 用途 数据字典 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | Code | string | 否 | 层次代码 | | ValueOrDisplayName | string | 否 | 字典值/显示名称 | | ParentId | Gu"
+    },
+    {
+      "path": "docs/generated/tables/WMS_DocumentCenters.md",
+      "title": "WMS_DocumentCenters 文档中心",
+      "headings": [
+        "WMS_DocumentCenters 文档中心",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_DocumentCenters 文档中心 > 由 ABP 源码自动生成 ## 用途 文档中心 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | DisplayName | string | 否 | 文档名称 | | DocumentPath | string | 否 | 文档路径 | | DocumentName |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_FileAttachment.md",
+      "title": "WMS_FileAttachment 文件附件",
+      "headings": [
+        "WMS_FileAttachment 文件附件",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_FileAttachment 文件附件 > 由 ABP 源码自动生成 ## 用途 文件附件 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | EntityTableName | string | 否 | 实体表名 | | EntityId | string | 否 | 实体ID | | AttachmentDirectory | string | 否 | 附件目录 | | Fil"
+    },
+    {
+      "path": "docs/generated/tables/WMS_FilterFields.md",
+      "title": "WMS_FilterFields 报表筛选字段",
+      "headings": [
+        "WMS_FilterFields 报表筛选字段",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_FilterFields 报表筛选字段 > 由 ABP 源码自动生成 ## 用途 报表筛选字段 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | DataReportConfigId | Guid | 否 | 报表配置ID | | FieldName | string | 否 | 字段名称 | | FieldText | string | 否 | 字段文本 | | FieldTy"
+    },
+    {
+      "path": "docs/generated/tables/WMS_FlushOrders.md",
+      "title": "WMS_FlushOrders",
+      "headings": [
+        "WMS_FlushOrders",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_FlushOrders > 由 ABP 源码自动生成 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | BillNo | string | 否 | 订单号 | | LineId | int | 否 | 行号 | | BillNoYear | int | 否 | 订单年度 | | CreateUser | string | 否 "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Grades.md",
+      "title": "WMS_Grades 等级",
+      "headings": [
+        "WMS_Grades 等级",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Grades 等级 > 由 ABP 源码自动生成 ## 用途 等级 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | GradeCode | string | 否 | 等级编码 | | GradeName | string | 否 | 等级名称 | | Priority | int | 否 | 优先级 | | Ena"
+    },
+    {
+      "path": "docs/generated/tables/WMS_HomeDocuments.md",
+      "title": "WMS_HomeDocuments 首页文档表",
+      "headings": [
+        "WMS_HomeDocuments 首页文档表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_HomeDocuments 首页文档表 > 由 ABP 源码自动生成 ## 用途 首页文档表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | CategoryName | string | 否 | 文档名称 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户） - `IsDeleted`：软删除标记，默认查询应排除 - `Creation"
+    },
+    {
+      "path": "docs/generated/tables/WMS_HomeNotices.md",
+      "title": "WMS_HomeNotices 首页公告表",
+      "headings": [
+        "WMS_HomeNotices 首页公告表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_HomeNotices 首页公告表 > 由 ABP 源码自动生成 ## 用途 首页公告表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Title | string | 否 | 公告标题 | | Content | string | 否 | 公告内容 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户） - `IsDeleted`：软删"
+    },
+    {
+      "path": "docs/generated/tables/WMS_HomePublicNotices.md",
+      "title": "WMS_HomePublicNotices 首页公示表",
+      "headings": [
+        "WMS_HomePublicNotices 首页公示表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_HomePublicNotices 首页公示表 > 由 ABP 源码自动生成 ## 用途 首页公示表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Title | string | 否 | 公示标题 | | Content | string | 否 | 公示内容 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户） - `IsDelet"
+    },
+    {
+      "path": "docs/generated/tables/WMS_HomeTodos.md",
+      "title": "WMS_HomeTodos 首页待办表",
+      "headings": [
+        "WMS_HomeTodos 首页待办表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_HomeTodos 首页待办表 > 由 ABP 源码自动生成 ## 用途 首页待办表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Title | string | 否 | 待办标题 | | Content | string | 否 | 待办内容 | | Priority | TodoPriorityEnum | 否 | 待办优先级 | | IsCompleted | boo"
+    },
+    {
+      "path": "docs/generated/tables/WMS_HomeWarehouseInfos.md",
+      "title": "WMS_HomeWarehouseInfos 首页库房信息表",
+      "headings": [
+        "WMS_HomeWarehouseInfos 首页库房信息表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_HomeWarehouseInfos 首页库房信息表 > 由 ABP 源码自动生成 ## 用途 首页库房信息表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Content | string | 否 | 库房信息内容 | | EndTime | DateTime | 否 | 结束时间 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户）"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ILTDetails.md",
+      "title": "WMS_ILTDetails 盘点单明细",
+      "headings": [
+        "WMS_ILTDetails 盘点单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ILTDetails 盘点单明细 > 由 ABP 源码自动生成 ## 用途 盘点单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ILTState | IltStateEnum | 否 | 盘点单状态 | | ITT | InventoryTypeEnum | 否 | 盘点单类型 | | BillNo | s"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ILTs.md",
+      "title": "WMS_ILTs 盘点单",
+      "headings": [
+        "WMS_ILTs 盘点单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ILTs 盘点单 > 由 ABP 源码自动生成 ## 用途 盘点单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ILTState | IltStateEnum | 否 | 盘点单状态 | | ITT | InventoryTypeEnum | 否 | 盘点单类型 | | InventoryMode | Inve"
+    },
+    {
+      "path": "docs/generated/tables/WMS_InboundApplicationDetails.md",
+      "title": "WMS_InboundApplicationDetails 入库申请单明细",
+      "headings": [
+        "WMS_InboundApplicationDetails 入库申请单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InboundApplicationDetails 入库申请单明细 > 由 ABP 源码自动生成 ## 用途 入库申请单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | InboundApplicationId | Guid | 否 | 入库申请单ID | | ArrivalRegistrationId | Guid? "
+    },
+    {
+      "path": "docs/generated/tables/WMS_InboundApplications.md",
+      "title": "WMS_InboundApplications 入库申请单",
+      "headings": [
+        "WMS_InboundApplications 入库申请单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InboundApplications 入库申请单 > 由 ABP 源码自动生成 ## 用途 入库申请单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | BillNo | string | 否 | 入库申请单号 | | SapBillNo | string? | 是 | SAP入库申请单号 | | Mblnr | strin"
+    },
+    {
+      "path": "docs/generated/tables/WMS_InspectionInboundDetails.md",
+      "title": "WMS_InspectionInboundDetails 检验入库单明细",
+      "headings": [
+        "WMS_InspectionInboundDetails 检验入库单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InspectionInboundDetails 检验入库单明细 > 由 ABP 源码自动生成 ## 用途 检验入库单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | InspectionInboundId | Guid? | 是 | 检验入库单ID | | SapProductionOrderId | Guid? | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_InspectionInbounds.md",
+      "title": "WMS_InspectionInbounds 检验入库单",
+      "headings": [
+        "WMS_InspectionInbounds 检验入库单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InspectionInbounds 检验入库单 > 由 ABP 源码自动生成 ## 用途 检验入库单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | BillNo | string | 否 | 检验入库单号 | | SapBillNo | string? | 是 | SAP检验入库单号 | | Mblnr | string"
+    },
+    {
+      "path": "docs/generated/tables/WMS_InventoryAnomalyInfos.md",
+      "title": "WMS_InventoryAnomalyInfos 库存异常信息",
+      "headings": [
+        "WMS_InventoryAnomalyInfos 库存异常信息",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InventoryAnomalyInfos 库存异常信息 > 由 ABP 源码自动生成 ## 用途 库存异常信息 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | AbnormalNo | string | 否 | 异常编码 | | RegionId | Guid | 否 | 区域ID | | Region | Wa"
+    },
+    {
+      "path": "docs/generated/tables/WMS_InventoryOrder.md",
+      "title": "WMS_InventoryOrder 盘点单",
+      "headings": [
+        "WMS_InventoryOrder 盘点单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InventoryOrder 盘点单 > 由 ABP 源码自动生成 ## 用途 盘点单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | DocNo | string | 否 | 单据号 | | RegionId | Guid | 否 | 区域ID | | CreatePerson | string | 否 | 创建"
+    },
+    {
+      "path": "docs/generated/tables/WMS_InventoryOrderDetail.md",
+      "title": "WMS_InventoryOrderDetail 盘点单明细",
+      "headings": [
+        "WMS_InventoryOrderDetail 盘点单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_InventoryOrderDetail 盘点单明细 > 由 ABP 源码自动生成 ## 用途 盘点单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | StockId | Guid? | 是 | 库存ID | | Qty | decimal | 否 | 库存数量 | | RealQty | decimal | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_LogisticsCompanies.md",
+      "title": "WMS_LogisticsCompanies 物流公司",
+      "headings": [
+        "WMS_LogisticsCompanies 物流公司",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_LogisticsCompanies 物流公司 > 由 ABP 源码自动生成 ## 用途 物流公司 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | LogisticsCompanyCode | string | 否 | 物流公司编码 | | LogisticsCompanyName | string | 否 | 物"
+    },
+    {
+      "path": "docs/generated/tables/WMS_MenuSearchSettings.md",
+      "title": "WMS_MenuSearchSettings 菜单查询设置",
+      "headings": [
+        "WMS_MenuSearchSettings 菜单查询设置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_MenuSearchSettings 菜单查询设置 > 由 ABP 源码自动生成 ## 用途 菜单查询设置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | SysMenuId | string | 否 | 菜单主键 | | UserId | Guid | 否 | 用户主键 | | SettingJson | string | 否 | 配置json | | DefaultFilt"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Menus.md",
+      "title": "WMS_Menus 菜单",
+      "headings": [
+        "WMS_Menus 菜单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Menus 菜单 > 由 ABP 源码自动生成 ## 用途 菜单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ParentId | Guid? | 是 | 父级Id. <see cref=\"WebMenu\"/> 如果此Menu是根，则为Null。 | | Code | string | 否 | 此菜单的层次代码。 示例: \"00001.00042.00005\"。 这是Men"
+    },
+    {
+      "path": "docs/generated/tables/WMS_MeteringClasss.md",
+      "title": "WMS_MeteringClasss 计量类别",
+      "headings": [
+        "WMS_MeteringClasss 计量类别",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_MeteringClasss 计量类别 > 由 ABP 源码自动生成 ## 用途 计量类别 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | ClassCode | string | 否 | 计量类别编码 | | ClassDesc | string | 否 | 计量类别描述 | | ClassLevel | int? | 是"
+    },
+    {
+      "path": "docs/generated/tables/WMS_NonPurchaseInboundDetails.md",
+      "title": "WMS_NonPurchaseInboundDetails 非采购入库单明细",
+      "headings": [
+        "WMS_NonPurchaseInboundDetails 非采购入库单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_NonPurchaseInboundDetails 非采购入库单明细 > 由 ABP 源码自动生成 ## 用途 非采购入库单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | NonPurchaseInboundOrderId | Guid | 否 | 非采购入库单ID | | MaterialCode | string "
+    },
+    {
+      "path": "docs/generated/tables/WMS_NonPurchaseInboundOrders.md",
+      "title": "WMS_NonPurchaseInboundOrders 非采购入库单",
+      "headings": [
+        "WMS_NonPurchaseInboundOrders 非采购入库单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_NonPurchaseInboundOrders 非采购入库单 > 由 ABP 源码自动生成 ## 用途 非采购入库单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | BillNo | string | 否 | WMS入库单号 | | SapBillNo | string? | 是 | SAP入库单号 | | OwnerId"
+    },
+    {
+      "path": "docs/generated/tables/WMS_OfflineJob.md",
+      "title": "WMS_OfflineJob 离线作业",
+      "headings": [
+        "WMS_OfflineJob 离线作业",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_OfflineJob 离线作业 > 由 ABP 源码自动生成 ## 用途 离线作业 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Route | string | 否 | 接口路由 | | JsonParams | string | 否 | 方法入参 | | Status | OfflineJobStatus | 否 | 执行状态 | | ErrorMessage | str"
+    },
+    {
+      "path": "docs/generated/tables/WMS_OilSealOrders.md",
+      "title": "WMS_OilSealOrders 油封单",
+      "headings": [
+        "WMS_OilSealOrders 油封单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_OilSealOrders 油封单 > 由 ABP 源码自动生成 ## 用途 油封单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | OilSealUnitType | OilSealUnitTypeEnum | 否 | 执行油封单位 | | DepartmentId | Guid? | 是 | 内部油封部门ID | | SupplierId | Guid? | 是 | 外部油"
+    },
+    {
+      "path": "docs/generated/tables/WMS_OperationLogs.md",
+      "title": "WMS_OperationLogs 操作日志",
+      "headings": [
+        "WMS_OperationLogs 操作日志",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_OperationLogs 操作日志 > 由 ABP 源码自动生成 ## 用途 操作日志 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | OperatorUser | string | 否 | 操作人 | | Keywords | string | 否 | 关键词 | | RequestIp | string | 否 | 操作IP地址 | | OperatorName | st"
+    },
+    {
+      "path": "docs/generated/tables/WMS_OrderUseRecords.md",
+      "title": "WMS_OrderUseRecords 订单使用记录",
+      "headings": [
+        "WMS_OrderUseRecords 订单使用记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_OrderUseRecords 订单使用记录 > 由 ABP 源码自动生成 ## 用途 订单使用记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | SourceBillNo | string | 否 | 来源单号 | | SourceLineNo | int? | 是 | 来源单行号 | | PurchaseOr"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Owners.md",
+      "title": "WMS_Owners 工厂",
+      "headings": [
+        "WMS_Owners 工厂",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Owners 工厂 > 由 ABP 源码自动生成 ## 用途 工厂 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | OwnerCode | string | 否 | 工厂 | | OwnerName | string | 否 | 工厂名称 | | IsDefault | bool | 否 | 是否默认 | | En"
+    },
+    {
+      "path": "docs/generated/tables/WMS_PickPhotos.md",
+      "title": "WMS_PickPhotos 拣货图片",
+      "headings": [
+        "WMS_PickPhotos 拣货图片",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_PickPhotos 拣货图片 > 由 ABP 源码自动生成 ## 用途 拣货图片 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ImgSavePath | string? | 是 | 图片保存路径 | | SLImg1 | string? | 是 | 图片1 | | SLImg2 | string? | 是 |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_PickTasks.md",
+      "title": "WMS_PickTasks 拣货任务",
+      "headings": [
+        "WMS_PickTasks 拣货任务",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_PickTasks 拣货任务 > 由 ABP 源码自动生成 ## 用途 拣货任务 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | WarehouseId | Guid? | 是 | 仓库ID | | PickTaskNo | string | 否 | 任务波次号 | | PickTaskSeq | int | 否 | 序号 | | PickId | Guid? | 是 | 拣选"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Picks.md",
+      "title": "WMS_Picks 拣货单",
+      "headings": [
+        "WMS_Picks 拣货单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Picks 拣货单 > 由 ABP 源码自动生成 ## 用途 拣货单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | WarehouseId | Guid? | 是 | 仓库ID | | PickNo | string | 否 | 拣货单号 | | Priority | BorrowPriorityEnum | 否 | 任务等级 | | PickState | PickStat"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Points.md",
+      "title": "WMS_Points 出入库点位",
+      "headings": [
+        "WMS_Points 出入库点位",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Points 出入库点位 > 由 ABP 源码自动生成 ## 用途 出入库点位 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | PointCode | string | 否 | 点位编码 | | PointName | string? | 是 | 点位名称 | | PointType | PointTypeEnum"
+    },
+    {
+      "path": "docs/generated/tables/WMS_PrintConfigs.md",
+      "title": "WMS_PrintConfigs 打印配置",
+      "headings": [
+        "WMS_PrintConfigs 打印配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_PrintConfigs 打印配置 > 由 ABP 源码自动生成 ## 用途 打印配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | PrintDevName | string | 否 | 打印设备名称 | | SetUserId | Guid | 否 | 配置人ID | | SetUserName | stri"
+    },
+    {
+      "path": "docs/generated/tables/WMS_PrintTempletes.md",
+      "title": "WMS_PrintTempletes 打印模板",
+      "headings": [
+        "WMS_PrintTempletes 打印模板",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_PrintTempletes 打印模板 > 由 ABP 源码自动生成 ## 用途 打印模板 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | MenuId | Guid | 否 | 菜单ID | | TempleteJson | string | 否 | 模板JSON | | TempleteName | strin"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductBatchs.md",
+      "title": "WMS_ProductBatchs 物料批次",
+      "headings": [
+        "WMS_ProductBatchs 物料批次",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductBatchs 物料批次 > 由 ABP 源码自动生成 ## 用途 物料批次 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ItemBatch | string | 否 | 批次号/序列号 | | SupplierBatch | string | 否 | 供应商批次 | | SupplierId | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductClasss.md",
+      "title": "WMS_ProductClasss 物料分类",
+      "headings": [
+        "WMS_ProductClasss 物料分类",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductClasss 物料分类 > 由 ABP 源码自动生成 ## 用途 物料分类 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ClassCode | string | 否 | 分类编码 | | ClassName | string | 否 | 分类名称 | | ClassLevel | int? | 是"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductCounts.md",
+      "title": "WMS_ProductCounts 物料计数",
+      "headings": [
+        "WMS_ProductCounts 物料计数",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductCounts 物料计数 > 由 ABP 源码自动生成 ## 用途 物料计数 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ProductCode | string | 否 | 物料编码 | | ProductName | string | 否 | 物料名称 | | Spec | string | 否 | 规格 | | Model | string | 否 | 型"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductOwners.md",
+      "title": "WMS_ProductOwners 物料工厂",
+      "headings": [
+        "WMS_ProductOwners 物料工厂",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductOwners 物料工厂 > 由 ABP 源码自动生成 ## 用途 物料工厂 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ProductId | Guid | 否 | 物料ID | | OwnerId | Guid | 否 | 工厂ID | | IsBatch | bool | 否 | 批次管理 | ## 继承/审计字段 - `Id`：主键 - `TenantI"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductPhotos.md",
+      "title": "WMS_ProductPhotos 物料图片",
+      "headings": [
+        "WMS_ProductPhotos 物料图片",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductPhotos 物料图片 > 由 ABP 源码自动生成 ## 用途 物料图片 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ImgSavePath | string? | 是 | 图片保存路径 | | SLImg1 | string? | 是 | 图片1 | | SLImg2 | string? | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductPidInfos.md",
+      "title": "WMS_ProductPidInfos 物料PID信息",
+      "headings": [
+        "WMS_ProductPidInfos 物料PID信息",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductPidInfos 物料PID信息 > 由 ABP 源码自动生成 ## 用途 物料PID信息 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ProductId | Guid | 否 | 物料ID | | ProductBatchId | Guid | 否 | 物料批次ID | | Pid1 | str"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductRegulars.md",
+      "title": "WMS_ProductRegulars 物料正则表达式",
+      "headings": [
+        "WMS_ProductRegulars 物料正则表达式",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductRegulars 物料正则表达式 > 由 ABP 源码自动生成 ## 用途 物料正则表达式 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ProductType | ProductClassTypeEnum | 否 | 物料大类 | | ProductName | string | 否 | 用途名称 | | Regular | string | 否 | 正则表达"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ProductTableNumbers.md",
+      "title": "WMS_ProductTableNumbers 台份",
+      "headings": [
+        "WMS_ProductTableNumbers 台份",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ProductTableNumbers 台份 > 由 ABP 源码自动生成 ## 用途 台份 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TableNumber | string | 否 | 台份 | | TableNumberStage | string | 否 | 台份阶段 | | Airworthiness | bool | 否 | 是否适航批 | | CreateU"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Products.md",
+      "title": "WMS_Products 物料基础信息",
+      "headings": [
+        "WMS_Products 物料基础信息",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Products 物料基础信息 > 由 ABP 源码自动生成 ## 用途 物料基础信息 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | ProductCode | string | 否 | 物料编码 | | ProductName | string | 否 | 物料名称 | | DrawingNo | string | 否 "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Projects.md",
+      "title": "WMS_Projects SAP项目",
+      "headings": [
+        "WMS_Projects SAP项目",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Projects SAP项目 > 由 ABP 源码自动生成 ## 用途 SAP项目 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Mandt | string | 否 | 集团 | | Objnr | string | 否 | 对象号 | | Stat | string | 否 | 对象状态 | | Spras | string | 否 | 语言代码 | | Inact | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_QualityInspections.md",
+      "title": "WMS_QualityInspections 质检登记",
+      "headings": [
+        "WMS_QualityInspections 质检登记",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_QualityInspections 质检登记 > 由 ABP 源码自动生成 ## 用途 质检登记 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | ArrivalRegistrationBillNo | string | 否 | 到货登记单号 | | ArrivalRegistrationDetailId | Guid | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_RecordWorkStations.md",
+      "title": "WMS_RecordWorkStations 记录工位",
+      "headings": [
+        "WMS_RecordWorkStations 记录工位",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_RecordWorkStations 记录工位 > 由 ABP 源码自动生成 ## 用途 记录工位 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | StationNames | string | 否 | 工位名称 | | Reserve | string? | 是 | 预留字段 | | Reserve1 | str"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Regions.md",
+      "title": "WMS_Regions 区域",
+      "headings": [
+        "WMS_Regions 区域",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Regions 区域 > 由 ABP 源码自动生成 ## 用途 区域 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | WarehouseId | Guid? | 是 | 仓库ID | | RegionCode | string | 否 | 区域编码 | | RegionName | string | 否 | 区域名"
+    },
+    {
+      "path": "docs/generated/tables/WMS_RoadWays.md",
+      "title": "WMS_RoadWays 巷道",
+      "headings": [
+        "WMS_RoadWays 巷道",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_RoadWays 巷道 > 由 ABP 源码自动生成 ## 用途 巷道 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | Code | string | 否 | 巷道编码 | | RoadWayName | string | 否 | 通道名称 | | Enabled | bool | 否 | 可用状态 | | Rem"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ScreenConfiguration.md",
+      "title": "WMS_ScreenConfiguration 大屏配置信息",
+      "headings": [
+        "WMS_ScreenConfiguration 大屏配置信息",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ScreenConfiguration 大屏配置信息 > 由 ABP 源码自动生成 ## 用途 大屏配置信息 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Identifying | string | 否 | 大屏唯一标识 | | ServiceType | ScreenServiceTypeEnum | 否 | 服务类别 | | ServiceName | string |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_ScreenMessage.md",
+      "title": "WMS_ScreenMessage 大屏消息",
+      "headings": [
+        "WMS_ScreenMessage 大屏消息",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ScreenMessage 大屏消息 > 由 ABP 源码自动生成 ## 用途 大屏消息 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Identifying | string | 否 | 大屏唯一标识 | | Title | string | 否 | 标题 | | IsError | bool | 否 | 是否是异常消息 | ## 继承/审计字段 - `Id`：主键 - `"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SelectedColumns.md",
+      "title": "WMS_SelectedColumns 报表选中列",
+      "headings": [
+        "WMS_SelectedColumns 报表选中列",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SelectedColumns 报表选中列 > 由 ABP 源码自动生成 ## 用途 报表选中列 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | DataReportConfigId | Guid | 否 | 报表配置ID | | ColumnName | string | 否 | 列名称 | | ColumnText | string | 否 | 列文本 | | Column"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SerialNumbers.md",
+      "title": "WMS_SerialNumbers 流水号",
+      "headings": [
+        "WMS_SerialNumbers 流水号",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SerialNumbers 流水号 > 由 ABP 源码自动生成 ## 用途 流水号 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | KeyCode | string | 否 | 关键字 | | SerialDate | DateTime | 否 | 日期 | | SerialSeq | int | 否 | 序号 | | Remark | string | 否 | 备注 | #"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Shelves.md",
+      "title": "WMS_Shelves 货架",
+      "headings": [
+        "WMS_Shelves 货架",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Shelves 货架 > 由 ABP 源码自动生成 ## 用途 货架 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | Code | string | 否 | 货架编码 | | Name | string | 否 | 货架名称 | | RegionId | Guid | 否 | 区域ID | | RoadWayId "
+    },
+    {
+      "path": "docs/generated/tables/WMS_ShelvingRecords.md",
+      "title": "WMS_ShelvingRecords 上架明细",
+      "headings": [
+        "WMS_ShelvingRecords 上架明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_ShelvingRecords 上架明细 > 由 ABP 源码自动生成 ## 用途 上架明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | SourceBillNo | string | 否 | 来源单号 | | SapBillNo | string? | 是 | SAP单号 | | SourceBillType | So"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Shippers.md",
+      "title": "WMS_Shippers 出货方",
+      "headings": [
+        "WMS_Shippers 出货方",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Shippers 出货方 > 由 ABP 源码自动生成 ## 用途 出货方 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ShipperType | ShipperTypeEnum | 否 | 出货方类型 | | ShipperCode | string | 否 | 出货方编码 | | ShipperName |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SpecialEquipmentDetails.md",
+      "title": "WMS_SpecialEquipmentDetails 特种设备明细表",
+      "headings": [
+        "WMS_SpecialEquipmentDetails 特种设备明细表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SpecialEquipmentDetails 特种设备明细表 > 由 ABP 源码自动生成 ## 用途 特种设备明细表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | SpecialEquipmentId | Guid | 否 | 申请表ID | | EquipmentName | string | 否 | 设备名称 | | UsageQuantity | decimal |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SpecialEquipments.md",
+      "title": "WMS_SpecialEquipments 特种设备表",
+      "headings": [
+        "WMS_SpecialEquipments 特种设备表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SpecialEquipments 特种设备表 > 由 ABP 源码自动生成 ## 用途 特种设备表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ApplicationNo | string | 否 | 申请编号 | | UsageLocation | string | 否 | 使用地点 | | EquipmentName | string | 否 | 使用设备名称 | |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmBoms.md",
+      "title": "WMS_SrmBoms SRM BOM表",
+      "headings": [
+        "WMS_SrmBoms SRM BOM表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmBoms SRM BOM表 > 由 ABP 源码自动生成 ## 用途 SRM BOM表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Uuid | string | 否 | SRM字段：UUID | | ParentItemRevUid | string | 否 | SRM字段：PARENT_ITEM_REV_UID | | ItemRevUid | string | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmEntityEdits.md",
+      "title": "WMS_SrmEntityEdits 构型修改表",
+      "headings": [
+        "WMS_SrmEntityEdits 构型修改表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmEntityEdits 构型修改表 > 由 ABP 源码自动生成 ## 用途 构型修改表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | OrderformCode | string | 否 | 合同号 | | Ebeln | string | 否 | 采购订单号 | | ComponentName | string | 否 | 零组件名称 | | ComponentFi"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmEntityMessages.md",
+      "title": "WMS_SrmEntityMessages 构型表",
+      "headings": [
+        "WMS_SrmEntityMessages 构型表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmEntityMessages 构型表 > 由 ABP 源码自动生成 ## 用途 构型表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | OrderformCode | string | 否 | SRM字段：ORDERFORM_CODE | | Ebeln | string | 否 | SRM字段：EBELN | | ComponentName | string | 否 |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmFlowCheckRecords.md",
+      "title": "WMS_SrmFlowCheckRecords 审查项目表",
+      "headings": [
+        "WMS_SrmFlowCheckRecords 审查项目表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmFlowCheckRecords 审查项目表 > 由 ABP 源码自动生成 ## 用途 审查项目表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | CItem | string | 否 | SRM字段：C_ITEM | | CContent | string | 否 | SRM字段：C_CONTENT | | CTjresult | string | 否 | SRM字段："
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmFlows.md",
+      "title": "WMS_SrmFlows 专用工装验收与交接主表",
+      "headings": [
+        "WMS_SrmFlows 专用工装验收与交接主表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmFlows 专用工装验收与交接主表 > 由 ABP 源码自动生成 ## 用途 专用工装验收与交接主表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | LocalId | string | 否 | WMS本地主键 | | Acceptid | string | 否 | SRM字段：ACCEPTID | | DvtunitCode | string | 否 | SRM字段：D"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmParts.md",
+      "title": "WMS_SrmParts 零件清单表",
+      "headings": [
+        "WMS_SrmParts 零件清单表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmParts 零件清单表 > 由 ABP 源码自动生成 ## 用途 零件清单表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | PartId | string | 否 | SRM字段：PART_ID | | PartNumber | string | 否 | SRM字段：PART_NUMBER | | PartName | string | 否 | SRM字段：PART_N"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmProductAcceptDetails.md",
+      "title": "WMS_SrmProductAcceptDetails 产品验收明细表",
+      "headings": [
+        "WMS_SrmProductAcceptDetails 产品验收明细表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmProductAcceptDetails 产品验收明细表 > 由 ABP 源码自动生成 ## 用途 产品验收明细表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | SrmProductAcceptManageId | string | 否 | 主表ID | | DeliveryProductType | string | 否 | 交付产品类型 | | ComponentN"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmProductAcceptManages.md",
+      "title": "WMS_SrmProductAcceptManages 产品验收管理表",
+      "headings": [
+        "WMS_SrmProductAcceptManages 产品验收管理表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmProductAcceptManages 产品验收管理表 > 由 ABP 源码自动生成 ## 用途 产品验收管理表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Requisition | string | 否 | 申请单 | | DeliveryUnitCode | string | 否 | 交付单位编码 | | DeliveryUnitName | string |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmProductDeliverReceiveLines.md",
+      "title": "WMS_SrmProductDeliverReceiveLines 产品交付发运接收明细表",
+      "headings": [
+        "WMS_SrmProductDeliverReceiveLines 产品交付发运接收明细表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmProductDeliverReceiveLines 产品交付发运接收明细表 > 由 ABP 源码自动生成 ## 用途 产品交付发运接收明细表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ProductModel | string | 否 | 产品型号 | | ProductFigureNo | string | 否 | 交付物图号 | | ProductVersio"
+    },
+    {
+      "path": "docs/generated/tables/WMS_SrmProductDeliverReceives.md",
+      "title": "WMS_SrmProductDeliverReceives 产品交付发运接收主表",
+      "headings": [
+        "WMS_SrmProductDeliverReceives 产品交付发运接收主表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SrmProductDeliverReceives 产品交付发运接收主表 > 由 ABP 源码自动生成 ## 用途 产品交付发运接收主表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TransferSerialNum | string | 否 | 交接流水号 | | TransferStatus | string | 否 | 发运状态 | | InvolvedContrac"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Stagings.md",
+      "title": "WMS_Stagings 工作台",
+      "headings": [
+        "WMS_Stagings 工作台",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Stagings 工作台 > 由 ABP 源码自动生成 ## 用途 工作台 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | StagingCode | string | 否 | 立体柜编码 | | StagingName | string | 否 | 立体柜名称 | | StagingType | StagingT"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockDiffAdjustmentDetails.md",
+      "title": "WMS_StockDiffAdjustmentDetails 盘点差异调整单明细",
+      "headings": [
+        "WMS_StockDiffAdjustmentDetails 盘点差异调整单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockDiffAdjustmentDetails 盘点差异调整单明细 > 由 ABP 源码自动生成 ## 用途 盘点差异调整单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | StockDiffAdjustmentId | Guid | 否 | 盘点差异调整单ID | | ILTId | Guid | 否 "
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockDiffAdjustments.md",
+      "title": "WMS_StockDiffAdjustments 盘点差异调整单",
+      "headings": [
+        "WMS_StockDiffAdjustments 盘点差异调整单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockDiffAdjustments 盘点差异调整单 > 由 ABP 源码自动生成 ## 用途 盘点差异调整单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | BillNo | string | 否 | 盘点调整单号 | | SapBillNo | string | 否 | SAP盘点调整单号 | | Stoc"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockHistorys.md",
+      "title": "WMS_StockHistorys 库存流水",
+      "headings": [
+        "WMS_StockHistorys 库存流水",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockHistorys 库存流水 > 由 ABP 源码自动生成 ## 用途 库存流水 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | Warehouse | string | 否 | 仓库 | | TenantId | Guid? | 是 | 租户ID | | OrginalBillNo | string | 否 | 关联单号 | | BusinessNode | stri"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockInDetails.md",
+      "title": "WMS_StockInDetails 入库单明细",
+      "headings": [
+        "WMS_StockInDetails 入库单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockInDetails 入库单明细 > 由 ABP 源码自动生成 ## 用途 入库单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | LineId | int | 否 | 行号 | | TenantId | Guid? | 是 | 租户ID | | StockInId | Guid | 否 | 入库单ID | | ProductId | Guid | 否 | 物料ID"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockIns.md",
+      "title": "WMS_StockIns 入库单",
+      "headings": [
+        "WMS_StockIns 入库单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockIns 入库单 > 由 ABP 源码自动生成 ## 用途 入库单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | BillNo | string | 否 | 入库单号 | | OrginalBillNo | string | 否 | 来源单号 | | Number | string? | 是 | 台份 |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockOutDetailChecks.md",
+      "title": "WMS_StockOutDetailChecks 出库单明细复核",
+      "headings": [
+        "WMS_StockOutDetailChecks 出库单明细复核",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockOutDetailChecks 出库单明细复核 > 由 ABP 源码自动生成 ## 用途 出库单明细复核 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | StockOutDetailId | Guid | 否 | 出库单明细ID | | LossQty | decimal | 否 | 缺件数量 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockOutDetails.md",
+      "title": "WMS_StockOutDetails 出库单明细",
+      "headings": [
+        "WMS_StockOutDetails 出库单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockOutDetails 出库单明细 > 由 ABP 源码自动生成 ## 用途 出库单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | WarehouseId | Guid? | 是 | 仓库ID | | LineId | int | 否 | 行号 | | StockOutId | Guid | 否 | 出库单ID | | OrderDetailState | Ord"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockOuts.md",
+      "title": "WMS_StockOuts 出库订单",
+      "headings": [
+        "WMS_StockOuts 出库订单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockOuts 出库订单 > 由 ABP 源码自动生成 ## 用途 出库订单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | BillNo | string | 否 | 出库单号 | | Werks | string | 否 | 工厂 | | OwnerName | string | 否 | 工厂描述 | | OriginalBillNo | string | 否 | SA"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockProjectTransferDetails.md",
+      "title": "WMS_StockProjectTransferDetails 库存项目调拨单明细",
+      "headings": [
+        "WMS_StockProjectTransferDetails 库存项目调拨单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockProjectTransferDetails 库存项目调拨单明细 > 由 ABP 源码自动生成 ## 用途 库存项目调拨单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | StockProjectTransferId | Guid | 否 | 调拨单ID | | LineNum | int | 否 | 行号 | | StockId | Guid? | 是 | 库存"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockProjectTransfers.md",
+      "title": "WMS_StockProjectTransfers 库存项目调拨单",
+      "headings": [
+        "WMS_StockProjectTransfers 库存项目调拨单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockProjectTransfers 库存项目调拨单 > 由 ABP 源码自动生成 ## 用途 库存项目调拨单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TransferNo | string | 否 | 调拨单号 | | SapBillNo | string? | 是 | SAP调拨单号 | | TransferStatus | TransferStatusEnu"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockTransferDetails.md",
+      "title": "WMS_StockTransferDetails 库存调拨单明细",
+      "headings": [
+        "WMS_StockTransferDetails 库存调拨单明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockTransferDetails 库存调拨单明细 > 由 ABP 源码自动生成 ## 用途 库存调拨单明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | WarehouseId | Guid? | 是 | 仓库ID | | LineId | int | 否 | 行号 | | StockTransferId | Guid | 否 | 库存调拨单ID | | StockT"
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockTransferOperateRecords.md",
+      "title": "WMS_StockTransferOperateRecords 库存调拨上下架操作记录",
+      "headings": [
+        "WMS_StockTransferOperateRecords 库存调拨上下架操作记录",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockTransferOperateRecords 库存调拨上下架操作记录 > 由 ABP 源码自动生成 ## 用途 库存调拨上下架操作记录 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | WarehouseId | Guid? | 是 | 仓库ID | | StockTransferId | Guid? | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_StockTransfers.md",
+      "title": "WMS_StockTransfers 库存调拨单",
+      "headings": [
+        "WMS_StockTransfers 库存调拨单",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_StockTransfers 库存调拨单 > 由 ABP 源码自动生成 ## 用途 库存调拨单 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | WarehouseId | Guid? | 是 | 仓库ID | | OwnerCode | string | 否 | 工厂 | | OwnerName | string "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Stocks.md",
+      "title": "WMS_Stocks 库存",
+      "headings": [
+        "WMS_Stocks 库存",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Stocks 库存 > 由 ABP 源码自动生成 ## 用途 库存 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | ProductClassId | Guid? | 是 | 物料类别ID | | ProductId | Guid | 否 | 物料ID | | OwnerId | Guid | 否 | 工厂ID | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_SubContainers.md",
+      "title": "WMS_SubContainers 子容器",
+      "headings": [
+        "WMS_SubContainers 子容器",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_SubContainers 子容器 > 由 ABP 源码自动生成 ## 用途 子容器 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | SubContainerCode | string | 否 | 子容器编码 | ## 继承/审计字段 - `Id`：主键 - `IsDeleted`：软删除标记，默认查询应排除 - "
+    },
+    {
+      "path": "docs/generated/tables/WMS_Suppliers.md",
+      "title": "WMS_Suppliers 供应商",
+      "headings": [
+        "WMS_Suppliers 供应商",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Suppliers 供应商 > 由 ABP 源码自动生成 ## 用途 供应商 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | PARTNER | string | 否 | 业务伙伴编号 | | NAME1 | string | 否 | 业务伙伴名称 | | BANKL | string | 否 | 银行代码 | | BANKA | string | 否 | 银行名称 | | C"
+    },
+    {
+      "path": "docs/generated/tables/WMS_TemplateConfigDefaultValues.md",
+      "title": "WMS_TemplateConfigDefaultValues 模板配置默认值",
+      "headings": [
+        "WMS_TemplateConfigDefaultValues 模板配置默认值",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "关系",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_TemplateConfigDefaultValues 模板配置默认值 > 由 ABP 源码自动生成 ## 用途 模板配置默认值 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TemplateConfigId | Guid | 否 | 模板配置Id | | DefaultValueName | string | 否 | 默认值名称 | | DefaultValueJson |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_TemplateConfigDetails.md",
+      "title": "WMS_TemplateConfigDetails 模板配置明细",
+      "headings": [
+        "WMS_TemplateConfigDetails 模板配置明细",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_TemplateConfigDetails 模板配置明细 > 由 ABP 源码自动生成 ## 用途 模板配置明细 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TemplateConfigId | Guid | 否 | 模板配置Id | | ControlName | string | 否 | 控件名 | | ControlValue | string | 否 | 控件值 |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_TemplateConfigs.md",
+      "title": "WMS_TemplateConfigs 模板配置",
+      "headings": [
+        "WMS_TemplateConfigs 模板配置",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_TemplateConfigs 模板配置 > 由 ABP 源码自动生成 ## 用途 模板配置 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ParentTemplateId | Guid? | 是 | 父模板Id | | TemplateName | string | 否 | 模板名称 | ## 继承/审计字段 - `Id`：主键 - `TenantId`：租户 ID（多租户"
+    },
+    {
+      "path": "docs/generated/tables/WMS_UserFieldConfigurations.md",
+      "title": "WMS_UserFieldConfigurations 用户字段配置表",
+      "headings": [
+        "WMS_UserFieldConfigurations 用户字段配置表",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_UserFieldConfigurations 用户字段配置表 > 由 ABP 源码自动生成 ## 用途 用户字段配置表 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | UserId | Guid | 否 | 用户ID | | PageKey | string | 否 | 页面/模块标识（如：StockIn、Sto"
+    },
+    {
+      "path": "docs/generated/tables/WMS_UserLogins.md",
+      "title": "WMS_UserLogins 表示用户的登录名及其关联的提供程序。",
+      "headings": [
+        "WMS_UserLogins 表示用户的登录名及其关联的提供程序。",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_UserLogins 表示用户的登录名及其关联的提供程序。 > 由 ABP 源码自动生成 ## 用途 表示用户的登录名及其关联的提供程序。 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | UserId | Guid | 否 | 获取或设置与此登录名关联的用户的主键。 | | LoginProvider | string | "
+    },
+    {
+      "path": "docs/generated/tables/WMS_UserTokens.md",
+      "title": "WMS_UserTokens Represents an authentication token for a user.",
+      "headings": [
+        "WMS_UserTokens Represents an authentication token for a user.",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_UserTokens Represents an authentication token for a user. > 由 ABP 源码自动生成 ## 用途 Represents an authentication token for a user. ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | | | UserId | Guid"
+    },
+    {
+      "path": "docs/generated/tables/WMS_Warehouses.md",
+      "title": "WMS_Warehouses 仓库",
+      "headings": [
+        "WMS_Warehouses 仓库",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "索引字段",
+        "查询注意",
+        "相关接口"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_Warehouses 仓库 > 由 ABP 源码自动生成 ## 用途 仓库 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | TenantId | Guid? | 是 | 租户ID | | WarehouseCode | string | 否 | 仓库编码 | | WarehouseName | string | 否 | 仓库名称 | | Enabled | bool | 否 |"
+    },
+    {
+      "path": "docs/generated/tables/WMS_WcsEquipMentStatistics.md",
+      "title": "WMS_WcsEquipMentStatistics WCS设备统计",
+      "headings": [
+        "WMS_WcsEquipMentStatistics WCS设备统计",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_WcsEquipMentStatistics WCS设备统计 > 由 ABP 源码自动生成 ## 用途 WCS设备统计 ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | System | int | 否 | 系统 | | Date | DateTime | 否 | 日期 | | TaskTotalTime | decimal | 否 | 作业时长(分钟) | | CarTaskC"
+    },
+    {
+      "path": "docs/generated/tables/WMS_YLPhotos.md",
+      "title": "WMS_YLPhotos 容器图片(YL)",
+      "headings": [
+        "WMS_YLPhotos 容器图片(YL)",
+        "用途",
+        "字段",
+        "继承/审计字段",
+        "关键字段",
+        "查询注意"
+      ],
+      "kind": "doc",
+      "snippet": "# WMS_YLPhotos 容器图片(YL) > 由 ABP 源码自动生成 ## 用途 容器图片(YL) ## 字段 | 字段 | 类型 | 可空 | 说明 | |---|---|---|---| | ContainerCode | string? | 是 | 容器编号 | | OriginBillNo | string? | 是 | 来源单号 | | TenantId | Guid? | 是 | 租户ID | | ImgSavePa"
+    }
+  ],
+  "reports": [],
+  "queries": [],
+  "generatedAt": "2026-10-28T17:09:10.950Z"
+}

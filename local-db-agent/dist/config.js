@@ -46,7 +46,7 @@ const DEFAULTS = {
     llmBaseUrl: 'https://api.deepseek.com/v1',
     llmModel: 'deepseek-chat',
     llmTimeoutSec: 60,
-    llmTemperature: 0.3,
+    llmTemperature: 0.1,
     llmTopP: 0.9,
     recursionLimit: 30,
     turnTimeoutSec: 120,
@@ -66,10 +66,21 @@ const DEFAULTS = {
     maxDailyTokens: 2000000,
     maxModelCalls: 12,
     maxReportModelCalls: 16,
+    maxPlanModelCalls: 24,
+    maxPlanTurnTokens: 240000,
+    planTurnTimeoutSec: 600,
+    stepTimeoutSec: 240,
     enableSuggestions: true,
     enableClarify: true,
     strictNumberCheck: false,
     requireSqlApproval: false,
+    enablePlanMode: true,
+    maxPlanSteps: 8,
+    maxRetriesPerStep: 2,
+    maxReplans: 1,
+    maxParallelSteps: 3,
+    enableAccuracyCritic: true,
+    maxCriticRounds: 1,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
 export class ConfigError extends Error {
@@ -268,11 +279,26 @@ export function resolveRequestConfig(raw) {
     const maxDailyTokens = Math.max(0, num(lim.maxDailyTokens, DEFAULTS.maxDailyTokens));
     const maxModelCalls = Math.max(1, num(lim.maxModelCalls, DEFAULTS.maxModelCalls));
     const maxReportModelCalls = Math.max(maxModelCalls, num(lim.maxReportModelCalls, DEFAULTS.maxReportModelCalls));
+    const maxPlanModelCalls = Math.max(maxModelCalls, lim.maxModelCalls != null
+        ? num(lim.maxPlanModelCalls, maxModelCalls)
+        : num(lim.maxPlanModelCalls, DEFAULTS.maxPlanModelCalls));
+    const maxPlanTurnTokens = Math.max(maxTurnTokens, lim.maxTurnTokens != null
+        ? num(lim.maxPlanTurnTokens, maxTurnTokens)
+        : num(lim.maxPlanTurnTokens, DEFAULTS.maxPlanTurnTokens));
+    const planTurnTimeoutMs = Math.max(turnTimeoutMs, Math.max(1, num(lim.planTurnTimeoutSec, DEFAULTS.planTurnTimeoutSec)) * 1000);
+    const stepTimeoutMs = Math.max(10_000, Math.max(1, num(lim.stepTimeoutSec, DEFAULTS.stepTimeoutSec)) * 1000);
     const enableSuggestions = lim.enableSuggestions !== false;
     const enableClarify = lim.enableClarify !== false;
     const strictNumberCheck = lim.strictNumberCheck === true;
     const tokenPrices = normalizePrices(lim.tokenPrices);
     const requireSqlApproval = lim.requireSqlApproval === true;
+    const enablePlanMode = lim.enablePlanMode !== false;
+    const maxPlanSteps = Math.max(1, num(lim.maxPlanSteps, DEFAULTS.maxPlanSteps));
+    const maxRetriesPerStep = Math.max(0, num(lim.maxRetriesPerStep, DEFAULTS.maxRetriesPerStep));
+    const maxReplans = Math.max(0, num(lim.maxReplans, DEFAULTS.maxReplans));
+    const maxParallelSteps = Math.max(1, num(lim.maxParallelSteps, DEFAULTS.maxParallelSteps));
+    const enableAccuracyCritic = lim.enableAccuracyCritic !== false;
+    const maxCriticRounds = Math.max(0, num(lim.maxCriticRounds, DEFAULTS.maxCriticRounds));
     const key = hashKey(JSON.stringify({
         db,
         llm,
@@ -289,10 +315,21 @@ export function resolveRequestConfig(raw) {
         maxDailyTokens,
         maxModelCalls,
         maxReportModelCalls,
+        maxPlanModelCalls,
+        maxPlanTurnTokens,
+        planTurnTimeoutMs,
+        stepTimeoutMs,
         enableSuggestions,
         enableClarify,
         strictNumberCheck,
         requireSqlApproval,
+        enablePlanMode,
+        maxPlanSteps,
+        maxRetriesPerStep,
+        maxReplans,
+        maxParallelSteps,
+        enableAccuracyCritic,
+        maxCriticRounds,
     }));
     return {
         db,
@@ -312,11 +349,22 @@ export function resolveRequestConfig(raw) {
         maxDailyTokens,
         maxModelCalls,
         maxReportModelCalls,
+        maxPlanModelCalls,
+        maxPlanTurnTokens,
+        planTurnTimeoutMs,
+        stepTimeoutMs,
         enableSuggestions,
         enableClarify,
         strictNumberCheck,
         tokenPrices,
         requireSqlApproval,
+        enablePlanMode,
+        maxPlanSteps,
+        maxRetriesPerStep,
+        maxReplans,
+        maxParallelSteps,
+        enableAccuracyCritic,
+        maxCriticRounds,
         key,
     };
 }
