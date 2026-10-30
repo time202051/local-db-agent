@@ -81,6 +81,7 @@ const DEFAULTS = {
     maxParallelSteps: 3,
     enableAccuracyCritic: true,
     maxCriticRounds: 1,
+    intentGateTimeoutSec: 8,
 };
 /** 配置错误：消息面向用户、不含密码等敏感信息 */
 export class ConfigError extends Error {
@@ -299,6 +300,7 @@ export function resolveRequestConfig(raw) {
     const maxParallelSteps = Math.max(1, num(lim.maxParallelSteps, DEFAULTS.maxParallelSteps));
     const enableAccuracyCritic = lim.enableAccuracyCritic !== false;
     const maxCriticRounds = Math.max(0, num(lim.maxCriticRounds, DEFAULTS.maxCriticRounds));
+    const intentGateTimeoutMs = Math.max(1000, num(lim.intentGateTimeoutSec, DEFAULTS.intentGateTimeoutSec) * 1000);
     const key = hashKey(JSON.stringify({
         db,
         llm,
@@ -330,6 +332,7 @@ export function resolveRequestConfig(raw) {
         maxParallelSteps,
         enableAccuracyCritic,
         maxCriticRounds,
+        intentGateTimeoutMs,
     }));
     return {
         db,
@@ -365,6 +368,7 @@ export function resolveRequestConfig(raw) {
         maxParallelSteps,
         enableAccuracyCritic,
         maxCriticRounds,
+        intentGateTimeoutMs,
         key,
     };
 }

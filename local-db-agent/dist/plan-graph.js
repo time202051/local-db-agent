@@ -4,6 +4,7 @@ import { BudgetExceededError } from './cost-guard.js';
 import { getKnowledgePack } from './knowledge.js';
 import { logLine } from './log.js';
 import { createChatModel, getRuntime } from './runtime.js';
+import { isTerminalVisualTool } from './tools.js';
 import { buildQuickPlan, evaluateStep, fallbackPlan, isLikelySimpleQuestion, isReportStep, normalizePlan, planEventPayload, summarizeObservation, } from './plan.js';
 import { buildResultSummary, checkBudget, executeStep, extractText, planWithModel, produceAnswer, recordUsage, } from './plan-runner.js';
 const PlanGraphState = Annotation.Root({
@@ -528,9 +529,63 @@ async function reflectorNode(state, config) {
                 summary: doneStep?.summary,
             });
             logLine(`step end ${step.index + 1}/${plan.steps.length} status=done visual`);
-            // 模型可能在数据步骤里提前调用了 render_html_report。此时报告已生成，
-            // 后续“生成 HTML 报告”目标不能一直 pending，否则界面会显示 1/2。
-            if (!isReportStep(step)) {
+            // 模型可能在数据步骤里提前调用了 render_html_report。此时报告已经出图，
+            // 渲染早停后剩余 pending 步骤不会再执行，必须全部标记完成，
+            // 否则 completed<total，界面会一直显示 1/2、状态 partial。
+            // 以“终版报告工具是否真的渲染成功”为准，不再依赖步骤标题是否像报告步骤；
+            // render_chart / render_report 等非终版图表不算，后续步骤仍正常执行。
+            const terminalRendered = observation.tools.some(item => isTerminalVisualTool(item.name));
+            if (terminalRendered) {
+                const reusedSteps = nextPlan.steps.filter(item => item.id !== stepId && item.status === 'pending');
+                for (const reused of reusedSteps) {
+                    const summary = '报告已在上一步生成，本步骤复用，不重复渲染';
+                    nextPlan = patchStep(nextPlan, reused.id, {
+                        status: 'done',
+                        endedAt,
+                        durationMs: 0,
+                        summary,
+                    });
+                    const reusedStep = nextPlan.steps.find(item => item.id === reused.id);
+                    if (reusedStep) {
+                        completedResults.push({
+                            step: reusedStep,
+                            observation: {
+                                ...observation,
+                                tools: [],
+                                sql: [],
+                                aiText: '',
+                                visual: true,
+                                clarify: false,
+                                errorMessages: [],
+                                budgetBlocked: false,
+                                timedOut: false,
+                            },
+                        });
+                    }
+                    send({
+                        type: 'trace',
+                        id: `trace-report-reuse-${reused.id}`,
+                        stepId: reused.id,
+                        phase: 'step',
+                        kind: 'report',
+                        title: '复用 HTML 报告',
+                        detail: '上一步已生成 HTML 报告，本步骤不重复渲染',
+                        status: 'success',
+                        durationMs: 0,
+                    });
+                    send({
+                        type: 'step_end',
+                        stepId: reused.id,
+                        status: 'done',
+                        durationMs: 0,
+                        summary,
+                    });
+                    logLine(`step end ${reused.index + 1}/${plan.steps.length} status=done reused-report`);
+                }
+            }
+            else if (!isReportStep(step)) {
+                // 非终版可视化（render_report / render_chart）：维持旧语义，
+                // 只把“像报告步骤”的 pending 步骤标成复用完成。
                 const reusedSteps = nextPlan.steps.filter(item => item.id !== stepId && item.status === 'pending' && isReportStep(item));
                 for (const reused of reusedSteps) {
                     const summary = '报告已在上一步生成，本步骤复用，不重复渲染';
@@ -845,6 +900,12 @@ async function criticNode(state, config) {
         !state.stepResults.length) {
         return { route: 'reporter' };
     }
+    // 整轮没有任何 SQL 结果时没有数据可校验（闲聊、纯澄清、无数据的兜底轮），
+    // 跑 critic 只会空转一次模型调用。
+    if (!state.stepResults.some(item => item.observation.sql.length > 0)) {
+        logLine('critic skipped: no sql observations this turn');
+        return { route: 'reporter' };
+    }
     send({ type: 'status', message: '正在进行最终数据校验…' });
     logLine(`critic start steps=${plan.steps.length}`);
     const criticStartedAt = Date.now();
@@ -961,6 +1022,22 @@ async function reporterNode(state, config) {
         : '';
     if (state.executionMode === 'quick' && fallbackText.trim()) {
         // 快速模式下单步模型已经给出答案，不再额外调用一次 reporter。
+        send({ type: 'token', content: fallbackText.trim() });
+        return { route: 'finalize' };
+    }
+    const lastResult = state.stepResults.length > 0 ? state.stepResults[state.stepResults.length - 1] : null;
+    const plainSingleAnswer = Boolean(
+    // analyze 模式的"单步、无可视化、校验无异议"轮：executor 已经给出完整答案，
+    // 再调一次 reporter 只会把答案重写（同一内容重复出现），直接复用。
+    fallbackText.trim() &&
+        !state.reportMode &&
+        plan.steps.length <= 1 &&
+        !lastResult?.observation.visual &&
+        !lastResult?.observation.clarify &&
+        (!state.criticVerdict || state.criticVerdict === 'pass') &&
+        state.criticIssues.length === 0);
+    if (plainSingleAnswer) {
+        logLine(`reporter reuse executor answer chars=${fallbackText.trim().length}`);
         send({ type: 'token', content: fallbackText.trim() });
         return { route: 'finalize' };
     }

@@ -86,6 +86,7 @@ const DEFAULTS = {
   maxParallelSteps: 3,
   enableAccuracyCritic: true,
   maxCriticRounds: 1,
+  intentGateTimeoutSec: 8,
 };
 
 export type DbType = 'sqlserver' | 'kingbase';
@@ -235,6 +236,8 @@ export interface LimitsInput {
   enableAccuracyCritic?: boolean;
   /** max critic-driven revisions/replans per turn (default 1) */
   maxCriticRounds?: number;
+  /** 意图门调用超时（秒，默认 8）；意图门固定开启，超时/失败回落 analyze */
+  intentGateTimeoutSec?: number;
 }
 
 export interface RequestConfigInput {
@@ -328,6 +331,8 @@ export interface ResolvedConfig {
   maxParallelSteps: number;
   enableAccuracyCritic: boolean;
   maxCriticRounds: number;
+  /** 意图门调用超时（毫秒）：每轮先由模型判定 chat/quick/analyze，失败回落 analyze */
+  intentGateTimeoutMs: number;
   /** cache key (hash, no plaintext secrets) */
   key: string;
 }
@@ -595,6 +600,10 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
   const maxParallelSteps = Math.max(1, num(lim.maxParallelSteps, DEFAULTS.maxParallelSteps));
   const enableAccuracyCritic = lim.enableAccuracyCritic !== false;
   const maxCriticRounds = Math.max(0, num(lim.maxCriticRounds, DEFAULTS.maxCriticRounds));
+  const intentGateTimeoutMs = Math.max(
+    1000,
+    num(lim.intentGateTimeoutSec, DEFAULTS.intentGateTimeoutSec) * 1000,
+  );
 
   const key = hashKey(
     JSON.stringify({
@@ -628,6 +637,7 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
       maxParallelSteps,
       enableAccuracyCritic,
       maxCriticRounds,
+      intentGateTimeoutMs,
     }),
   );
 
@@ -665,6 +675,7 @@ export function resolveRequestConfig(raw?: RequestConfigInput | null): ResolvedC
     maxParallelSteps,
     enableAccuracyCritic,
     maxCriticRounds,
+    intentGateTimeoutMs,
     key,
   };
 }

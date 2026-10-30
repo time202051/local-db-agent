@@ -129160,14 +129160,14 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
       runtime
     });
   };
-  const processDecision = (decision2, toolCall, config2) => {
+  const processDecision = (decision, toolCall, config2) => {
     const allowedDecisions = config2.allowedDecisions;
-    if (decision2.type === "approve" && allowedDecisions.includes("approve")) return {
+    if (decision.type === "approve" && allowedDecisions.includes("approve")) return {
       revisedToolCall: toolCall,
       toolMessage: null
     };
-    if (decision2.type === "edit" && allowedDecisions.includes("edit")) {
-      const editedAction = decision2.editedAction;
+    if (decision.type === "edit" && allowedDecisions.includes("edit")) {
+      const editedAction = decision.editedAction;
       if (!editedAction || typeof editedAction.name !== "string") throw new Error(`Invalid edited action for tool "${toolCall.name}": name must be a string`);
       if (!editedAction.args || typeof editedAction.args !== "object") throw new Error(`Invalid edited action for tool "${toolCall.name}": args must be an object`);
       return {
@@ -129180,9 +129180,9 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         toolMessage: null
       };
     }
-    if (decision2.type === "reject" && allowedDecisions.includes("reject")) {
-      if (decision2.message !== void 0 && typeof decision2.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision2.message}`);
-      const content = decision2.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`;
+    if (decision.type === "reject" && allowedDecisions.includes("reject")) {
+      if (decision.message !== void 0 && typeof decision.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision.message}`);
+      const content = decision.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`;
       return {
         revisedToolCall: toolCall,
         toolMessage: new ToolMessage({
@@ -129193,19 +129193,19 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         })
       };
     }
-    if (decision2.type === "respond" && allowedDecisions.includes("respond")) {
-      if (typeof decision2.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision2.message}`);
+    if (decision.type === "respond" && allowedDecisions.includes("respond")) {
+      if (typeof decision.message !== "string") throw new Error(`Tool call response for "${toolCall.name}" must be a string, got ${typeof decision.message}`);
       return {
         revisedToolCall: toolCall,
         toolMessage: new ToolMessage({
-          content: decision2.message,
+          content: decision.message,
           name: toolCall.name,
           tool_call_id: toolCall.id,
           status: "success"
         })
       };
     }
-    const msg = `Unexpected human decision: ${JSON.stringify(decision2)}. Decision type '${decision2.type}' is not allowed for tool '${toolCall.name}'. Expected one of ${JSON.stringify(allowedDecisions)} based on the tool's configuration.`;
+    const msg = `Unexpected human decision: ${JSON.stringify(decision)}. Decision type '${decision.type}' is not allowed for tool '${toolCall.name}'. Expected one of ${JSON.stringify(allowedDecisions)} based on the tool's configuration.`;
     throw new Error(msg);
   };
   const interruptMode = options.interruptMode ?? "batched";
@@ -129238,21 +129238,21 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         description: actionRequest.description ?? ""
       };
       const responseSchema = decisionSchema(toolConfig.allowedDecisions, toolCall.name, request.tool);
-      const decision2 = interrupt(value, { responseSchema });
-      if (decision2.type === "approve") return handler(request);
-      if (decision2.type === "reject") return new ToolMessage({
-        content: decision2.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`,
+      const decision = interrupt(value, { responseSchema });
+      if (decision.type === "approve") return handler(request);
+      if (decision.type === "reject") return new ToolMessage({
+        content: decision.message ?? `User rejected the tool call for \`${toolCall.name}\` with id ${toolCall.id}`,
         name: toolCall.name,
         tool_call_id: toolCall.id,
         status: "error"
       });
-      if (decision2.type === "respond") return new ToolMessage({
-        content: decision2.message,
+      if (decision.type === "respond") return new ToolMessage({
+        content: decision.message,
         name: toolCall.name,
         tool_call_id: toolCall.id,
         status: "success"
       });
-      const executed = decision2.edited_action;
+      const executed = decision.edited_action;
       return withEditNotice(await handler({
         ...request,
         toolCall: {
@@ -129300,14 +129300,14 @@ Args: ${JSON.stringify(toolArgs, null, 2)}`;
         if (decisions.length !== interruptToolCalls.length) throw new Error(`Number of human decisions (${decisions.length}) does not match number of hanging tool calls (${interruptToolCalls.length}).`);
         const revisedToolCalls = [...autoApprovedToolCalls];
         const artificialToolMessages = [];
-        const hasRejectedToolCalls = decisions.some((decision2) => decision2.type === "reject");
-        const hasRespondedToolCalls = decisions.some((decision2) => decision2.type === "respond");
+        const hasRejectedToolCalls = decisions.some((decision) => decision.type === "reject");
+        const hasRespondedToolCalls = decisions.some((decision) => decision.type === "respond");
         for (let i = 0; i < decisions.length; i++) {
-          const decision2 = decisions[i];
+          const decision = decisions[i];
           const toolCall = interruptToolCalls[i];
           const interruptConfig = resolvedConfigs[toolCall.name];
-          const { revisedToolCall, toolMessage } = processDecision(decision2, toolCall, interruptConfig);
-          if (revisedToolCall && (!hasRejectedToolCalls || decision2.type === "reject" || decision2.type === "respond")) revisedToolCalls.push(revisedToolCall);
+          const { revisedToolCall, toolMessage } = processDecision(decision, toolCall, interruptConfig);
+          if (revisedToolCall && (!hasRejectedToolCalls || decision.type === "reject" || decision.type === "respond")) revisedToolCalls.push(revisedToolCall);
           if (toolMessage) artificialToolMessages.push(toolMessage);
         }
         if (AIMessage.isInstance(lastMessage)) lastMessage.tool_calls = revisedToolCalls;
@@ -130484,7 +130484,8 @@ var DEFAULTS = {
   maxReplans: 1,
   maxParallelSteps: 3,
   enableAccuracyCritic: true,
-  maxCriticRounds: 1
+  maxCriticRounds: 1,
+  intentGateTimeoutSec: 8
 };
 var ConfigError = class extends Error {
 };
@@ -130673,6 +130674,7 @@ function resolveRequestConfig(raw) {
   const maxParallelSteps = Math.max(1, num(lim.maxParallelSteps, DEFAULTS.maxParallelSteps));
   const enableAccuracyCritic = lim.enableAccuracyCritic !== false;
   const maxCriticRounds = Math.max(0, num(lim.maxCriticRounds, DEFAULTS.maxCriticRounds));
+  const intentGateTimeoutMs = Math.max(1e3, num(lim.intentGateTimeoutSec, DEFAULTS.intentGateTimeoutSec) * 1e3);
   const key = hashKey(JSON.stringify({
     db,
     llm,
@@ -130703,7 +130705,8 @@ function resolveRequestConfig(raw) {
     maxReplans,
     maxParallelSteps,
     enableAccuracyCritic,
-    maxCriticRounds
+    maxCriticRounds,
+    intentGateTimeoutMs
   }));
   return {
     db,
@@ -130739,6 +130742,7 @@ function resolveRequestConfig(raw) {
     maxParallelSteps,
     enableAccuracyCritic,
     maxCriticRounds,
+    intentGateTimeoutMs,
     key
   };
 }
@@ -170654,7 +170658,55 @@ async function reflectorNode(state2, config2) {
         summary: doneStep2?.summary
       });
       logLine(`step end ${step.index + 1}/${plan.steps.length} status=done visual`);
-      if (!isReportStep(step)) {
+      const terminalRendered = observation.tools.some((item) => isTerminalVisualTool(item.name));
+      if (terminalRendered) {
+        const reusedSteps = nextPlan.steps.filter((item) => item.id !== stepId && item.status === "pending");
+        for (const reused of reusedSteps) {
+          const summary = "\u62A5\u544A\u5DF2\u5728\u4E0A\u4E00\u6B65\u751F\u6210\uFF0C\u672C\u6B65\u9AA4\u590D\u7528\uFF0C\u4E0D\u91CD\u590D\u6E32\u67D3";
+          nextPlan = patchStep(nextPlan, reused.id, {
+            status: "done",
+            endedAt: endedAt2,
+            durationMs: 0,
+            summary
+          });
+          const reusedStep = nextPlan.steps.find((item) => item.id === reused.id);
+          if (reusedStep) {
+            completedResults.push({
+              step: reusedStep,
+              observation: {
+                ...observation,
+                tools: [],
+                sql: [],
+                aiText: "",
+                visual: true,
+                clarify: false,
+                errorMessages: [],
+                budgetBlocked: false,
+                timedOut: false
+              }
+            });
+          }
+          send({
+            type: "trace",
+            id: `trace-report-reuse-${reused.id}`,
+            stepId: reused.id,
+            phase: "step",
+            kind: "report",
+            title: "\u590D\u7528 HTML \u62A5\u544A",
+            detail: "\u4E0A\u4E00\u6B65\u5DF2\u751F\u6210 HTML \u62A5\u544A\uFF0C\u672C\u6B65\u9AA4\u4E0D\u91CD\u590D\u6E32\u67D3",
+            status: "success",
+            durationMs: 0
+          });
+          send({
+            type: "step_end",
+            stepId: reused.id,
+            status: "done",
+            durationMs: 0,
+            summary
+          });
+          logLine(`step end ${reused.index + 1}/${plan.steps.length} status=done reused-report`);
+        }
+      } else if (!isReportStep(step)) {
         const reusedSteps = nextPlan.steps.filter((item) => item.id !== stepId && item.status === "pending" && isReportStep(item));
         for (const reused of reusedSteps) {
           const summary = "\u62A5\u544A\u5DF2\u5728\u4E0A\u4E00\u6B65\u751F\u6210\uFF0C\u672C\u6B65\u9AA4\u590D\u7528\uFF0C\u4E0D\u91CD\u590D\u6E32\u67D3";
@@ -170958,6 +171010,10 @@ async function criticNode(state2, config2) {
   if (!plan || state2.executionMode === "quick" || !cfg.enableAccuracyCritic || !state2.stepResults.length) {
     return { route: "reporter" };
   }
+  if (!state2.stepResults.some((item) => item.observation.sql.length > 0)) {
+    logLine("critic skipped: no sql observations this turn");
+    return { route: "reporter" };
+  }
   send({ type: "status", message: "\u6B63\u5728\u8FDB\u884C\u6700\u7EC8\u6570\u636E\u6821\u9A8C\u2026" });
   logLine(`critic start steps=${plan.steps.length}`);
   const criticStartedAt = Date.now();
@@ -171067,6 +171123,17 @@ async function reporterNode(state2, config2) {
     return { route: "finalize" };
   const fallbackText = state2.stepResults.length ? state2.stepResults[state2.stepResults.length - 1].observation.aiText : "";
   if (state2.executionMode === "quick" && fallbackText.trim()) {
+    send({ type: "token", content: fallbackText.trim() });
+    return { route: "finalize" };
+  }
+  const lastResult = state2.stepResults.length > 0 ? state2.stepResults[state2.stepResults.length - 1] : null;
+  const plainSingleAnswer = Boolean(
+    // analyze 模式的"单步、无可视化、校验无异议"轮：executor 已经给出完整答案，
+    // 再调一次 reporter 只会把答案重写（同一内容重复出现），直接复用。
+    fallbackText.trim() && !state2.reportMode && plan.steps.length <= 1 && !lastResult?.observation.visual && !lastResult?.observation.clarify && (!state2.criticVerdict || state2.criticVerdict === "pass") && state2.criticIssues.length === 0
+  );
+  if (plainSingleAnswer) {
+    logLine(`reporter reuse executor answer chars=${fallbackText.trim().length}`);
     send({ type: "token", content: fallbackText.trim() });
     return { route: "finalize" };
   }
@@ -171214,6 +171281,176 @@ async function runPlanTurn(options) {
     clarified: Boolean(finalState.clarified),
     stopped: Boolean(finalState.stopped),
     error: String(finalState.lastFailure || "")
+  };
+}
+
+// dist/model-activity.js
+function generationLabel(toolName) {
+  switch (toolName) {
+    case "render_html_report":
+      return "\u6B63\u5728\u7F16\u5199 HTML \u62A5\u544A";
+    case "render_report":
+      return "\u6B63\u5728\u7EC4\u88C5\u8F7B\u91CF\u62A5\u544A\u7EC4\u4EF6";
+    case "render_chart":
+      return "\u6B63\u5728\u7ED8\u5236\u56FE\u8868";
+    case "run_sql":
+      return "\u6B63\u5728\u7EC4\u7EC7 SQL \u67E5\u8BE2";
+    case "run_saved_query":
+      return "\u6B63\u5728\u6267\u884C\u9884\u7F6E\u6307\u6807\u67E5\u8BE2";
+    case "get_table_schema":
+      return "\u6B63\u5728\u67E5\u770B\u8868\u7ED3\u6784";
+    case "list_tables":
+      return "\u6B63\u5728\u626B\u63CF\u8868\u6E05\u5355";
+    case "search_tables":
+      return "\u6B63\u5728\u68C0\u7D22\u76F8\u5173\u8868";
+    case "search_knowledge":
+    case "read_knowledge":
+      return "\u6B63\u5728\u67E5\u9605\u77E5\u8BC6\u5E93";
+    case "read_skill":
+    case "read_skill_file":
+      return "\u6B63\u5728\u8BFB\u53D6\u6267\u884C\u6280\u80FD";
+    case "ask_clarification":
+      return "\u6B63\u5728\u6574\u7406\u6F84\u6E05\u95EE\u9898";
+    default:
+      return "\u6B63\u5728\u5206\u6790\u601D\u8003";
+  }
+}
+function textLength(content) {
+  if (typeof content === "string")
+    return content.length;
+  if (Array.isArray(content)) {
+    return content.reduce((sum, part) => {
+      if (typeof part === "string")
+        return sum + part.length;
+      if (part && typeof part === "object" && "text" in part) {
+        return sum + String(part.text || "").length;
+      }
+      return sum;
+    }, 0);
+  }
+  if (content && typeof content === "object" && "content" in content) {
+    return textLength(content.content);
+  }
+  return 0;
+}
+var WAIT_LABEL_MS = 1e4;
+function createModelActivityTracker(options) {
+  const intervalMs = Math.max(500, options.intervalMs ?? 2e3);
+  const now = options.now || (() => Date.now());
+  const send = options.send;
+  let state2 = null;
+  const labelOf = (toolName) => generationLabel(toolName);
+  const sendActive = (elapsedMs) => {
+    if (!state2)
+      return;
+    const waiting = state2.chars === 0 && elapsedMs >= WAIT_LABEL_MS;
+    send({
+      type: "model_active",
+      label: waiting ? "\u6B63\u5728\u7B49\u5F85\u6A21\u578B\u54CD\u5E94" : labelOf(state2.toolName),
+      chars: state2.chars,
+      elapsedMs,
+      ...state2.stepId ? { stepId: state2.stepId } : {}
+    });
+  };
+  const openTrace = () => {
+    if (!state2)
+      return;
+    send({
+      type: "trace",
+      id: state2.traceId,
+      phase: state2.stepId ? "step" : "answer",
+      kind: "generation",
+      title: "\u6A21\u578B\u751F\u6210",
+      detail: labelOf(state2.toolName),
+      status: "running",
+      ...state2.stepId ? { stepId: state2.stepId } : {}
+    });
+  };
+  const finishTrace = () => {
+    if (!state2)
+      return;
+    send({
+      type: "trace",
+      id: state2.traceId,
+      phase: state2.stepId ? "step" : "answer",
+      kind: "generation",
+      title: "\u6A21\u578B\u751F\u6210",
+      detail: `${labelOf(state2.toolName)}\uFF0C\u8F93\u51FA ${state2.chars} \u5B57\u7B26`,
+      status: "success",
+      durationMs: now() - state2.startedAt,
+      ...state2.stepId ? { stepId: state2.stepId } : {}
+    });
+  };
+  const open2 = (stepId) => {
+    if (state2)
+      return;
+    const startedAt = now();
+    state2 = {
+      traceId: `trace-gen-${startedAt}-${Math.random().toString(36).slice(2, 6)}`,
+      stepId,
+      startedAt,
+      // 打开不立即脉冲：首 chunk（可知工具名）或 2s 后的 tick 才发
+      lastSentAt: startedAt,
+      sentActive: false,
+      chars: 0,
+      toolName: ""
+    };
+    openTrace();
+  };
+  const onChunk = (event, stepId) => {
+    if (!state2)
+      open2(stepId);
+    if (!state2)
+      return;
+    if (stepId && !state2.stepId)
+      state2.stepId = stepId;
+    const chunk = event.data?.chunk;
+    if (!chunk)
+      return;
+    let grew = textLength(chunk.content);
+    const chunks = Array.isArray(chunk.tool_call_chunks) ? chunk.tool_call_chunks : [];
+    for (const item of chunks) {
+      if (!item)
+        continue;
+      if (typeof item.args === "string")
+        grew += item.args.length;
+      const name = typeof item.name === "string" ? item.name : "";
+      if (name && !state2.toolName)
+        state2.toolName = name;
+    }
+    state2.chars += grew;
+    const current = now();
+    if (!state2.sentActive || current - state2.lastSentAt >= intervalMs) {
+      state2.lastSentAt = current;
+      state2.sentActive = true;
+      sendActive(current - state2.startedAt);
+    }
+  };
+  const close = () => {
+    if (!state2)
+      return;
+    try {
+      finishTrace();
+    } finally {
+      state2 = null;
+    }
+  };
+  const tick = () => {
+    if (!state2)
+      return;
+    const current = now();
+    if (current - state2.lastSentAt < intervalMs)
+      return;
+    state2.lastSentAt = current;
+    state2.sentActive = true;
+    sendActive(current - state2.startedAt);
+  };
+  return {
+    open: open2,
+    onChunk,
+    close,
+    tick,
+    isOpen: () => state2 !== null
   };
 }
 
@@ -171478,10 +171715,6 @@ function formatPageContextAnswer(context2) {
 }
 
 // dist/intent-router.js
-var REPORT_RE2 = /报告|日报|周报|月报|年报|年度|汇报|大屏|看板|面板|可视化页面|可视化报告|网页报告|html/i;
-var ANALYSIS_RE2 = /分析|趋势|同比|环比|对比|分布|排名|异常|原因|诊断|拆解|建议|预测|画像|漏斗|结构|占比|贡献|归因|波动/i;
-var MULTI_DIM_RE = /按.*(?:分组|维度|仓库|物料|分类|状态|月份|日期)|各.*(?:仓库|物料|分类|状态)|分别|多个|逐|分项|拆开|维度/i;
-var SIMPLE_RE2 = /多少|总数|合计|总计|统计|查询|查一下|查下|列出|显示|平均|最大|最小|最近|top\s*\d+|前\s*\d+|明细|列表/i;
 var CHAT_RE = /^(你好|您好|hi|hello|嗨|在吗|谢谢|感谢|辛苦了|你是谁|你能做什么|你可以做什么)[\s!！。,.?？]*$/i;
 function isChatQuestion(text) {
   return CHAT_RE.test(String(text || "").trim());
@@ -171495,55 +171728,129 @@ function chatReply(question) {
   }
   return "\u4F60\u597D\uFF0C\u6211\u662F\u6570\u636E\u5E93\u5206\u6790\u52A9\u624B\u3002\u9700\u8981\u67E5\u6570\u636E\u3001\u505A\u5206\u6790\u6216\u751F\u6210\u62A5\u544A\u65F6\uFF0C\u76F4\u63A5\u544A\u8BC9\u6211\u5C31\u884C\u3002";
 }
-function decision(mode, reason, confidence, overrides = {}) {
-  return {
-    mode,
-    needsSql: mode !== "quick",
-    needsPlan: mode !== "quick",
-    needsReflection: true,
-    needsCritic: mode !== "quick",
-    needsReport: mode === "report",
-    maxSteps: mode === "quick" ? 1 : mode === "report" ? 6 : 5,
-    reason,
-    confidence,
-    ...overrides
-  };
-}
-function routeExecutionMode(question, options = {}) {
-  const text = String(question || "").trim();
-  const wantsReport = options.wantsReport === true || REPORT_RE2.test(text);
-  if (wantsReport) {
-    return decision("report", "\u7528\u6237\u8981\u6C42\u62A5\u544A/HTML/\u770B\u677F\uFF0C\u9700\u8981\u5B8C\u6574 Plan \u548C\u62A5\u544A\u751F\u6210", 0.98, {
-      needsSql: true,
-      needsReport: true,
-      needsCritic: true
-    });
-  }
-  if (ANALYSIS_RE2.test(text) || MULTI_DIM_RE.test(text)) {
-    return decision("analyze", "\u95EE\u9898\u5305\u542B\u5206\u6790\u3001\u8D8B\u52BF\u3001\u5BF9\u6BD4\u6216\u591A\u7EF4\u62C6\u89E3\uFF0C\u9700\u8981\u591A\u6B65\u8BA1\u5212", 0.9, {
-      needsSql: true,
-      needsCritic: true
-    });
-  }
-  if (text.length <= 60 && (SIMPLE_RE2.test(text) || options.pageContext)) {
-    return decision("quick", "\u95EE\u9898\u8F83\u7B80\u5355\uFF0C\u8D70\u5355\u6B65\u67E5\u8BE2\u5E76\u4FDD\u7559\u8F7B\u91CF\u53CD\u601D\uFF0C\u4E0D\u751F\u6210\u5B8C\u6574\u8BA1\u5212", 0.82, {
-      needsSql: SIMPLE_RE2.test(text),
-      needsPlan: false,
-      needsCritic: false,
-      maxSteps: 1
-    });
-  }
-  return decision("analyze", "\u95EE\u9898\u4E0D\u591F\u660E\u786E\u6216\u53EF\u80FD\u6D89\u53CA\u591A\u6B65\uFF0C\u4FDD\u5B88\u4F7F\u7528\u5B8C\u6574 Plan", 0.55, {
-    needsSql: true,
-    needsCritic: true
-  });
-}
 function modeLabel(mode) {
   if (mode === "quick")
     return "\u5FEB\u901F\u95EE\u7B54";
   if (mode === "report")
     return "\u62A5\u544A\u751F\u6210";
   return "\u5206\u6790\u6A21\u5F0F";
+}
+var INTENT_GATE_SYSTEM_PROMPT = `\u4F60\u662F\u5BF9\u8BDD\u610F\u56FE\u8DEF\u7531\u5668\uFF0C\u670D\u52A1\u4E8E\u4E00\u4E2A\u901A\u7528\u6570\u636E\u5E93\u67E5\u8BE2\u4E0E\u53EF\u89C6\u5316\u5206\u6790\u52A9\u624B\uFF08\u53EF\u8FDE\u63A5 SQL Server / KingbaseES\uFF0C\u80FD\u529B\uFF1A\u7528 SQL \u67E5\u771F\u5B9E\u6570\u636E\u3001\u770B\u8868\u7ED3\u6784\u3001\u505A\u8D8B\u52BF/\u5BF9\u6BD4/\u5360\u6BD4/\u5F02\u5E38\u7B49\u5206\u6790\u3001\u751F\u6210\u53EF\u89C6\u5316\u5361\u7247\u548C HTML \u62A5\u544A\uFF09\u3002
+
+\u4F60\u7684\u4EFB\u52A1\uFF1A\u5224\u65AD\u7528\u6237\u6700\u65B0\u4E00\u53E5\u6D88\u606F"\u60F3\u5E72\u4EC0\u4E48"\uFF0C\u8F93\u51FA\u8DEF\u7531\u51B3\u7B56\uFF1B\u95F2\u804A\u65F6\u987A\u4FBF\u66FF\u52A9\u624B\u4F5C\u7B54\u3002
+
+\u5224\u5B9A\u89C4\u5219\uFF1A
+- chat\uFF1A\u4E0E\u6570\u636E\u65E0\u5173\u7684\u793E\u4EA4/\u54A8\u8BE2\u7C7B\u8BDD\u8BED\u2014\u2014\u95EE\u5019\u5BD2\u6684\u3001\u611F\u8C22\u5938\u5956\u3001\u8BE2\u95EE\u52A9\u624B\u8EAB\u4EFD/\u80FD\u529B/\u81EA\u6211\u4ECB\u7ECD\u3001\u67E5\u5929\u6C14\u8BB2\u7B11\u8BDD\u7B49\u95F2\u8C08\uFF0C\u6216\u4EC5\u5C31\u52A9\u624B\u4F7F\u7528\u65B9\u5F0F\u53D1\u95EE \u2192 mode=chat\uFF0C\u5E76\u5728 reply \u7528 2~4 \u53E5\u7B80\u77ED\u53CB\u597D\u7684\u4E2D\u6587\u4F5C\u7B54\uFF0C\u53EF\u81EA\u7136\u7ED3\u5408\u4E0B\u9762\u7684\u73AF\u5883\u4FE1\u606F\uFF1Breply \u7981\u6B62\u675C\u64B0\u6570\u636E\u503C\u3002
+- quick\uFF1A\u80FD\u7528 0~2 \u6761\u53EA\u8BFB SQL \u76F4\u63A5\u7B54\u5B8C\u7684\u5177\u4F53\u6570\u636E\u95EE\u9898\uFF08\u5355\u6307\u6807\u3001\u5355\u8868\u3001\u7B80\u5355\u5217\u8868\u3001"\u5F53\u524D\u5E93\u6709\u54EA\u4E9B\u8868"\u4E4B\u7C7B\uFF09 \u2192 mode=quick\uFF0Creply \u7559\u7A7A\u4E32\u3002
+- analyze\uFF1A\u591A\u53E3\u5F84\u3001\u591A\u7EF4\u5EA6\u3001\u8D8B\u52BF/\u5BF9\u6BD4/\u5206\u5E03/\u6392\u540D/\u5F52\u56E0\u3001\u9700\u8981\u6F84\u6E05\u53E3\u5F84\uFF0C\u6216\u8981\u6C42\u65E5\u62A5/\u5468\u62A5/\u5927\u5C4F/HTML \u62A5\u544A\u7B49\u6210\u578B\u7684\u4EA7\u51FA \u2192 mode=analyze\uFF0Creply \u7559\u7A7A\u4E32\u3002
+- \u62FF\u4E0D\u51C6\u662F\u5426\u9700\u8981\u67E5\u6570\u636E\u5E93\u65F6\u503E\u5411 quick/analyze\uFF0C\u5B81\u53EF\u591A\u5E72\u6D3B\u4E5F\u4E0D\u8981\u628A\u6570\u636E\u95EE\u9898\u8BEF\u5224\u6210 chat\u3002
+
+\u53EA\u8F93\u51FA JSON\uFF1A{"mode":"chat|quick|analyze","reply":"chat \u65F6\u7684\u4E2D\u6587\u56DE\u7B54\uFF0C\u5426\u5219\u7A7A\u4E32","confidence":0~1}`;
+function intentGateFallbackResult(durationMs = 0) {
+  return {
+    mode: "analyze",
+    reply: "",
+    confidence: 0,
+    byFallback: true,
+    usage: { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 },
+    durationMs
+  };
+}
+function gateExtractText(content) {
+  if (typeof content === "string")
+    return content;
+  if (Array.isArray(content)) {
+    return content.map((part) => {
+      if (typeof part === "string")
+        return part;
+      if (part && typeof part === "object" && "text" in part) {
+        return String(part.text || "");
+      }
+      return "";
+    }).join("");
+  }
+  if (content && typeof content === "object" && "content" in content) {
+    return gateExtractText(content.content);
+  }
+  return "";
+}
+function parseIntentGate(text) {
+  const raw = String(text || "").trim();
+  if (!raw)
+    return null;
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const first = raw.indexOf("{");
+  const last = raw.lastIndexOf("}");
+  const candidates = [
+    raw,
+    fenced && fenced[1] ? fenced[1] : "",
+    first >= 0 && last > first ? raw.slice(first, last + 1) : ""
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate);
+      const mode = parsed.mode === "chat" || parsed.mode === "quick" || parsed.mode === "analyze" ? parsed.mode : null;
+      if (!mode)
+        continue;
+      const reply = String(parsed.reply ?? "").trim().slice(0, 2e3);
+      const confidenceRaw = Number(parsed.confidence);
+      const confidence = Number.isFinite(confidenceRaw) ? Math.min(1, Math.max(0, confidenceRaw)) : 0.6;
+      return { mode, reply, confidence };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+async function routeIntentByModel(invoke, input2) {
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  let timer = null;
+  const fallback = () => ({
+    ...intentGateFallbackResult(Date.now() - startedAt)
+  });
+  const userParts = [
+    input2.contextNote ? `\u3010\u73AF\u5883\u3011${input2.contextNote}` : "",
+    input2.history?.trim() ? `\u3010\u6700\u8FD1\u5BF9\u8BDD\u3011
+${input2.history.trim().slice(0, 1200)}` : "",
+    `\u3010\u7528\u6237\u6700\u65B0\u6D88\u606F\u3011
+${String(input2.question || "").slice(0, 600)}`,
+    "\u8BF7\u8F93\u51FA JSON\u3002"
+  ].filter(Boolean);
+  const messages = [
+    { role: "system", content: INTENT_GATE_SYSTEM_PROMPT },
+    { role: "user", content: userParts.join("\n\n") }
+  ];
+  try {
+    const raced = await Promise.race([
+      invoke(messages, { signal: controller.signal }),
+      new Promise((resolve6) => {
+        timer = setTimeout(() => resolve6(null), Math.max(500, input2.timeoutMs));
+      })
+    ]);
+    if (raced === null) {
+      controller.abort();
+      return fallback();
+    }
+    const response = raced;
+    const parsed = parseIntentGate(gateExtractText(response?.content));
+    if (!parsed)
+      return fallback();
+    const usage = extractUsage(response?.usage_metadata);
+    return {
+      mode: parsed.mode,
+      reply: parsed.mode === "chat" ? parsed.reply : "",
+      confidence: parsed.confidence,
+      byFallback: false,
+      usage: usage.inputTokens || usage.outputTokens ? usage : { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 },
+      durationMs: Date.now() - startedAt
+    };
+  } catch {
+    return fallback();
+  } finally {
+    if (timer)
+      clearTimeout(timer);
+  }
 }
 
 // dist/index.js
@@ -171762,27 +172069,83 @@ app.post("/chat/stream", async (request, reply) => {
     return;
   }
   const wantsReport = /报告|日报|周报|月报|年报|年度|汇报|大屏|看板|面板|可视化页面|可视化报告|网页报告|html/i.test(lastUserText);
-  const route = routeExecutionMode(lastUserText, {
-    wantsReport,
-    pageContext: pageContextRelevant ? pageContext : null
+  const turnClockStart = Date.now();
+  const retrievalPromise = withTimeout(retrieveTables(resolved.db, lastUserText, 8, {
+    focusTables: pageContextRelevant ? pageContext?.tables || [] : []
+  }), 12e3, "\u76F8\u5173\u8868\u68C0\u7D22\u8D85\u65F6").then((tables) => ({ candidates: tables })).catch((error62) => {
+    logLine(`table retrieval failed: ${error62 instanceof Error ? error62.message : String(error62)}`);
+    return { candidates: [] };
   });
-  const executionMode = route.mode;
+  let candidates = [];
+  const gateModel = createChatModel(resolved, { maxTokens: 300 });
+  const gateInvoke = (messages2, options) => Promise.resolve(gateModel.invoke(messages2, { signal: options?.signal }));
+  const gateResult = await routeIntentByModel(gateInvoke, {
+    question: lastUserText,
+    history: recentHistoryText(body.messages),
+    contextNote: `\u63A5\u5165\u6570\u636E\u5E93\uFF1A${describeDb(resolved.db)}\uFF1B\u4E1A\u52A1\u53E3\u5F84\u4E0E\u6280\u80FD\u4EE5\u77E5\u8BC6\u5305/\u6280\u80FD\u5305\u4E3A\u51C6\u3002`,
+    timeoutMs: resolved.intentGateTimeoutMs
+  });
+  logLine(`intent gate mode=${gateResult.mode} fallback=${gateResult.byFallback} confidence=${gateResult.confidence} ms=${gateResult.durationMs}`);
+  send({
+    type: "trace",
+    id: `trace-intent-${turnClockStart}`,
+    phase: "planning",
+    kind: "intent_gate",
+    title: "\u8BC6\u522B\u610F\u56FE",
+    detail: gateResult.byFallback ? "\u610F\u56FE\u95E8\u8D85\u65F6/\u5931\u8D25\uFF0C\u6309\u5206\u6790\u6A21\u5F0F\u7EE7\u7EED" : `${gateResult.mode}\uFF08\u7F6E\u4FE1\u5EA6 ${Math.round(gateResult.confidence * 100)}%\uFF09`,
+    status: gateResult.byFallback ? "error" : "success",
+    durationMs: gateResult.durationMs,
+    data: {
+      mode: gateResult.mode,
+      byFallback: gateResult.byFallback,
+      confidence: gateResult.confidence
+    }
+  });
+  if (gateResult.mode === "chat" && !gateResult.byFallback && gateResult.reply.trim()) {
+    const chatBudget = buildTurnBudget(resolved, false, false);
+    if (gateResult.usage.inputTokens || gateResult.usage.outputTokens) {
+      chatBudget.recordModelUsage(gateResult.usage, resolved.tokenPrices);
+    }
+    const reply2 = gateResult.reply.trim();
+    send({ type: "token", content: reply2 });
+    send({
+      type: "usage",
+      model: resolved.llm.model,
+      inputTokens: chatBudget.usage.inputTokens,
+      outputTokens: chatBudget.usage.outputTokens,
+      cacheReadTokens: chatBudget.usage.cacheReadTokens,
+      cacheCreationTokens: chatBudget.usage.cacheCreationTokens,
+      estimatedCost: chatBudget.usage.cost,
+      calls: chatBudget.usage.modelCalls,
+      maxInputTokens: 0,
+      elapsedMs: Date.now() - turnClockStart
+    });
+    logLine(`intent gate chat reply chars=${reply2.length}`);
+    send({ type: "done" });
+    raw.end();
+    return;
+  }
+  const routeConfidence = gateResult.confidence;
+  const routeReason = gateResult.byFallback ? "\u610F\u56FE\u95E8\u8D85\u65F6/\u5931\u8D25\uFF0C\u4FDD\u5B88\u4F7F\u7528\u5B8C\u6574\u5206\u6790" : `\u610F\u56FE\u95E8\u5224\u5B9A\uFF1A${gateResult.mode}`;
+  let executionMode = gateResult.byFallback ? "analyze" : gateResult.mode === "chat" ? "quick" : gateResult.mode;
+  if (wantsReport)
+    executionMode = "report";
   send({
     type: "trace",
     id: `trace-route-${Date.now()}`,
     phase: "planning",
     kind: "route",
     title: "\u9009\u62E9\u6267\u884C\u6A21\u5F0F",
-    detail: `${modeLabel(executionMode)}\uFF1A${route.reason}`,
+    detail: `${modeLabel(executionMode)}\uFF1A${routeReason}`,
     status: "success",
     durationMs: 0,
     data: {
       mode: executionMode,
-      needsSql: route.needsSql,
-      needsPlan: route.needsPlan,
-      needsCritic: route.needsCritic,
-      needsReport: route.needsReport,
-      confidence: route.confidence
+      needsSql: executionMode !== "quick",
+      needsPlan: executionMode !== "quick",
+      needsCritic: executionMode !== "quick",
+      needsReport: executionMode === "report",
+      confidence: routeConfidence
     }
   });
   if (wantsReport) {
@@ -171823,11 +172186,9 @@ app.post("/chat/stream", async (request, reply) => {
       logLine(`visual structure dedupe=${lastStructure.join(",")}`);
     }
   }
-  let candidates = [];
-  try {
-    candidates = await withTimeout(retrieveTables(resolved.db, lastUserText, 8, {
-      focusTables: pageContextRelevant ? pageContext?.tables || [] : []
-    }), 12e3, "\u76F8\u5173\u8868\u68C0\u7D22\u8D85\u65F6");
+  {
+    const retrievalResult = await retrievalPromise;
+    candidates = retrievalResult.candidates;
     const block = formatTableCandidates(candidates);
     if (block) {
       const lastUserIndex = messages.reduce((index2, message, i) => message._getType() === "human" ? i : index2, -1);
@@ -171836,8 +172197,6 @@ app.post("/chat/stream", async (request, reply) => {
       }
       logLine(`table retrieval candidates=${candidates.length}`);
     }
-  } catch (error62) {
-    logLine(`table retrieval failed: ${error62 instanceof Error ? error62.message : String(error62)}`);
   }
   const usePlanMode = executionMode === "quick" || resolved.enablePlanMode && !resolved.requireSqlApproval;
   const deepPlan = executionMode !== "quick" && usePlanMode;
@@ -171900,21 +172259,13 @@ app.post("/chat/stream", async (request, reply) => {
   };
   raw.on("close", onClientClose);
   activeStreams += 1;
-  const budget = new TurnBudget({
-    // 普通问答仍用前�?limits；报告轮不按 SQL/Schema 条数限制
-    maxSqlQueries: resolved.maxSqlQueries,
-    maxSchemaCalls: resolved.maxSchemaCalls,
-    // 报告/计划轮需要完整聚合结果；普通问答保持原�?
-    maxResultChars: wantsReport || deepPlan ? Math.max(resolved.maxResultChars, 2e4) : resolved.maxResultChars,
-    maxTotalToolChars: wantsReport || deepPlan ? Math.max(resolved.maxTotalToolChars, 12e4) : resolved.maxTotalToolChars,
-    maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : deepPlan ? resolved.maxPlanTurnTokens : resolved.maxTurnTokens,
-    maxModelCalls: wantsReport ? resolved.maxReportModelCalls : deepPlan ? resolved.maxPlanModelCalls : resolved.maxModelCalls,
-    strictNumberCheck: resolved.strictNumberCheck
-  }, { unlimitedQueries: wantsReport || deepPlan });
+  const budget = buildTurnBudget(resolved, wantsReport, deepPlan);
   let turnError = "";
   const turnStartedAt = Date.now();
+  const activity = createModelActivityTracker({ send });
   const bridge = createTurnBridge({
     send,
+    activity,
     resolved,
     budget,
     turnStartedAt,
@@ -171925,6 +172276,7 @@ app.post("/chat/stream", async (request, reply) => {
   logLine(`turn start model=${resolved.llm.model}`);
   const heartbeat = setInterval(() => {
     send({ type: "heartbeat", ts: Date.now() });
+    activity.tick();
   }, 15e3);
   let agent = null;
   await runWithBudget(budget, async () => {
@@ -172138,8 +172490,10 @@ app.post("/chat/resume", async (request, reply) => {
     maxModelCalls: resolved.maxReportModelCalls,
     strictNumberCheck: resolved.strictNumberCheck
   }, { unlimitedQueries: true });
+  const activity = createModelActivityTracker({ send });
   const bridge = createTurnBridge({
     send,
+    activity,
     resolved,
     budget,
     turnStartedAt: Date.now(),
@@ -172148,6 +172502,7 @@ app.post("/chat/resume", async (request, reply) => {
   });
   const heartbeat = setInterval(() => {
     send({ type: "heartbeat", ts: Date.now() });
+    activity.tick();
   }, 15e3);
   let turnError = "";
   await runWithBudget(budget, async () => {
@@ -172340,6 +172695,31 @@ function withTimeout(p, ms, message) {
       reject(err);
     });
   });
+}
+function recentHistoryText(messages, maxTurns = 3) {
+  const parts = [];
+  for (const message of messages.slice(-6)) {
+    if (message.role === "system")
+      continue;
+    const text = shortText(message.content, 160);
+    if (!text)
+      continue;
+    parts.push(`${message.role === "user" ? "\u7528\u6237" : "\u52A9\u624B"}\uFF1A${text}`);
+  }
+  return parts.slice(-maxTurns * 2).join("\n");
+}
+function buildTurnBudget(resolved, wantsReport, deepPlan) {
+  return new TurnBudget({
+    // 普通问答仍用前端 limits；报告轮不按 SQL/Schema 条数限制
+    maxSqlQueries: resolved.maxSqlQueries,
+    maxSchemaCalls: resolved.maxSchemaCalls,
+    // 报告/计划轮需要完整聚合结果；普通问答保持原样
+    maxResultChars: wantsReport || deepPlan ? Math.max(resolved.maxResultChars, 2e4) : resolved.maxResultChars,
+    maxTotalToolChars: wantsReport || deepPlan ? Math.max(resolved.maxTotalToolChars, 12e4) : resolved.maxTotalToolChars,
+    maxTurnTokens: wantsReport ? resolved.maxReportTurnTokens : deepPlan ? resolved.maxPlanTurnTokens : resolved.maxTurnTokens,
+    maxModelCalls: wantsReport ? resolved.maxReportModelCalls : deepPlan ? resolved.maxPlanModelCalls : resolved.maxModelCalls,
+    strictNumberCheck: resolved.strictNumberCheck
+  }, { unlimitedQueries: wantsReport || deepPlan });
 }
 function toRecord2(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -172546,7 +172926,7 @@ function extractText2(content) {
   }
   return "";
 }
-function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, skills }) {
+function createTurnBridge({ send, activity, resolved, budget, turnStartedAt, knowledge, skills }) {
   const toolStarts = /* @__PURE__ */ new Map();
   const citations = [];
   const tablesUsed = /* @__PURE__ */ new Set();
@@ -172621,15 +173001,23 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
   };
   const handle = (event, options = {}) => {
     if (event.event === "on_chat_model_stream") {
-      if (options.emitTokens === false)
+      if (options.emitTokens === false) {
+        activity.onChunk(event, options.stepId);
         return;
+      }
       const chunk = event.data?.chunk;
       const text = extractText2(chunk?.content);
       if (text)
         send({ type: "token", content: text });
       return;
     }
+    if (event.event === "on_chat_model_start") {
+      if (options.emitTokens === false)
+        activity.open(options.stepId);
+      return;
+    }
     if (event.event === "on_tool_start") {
+      activity.close();
       const name = event.name || "tool";
       const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
       const input2 = event.data?.input;
@@ -172783,6 +173171,7 @@ function createTurnBridge({ send, resolved, budget, turnStartedAt, knowledge, sk
       return;
     }
     if (event.event === "on_chat_model_end") {
+      activity.close();
       addUsage(event.data?.output?.usage_metadata);
     }
   };

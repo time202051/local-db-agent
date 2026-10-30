@@ -5,7 +5,7 @@ import type { MessageContent } from '@langchain/core/messages';
 import { countTokensApproximately } from 'langchain';
 import { serverConfig, describeDb, resolveRequestConfig } from './config.js';
 import type { RequestConfigInput, ResolvedConfig } from './config.js';
-import { buildSystemPrompt, getRuntime, pingModel } from './runtime.js';
+import { buildSystemPrompt, createChatModel, getRuntime, pingModel } from './runtime.js';
 import { createTools, isTerminalVisualTool, VISUAL_TOOL_NAMES } from './tools.js';
 import { closeAllPools, pingDatabase } from './db.js';
 import { decryptConfigPayload, handshake } from './crypto.js';
@@ -24,6 +24,9 @@ import type { SkillStatus } from './skills.js';
 import { formatTableCandidates, retrieveTables } from './schema-cache.js';
 import type { TableCandidate } from './schema-cache.js';
 import { runPlanTurn } from './plan-graph.js';
+import type { ExecutionMode } from './plan.js';
+import { createModelActivityTracker } from './model-activity.js';
+import type { ModelActivityTracker, ModelStreamEvent } from './model-activity.js';
 import {
   formatPageContextAnswer,
   isPageContextRelevant,
@@ -31,7 +34,13 @@ import {
   resolvePageContext,
 } from './page-context.js';
 import type { PageContextInput, PageContextResolution } from './page-context.js';
-import { chatReply, isChatQuestion, modeLabel, routeExecutionMode } from './intent-router.js';
+import {
+  chatReply,
+  isChatQuestion,
+  modeLabel,
+  routeIntentByModel,
+} from './intent-router.js';
+import type { IntentGateInvoke } from './intent-router.js';
 
 // 图片以 dataURL 随消息上传，默认 1MB body 限制不够用
 const app = Fastify({ logger: true, bodyLimit: 20 * 1024 * 1024 });
@@ -342,27 +351,110 @@ app.post('/chat/stream', async (request, reply) => {
     /报告|日报|周报|月报|年报|年度|汇报|大屏|看板|面板|可视化页面|可视化报告|网页报告|html/i.test(
       lastUserText,
     );
-  const route = routeExecutionMode(lastUserText, {
-    wantsReport,
-    pageContext: pageContextRelevant ? pageContext : null,
+  // ---- 相关表检索先行发起（不 await）：与意图门并行，数据类问题里互相吸收耗时 ----
+  const turnClockStart = Date.now();
+  const retrievalPromise = withTimeout(
+    retrieveTables(resolved.db, lastUserText, 8, {
+      focusTables: pageContextRelevant ? pageContext?.tables || [] : [],
+    }),
+    12000,
+    '相关表检索超时',
+  )
+    .then((tables) => ({ candidates: tables }))
+    .catch((error) => {
+      logLine(`table retrieval failed: ${error instanceof Error ? error.message : String(error)}`);
+      return { candidates: [] as TableCandidate[] };
+    });
+  let candidates: TableCandidate[] = [];
+
+  // ---- 意图门：由模型判断本句想干什么，决定 chat/quick/analyze ----
+  // 判断交给模型，不做词表枚举；超时/失败回落 analyze，行为不比没有意图门更差。
+  // 每轮固定先走意图门（无开关）；与相关表检索并行，数据类问题里互相吸收耗时。
+  const gateModel = createChatModel(resolved, { maxTokens: 300 });
+  const gateInvoke: IntentGateInvoke = (messages, options) =>
+    Promise.resolve(gateModel.invoke(messages as never, { signal: options?.signal } as never));
+  const gateResult = await routeIntentByModel(gateInvoke, {
+    question: lastUserText,
+    history: recentHistoryText(body.messages),
+    contextNote: `接入数据库：${describeDb(resolved.db)}；业务口径与技能以知识包/技能包为准。`,
+    timeoutMs: resolved.intentGateTimeoutMs,
   });
-  const executionMode = route.mode;
+  logLine(
+    `intent gate mode=${gateResult.mode} fallback=${gateResult.byFallback} ` +
+      `confidence=${gateResult.confidence} ms=${gateResult.durationMs}`,
+  );
+  send({
+    type: 'trace',
+    id: `trace-intent-${turnClockStart}`,
+    phase: 'planning',
+    kind: 'intent_gate',
+    title: '识别意图',
+    detail: gateResult.byFallback
+      ? '意图门超时/失败，按分析模式继续'
+      : `${gateResult.mode}（置信度 ${Math.round(gateResult.confidence * 100)}%）`,
+    status: gateResult.byFallback ? 'error' : 'success',
+    durationMs: gateResult.durationMs,
+    data: {
+      mode: gateResult.mode,
+      byFallback: gateResult.byFallback,
+      confidence: gateResult.confidence,
+    },
+  });
+  // ---- chat 轮零管线：门生成的回答直接下发，记账后结束 ----
+  if (gateResult.mode === 'chat' && !gateResult.byFallback && gateResult.reply.trim()) {
+    const chatBudget = buildTurnBudget(resolved, false, false);
+    if (gateResult.usage.inputTokens || gateResult.usage.outputTokens) {
+      chatBudget.recordModelUsage(gateResult.usage, resolved.tokenPrices);
+    }
+    const reply = gateResult.reply.trim();
+    send({ type: 'token', content: reply });
+    send({
+      type: 'usage',
+      model: resolved.llm.model,
+      inputTokens: chatBudget.usage.inputTokens,
+      outputTokens: chatBudget.usage.outputTokens,
+      cacheReadTokens: chatBudget.usage.cacheReadTokens,
+      cacheCreationTokens: chatBudget.usage.cacheCreationTokens,
+      estimatedCost: chatBudget.usage.cost,
+      calls: chatBudget.usage.modelCalls,
+      maxInputTokens: 0,
+      elapsedMs: Date.now() - turnClockStart,
+    });
+    logLine(`intent gate chat reply chars=${reply.length}`);
+    send({ type: 'done' });
+    raw.end();
+    return;
+  }
+
+  // ---- 执行模式决策：意图门判定优先；失败回落统一按 analyze 保守处理 ----
+  const routeConfidence = gateResult.confidence;
+  const routeReason = gateResult.byFallback
+    ? '意图门超时/失败，保守使用完整分析'
+    : `意图门判定：${gateResult.mode}`;
+  let executionMode: ExecutionMode = gateResult.byFallback
+    ? 'analyze'
+    : gateResult.mode === 'chat'
+      ? 'quick'
+      : gateResult.mode;
+  // 报告词命中时仍抬为报告轮，与既有行为一致；意图门只负责 chat/quick/analyze 边界
+  if (wantsReport) executionMode = 'report';
+
   send({
     type: 'trace',
     id: `trace-route-${Date.now()}`,
     phase: 'planning',
     kind: 'route',
     title: '选择执行模式',
-    detail: `${modeLabel(executionMode)}：${route.reason}`,
+    detail: `${modeLabel(executionMode)}：${routeReason}`,
     status: 'success',
     durationMs: 0,
     data: {
       mode: executionMode,
-      needsSql: route.needsSql,
-      needsPlan: route.needsPlan,
-      needsCritic: route.needsCritic,
-      needsReport: route.needsReport,
-      confidence: route.confidence,
+      needsSql: executionMode !== 'quick',
+      needsPlan: executionMode !== 'quick',
+      needsCritic: executionMode !== 'quick',
+      needsReport: executionMode === 'report',
+      confidence: routeConfidence,
     },
   });
   if (wantsReport) {
@@ -426,15 +518,10 @@ app.post('/chat/stream', async (request, reply) => {
   }
 
   // 相关表检索：本轮先给 Top 8 紧凑目录，模型不需要全量 list_tables。
-  let candidates: TableCandidate[] = [];
-  try {
-    candidates = await withTimeout(
-      retrieveTables(resolved.db, lastUserText, 8, {
-        focusTables: pageContextRelevant ? pageContext?.tables || [] : [],
-      }),
-      12000,
-      '相关表检索超时',
-    );
+  // 检索已在意图门之前并行发起，这里只是收结果。
+  {
+    const retrievalResult = await retrievalPromise;
+    candidates = retrievalResult.candidates;
     const block = formatTableCandidates(candidates);
     if (block) {
       const lastUserIndex = messages.reduce(
@@ -446,8 +533,6 @@ app.post('/chat/stream', async (request, reply) => {
       }
       logLine(`table retrieval candidates=${candidates.length}`);
     }
-  } catch (error) {
-    logLine(`table retrieval failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 
   // 单轮总时长上限 + 客户端断开即中止（避免挂起、持续烧 token / 占着数据库）
@@ -527,38 +612,13 @@ app.post('/chat/stream', async (request, reply) => {
   raw.on('close', onClientClose);
 
   activeStreams += 1;
-  const budget = new TurnBudget(
-    {
-      // 普通问答仍用前�?limits；报告轮不按 SQL/Schema 条数限制
-      maxSqlQueries: resolved.maxSqlQueries,
-      maxSchemaCalls: resolved.maxSchemaCalls,
-      // 报告/计划轮需要完整聚合结果；普通问答保持原�?
-      maxResultChars:
-        wantsReport || deepPlan
-          ? Math.max(resolved.maxResultChars, 20000)
-          : resolved.maxResultChars,
-      maxTotalToolChars:
-        wantsReport || deepPlan
-          ? Math.max(resolved.maxTotalToolChars, 120000)
-          : resolved.maxTotalToolChars,
-      maxTurnTokens: wantsReport
-        ? resolved.maxReportTurnTokens
-        : deepPlan
-          ? resolved.maxPlanTurnTokens
-          : resolved.maxTurnTokens,
-      maxModelCalls: wantsReport
-        ? resolved.maxReportModelCalls
-        : deepPlan
-          ? resolved.maxPlanModelCalls
-          : resolved.maxModelCalls,
-      strictNumberCheck: resolved.strictNumberCheck,
-    },
-    { unlimitedQueries: wantsReport || deepPlan },
-  );
+  const budget = buildTurnBudget(resolved, wantsReport, deepPlan);
   let turnError = '';
   const turnStartedAt = Date.now();
+  const activity = createModelActivityTracker({ send });
   const bridge = createTurnBridge({
     send,
+    activity,
     resolved,
     budget,
     turnStartedAt,
@@ -575,6 +635,7 @@ app.post('/chat/stream', async (request, reply) => {
 
   const heartbeat = setInterval(() => {
     send({ type: 'heartbeat', ts: Date.now() });
+    activity.tick();
   }, 15000);
 
   let agent: ReturnType<typeof getRuntime> | null = null;
@@ -839,8 +900,10 @@ app.post('/chat/resume', async (request, reply) => {
     },
     { unlimitedQueries: true },
   );
+  const activity = createModelActivityTracker({ send });
   const bridge = createTurnBridge({
     send,
+    activity,
     resolved,
     budget,
     turnStartedAt: Date.now(),
@@ -849,6 +912,7 @@ app.post('/chat/resume', async (request, reply) => {
   });
   const heartbeat = setInterval(() => {
     send({ type: 'heartbeat', ts: Date.now() });
+    activity.tick();
   }, 15000);
   let turnError = '';
 
@@ -1117,6 +1181,48 @@ function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promise<T> 
       },
     );
   });
+}
+
+/** 取最近几轮对话的纯文本摘要，供意图门识别上下文（不含图片）。 */
+function recentHistoryText(messages: ChatMessageInput[], maxTurns = 3): string {
+  const parts: string[] = [];
+  for (const message of messages.slice(-6)) {
+    if (message.role === 'system') continue;
+    const text = shortText(message.content, 160);
+    if (!text) continue;
+    parts.push(`${message.role === 'user' ? '用户' : '助手'}：${text}`);
+  }
+  return parts.slice(-maxTurns * 2).join('\n');
+}
+
+/** 单轮预算：报告/计划轮放宽 SQL 条数与 token 上限（原内联逻辑抽公共函数）。 */
+function buildTurnBudget(resolved: ResolvedConfig, wantsReport: boolean, deepPlan: boolean): TurnBudget {
+  return new TurnBudget(
+    {
+      // 普通问答仍用前端 limits；报告轮不按 SQL/Schema 条数限制
+      maxSqlQueries: resolved.maxSqlQueries,
+      maxSchemaCalls: resolved.maxSchemaCalls,
+      // 报告/计划轮需要完整聚合结果；普通问答保持原样
+      maxResultChars:
+        wantsReport || deepPlan ? Math.max(resolved.maxResultChars, 20000) : resolved.maxResultChars,
+      maxTotalToolChars:
+        wantsReport || deepPlan
+          ? Math.max(resolved.maxTotalToolChars, 120000)
+          : resolved.maxTotalToolChars,
+      maxTurnTokens: wantsReport
+        ? resolved.maxReportTurnTokens
+        : deepPlan
+          ? resolved.maxPlanTurnTokens
+          : resolved.maxTurnTokens,
+      maxModelCalls: wantsReport
+        ? resolved.maxReportModelCalls
+        : deepPlan
+          ? resolved.maxPlanModelCalls
+          : resolved.maxModelCalls,
+      strictNumberCheck: resolved.strictNumberCheck,
+    },
+    { unlimitedQueries: wantsReport || deepPlan },
+  );
 }
 
 function toRecord(value: unknown): Record<string, unknown> | null {
@@ -1397,6 +1503,7 @@ interface StreamEventLike {
 
 interface TurnBridgeOptions {
   send: (payload: unknown) => void;
+  activity: ModelActivityTracker;
   resolved: ResolvedConfig;
   budget: TurnBudget;
   turnStartedAt: number;
@@ -1407,6 +1514,7 @@ interface TurnBridgeOptions {
 /** 把 LangChain 的 streamEvents 统一映射成前端 SSE 事件（普通对话与 HITL 恢复共用）。 */
 function createTurnBridge({
   send,
+  activity,
   resolved,
   budget,
   turnStartedAt,
@@ -1516,13 +1624,25 @@ function createTurnBridge({
     options: { emitTokens?: boolean; stepId?: string } = {},
   ) => {
     if (event.event === 'on_chat_model_stream') {
-      if (options.emitTokens === false) return;
+      if (options.emitTokens === false) {
+        // 步骤内部生成（用户看不到 token 流）：期间脉冲播报模型动态，
+        // 避免长窗口（整份报告吐字 / 慢首字）被当成卡死。
+        activity.onChunk(event as ModelStreamEvent, options.stepId);
+        return;
+      }
       const chunk = event.data?.chunk as { content?: unknown } | undefined;
       const text = extractText(chunk?.content);
       if (text) send({ type: 'token', content: text });
       return;
     }
+    if (event.event === 'on_chat_model_start') {
+      // 内部生成的模型调用开始：先在时间线挂一条“模型生成”进行中
+      if (options.emitTokens === false) activity.open(options.stepId);
+      return;
+    }
     if (event.event === 'on_tool_start') {
+      // 模型已产出工具调用、开始执行：内部生成窗口结束
+      activity.close();
       const name = event.name || 'tool';
       const runId = event.run_id || `tool-${Date.now()}-${toolStarts.size}`;
       const input = event.data?.input;
@@ -1702,6 +1822,7 @@ function createTurnBridge({
       return;
     }
     if (event.event === 'on_chat_model_end') {
+      activity.close();
       addUsage(
         (
           event.data?.output as {

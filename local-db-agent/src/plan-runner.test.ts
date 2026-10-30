@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { HumanMessage } from '@langchain/core/messages';
+import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import { TurnBudget } from './budget.js';
 import { DEFAULT_TOKEN_PRICES } from './usage.js';
 import type { ResolvedConfig } from './config.js';
@@ -114,6 +114,14 @@ function toolEnd(runId: string, payload: Record<string, unknown>): Record<string
     name: 'run_sql',
     run_id: runId,
     data: { output: JSON.stringify(payload) },
+  };
+}
+
+/** 模拟 executor 步骤里模型不改工具、直接输出完整文本（executeStep 只认 AIMessage 实例）。 */
+function chatModelEnd(text: string): Record<string, unknown> {
+  return {
+    event: 'on_chat_model_end',
+    data: { output: new AIMessage(text) },
   };
 }
 
@@ -352,6 +360,44 @@ describe('runPlanTurn', () => {
     expect(sent.some(item => item.type === 'trace' && item.kind === 'report')).toBe(true);
   });
 
+  it('终版报告提前渲染后，标题不像报告步骤的 pending 步骤也标记完成（修复 1/2）', async () => {
+    state.planJson = JSON.stringify({
+      goal: '生成库存主表健康度简报',
+      steps: [
+        { title: '提取 WMS_Stocks 库存主表核心指标', intent: '查询并核对核心指标' },
+        // 标题含“校验/汇总”，isReportStep 会判定失败；渲染早停后不能再依赖标题猜谜
+        { title: '校验口径并汇总图表数据', intent: '核对 coverage 与口径', dependsOn: [1] },
+      ],
+    });
+    state.answers = ['完成'];
+    state.agentCalls = 0;
+    state.delays = [];
+    state.scripts = [
+      [
+        {
+          event: 'on_tool_end',
+          name: 'render_html_report',
+          run_id: 'r-report-early',
+          data: {
+            output: JSON.stringify({ success: true, component: 'ol-html-report', title: '简报' }),
+          },
+        },
+      ],
+    ];
+
+    const { result, sent } = await run(state.scripts, '生成库存主表报告');
+    expect(state.agentCalls).toBe(1);
+    expect(result.completed).toBe(2);
+    expect(result.total).toBe(2);
+    const done = sent.find(item => item.type === 'plan_done');
+    expect(done?.status).toBe('done');
+    expect(done?.completed).toBe(2);
+    const reusedEnd = sent.find(
+      item => item.type === 'step_end' && item.summary === '报告已在上一步生成，本步骤复用，不重复渲染',
+    );
+    expect(reusedEnd).toBeTruthy();
+  });
+
   it('快速模式单步执行并反思，不调用 planner/critic', async () => {
     state.planJson = '';
     state.answers = ['库存 10'];
@@ -408,5 +454,71 @@ describe('runPlanTurn', () => {
     expect(result.completed).toBe(1);
     expect(sent.some(item => item.type === 'reflect' && item.verdict === 'retry')).toBe(true);
     expect(state.criticCalls).toBe(0);
+  });
+
+  it('analyze 闲聊单步：无 SQL 时跳过 critic，executor 答案直接复用（不再调 reporter）', async () => {
+    state.planJson = JSON.stringify({
+      goal: '向用户介绍自己的能力',
+      simple: true,
+      steps: [{ title: '自我介绍', intent: '介绍助手能力与当前接入环境' }],
+    });
+    state.answers = ['REPORTER-SHOULD-NOT-RUN'];
+    state.agentCalls = 0;
+    state.criticCalls = 0;
+    state.criticResponses = [];
+    state.delays = [];
+    state.scripts = [[chatModelEnd('我是数据库分析助手，可以帮你查数据、做分析和生成报告。')]];
+
+    const { result, sent } = await run(
+      state.scripts,
+      '你好，请自我介绍下',
+      { enableAccuracyCritic: true, maxCriticRounds: 1 },
+      'analyze',
+    );
+    expect(state.agentCalls).toBe(1);
+    expect(state.criticCalls).toBe(0);
+    expect(result.completed).toBe(1);
+    expect(result.total).toBe(1);
+    const tokens = sent
+      .filter(item => item.type === 'token')
+      .map(item => String(item.content || ''));
+    expect(tokens).toHaveLength(1);
+    expect(tokens[0]).toContain('数据库分析助手');
+    expect(tokens.join('')).not.toContain('REPORTER-SHOULD-NOT-RUN');
+  });
+
+  it('analyze 单步有 SQL 且校验通过：critic 照跑，reporter 复用答案', async () => {
+    state.planJson = JSON.stringify({
+      goal: '查库存',
+      steps: [{ title: '查库存', intent: '查当前库存' }],
+    });
+    state.answers = ['REPORTER-SHOULD-NOT-RUN'];
+    state.agentCalls = 0;
+    state.criticCalls = 0;
+    state.criticResponses = [JSON.stringify({ verdict: 'pass', issues: [], confidence: 0.9 })];
+    state.delays = [];
+    state.scripts = [
+      [
+        toolStart('s1', 'SELECT COUNT(*) AS n FROM Stock'),
+        toolEnd('s1', { success: true, rowCount: 1, columns: ['n'], rows: [[10]] }),
+        chatModelEnd('库存 10'),
+      ],
+    ];
+
+    const { result, sent } = await run(
+      state.scripts,
+      '当前库存有多少',
+      { enableAccuracyCritic: true, maxCriticRounds: 1 },
+      'analyze',
+    );
+    expect(state.agentCalls).toBe(1);
+    expect(state.criticCalls).toBe(1);
+    expect(result.completed).toBe(1);
+    const tokens = sent
+      .filter(item => item.type === 'token')
+      .map(item => String(item.content || ''));
+    expect(tokens).toEqual(['库存 10']);
+    const done = sent.find(item => item.type === 'plan_done');
+    expect(done?.criticVerdict).toBe('pass');
   });
 }, 30_000);

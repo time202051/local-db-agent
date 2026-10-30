@@ -212,6 +212,7 @@ POST /chat/suggest
 { "type": "tool_end",    "id": "run-…", "name": "run_sql", "label": "执行查询", "ok": true,
   "durationMs": 1200, "summary": { "rowCount": 1204, "truncated": false } }
 { "type": "tool_result", "id": "run-…", "name": "run_sql", "output": "JSON 字符串" }
+{ "type": "model_active", "label": "正在编写 HTML 报告", "chars": 8214, "elapsedMs": 23400, "stepId": "…" }
 { "type": "visual",      "component": "ol-html-report", "…": "报告 spec", "toolId": "run-…" }
 { "type": "usage",       "model": "deepseek-chat", "inputTokens": 3200, "outputTokens": 800, "elapsedMs": 6800 }
 { "type": "meta",        "queries": 3, "rowCount": 1204, "tables": ["…"], "warnings": [], "report": {…} }
@@ -431,6 +432,7 @@ Vue.use(OlCom, {
 | `strictNumberCheck`    | false                         | true = 报告数值对账不通过时拒绝出报告；false 只写 warnings        |
 | `tokenPrices`          | deepseek-chat 公开价          | 每 100 万 token 的 input miss/hit/output 单价，用于估算费用        |
 | `requireSqlApproval`   | false                         | true = 每次 `run_sql` 前通过 LangChain HITL 等待前端确认          |
+| `intentGateTimeoutSec` | 8                             | 意图门调用超时（秒）：每轮固定先由意图门判定 chat/quick/analyze，闲聊轮由门直接作答，超时/失败回落 analyze |
 | `turnTimeoutSec`       | 120                           | 单轮对话总时长，超时不出残缺报告                                  |
 | `maxConcurrent`        | 3                             | 并发会话上限                                                      |
 | `summaryTriggerTokens` | 40000                         | 触发历史摘要的 token 阈值（低于 20000 会被抬到 20000）            |
